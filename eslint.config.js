@@ -28,13 +28,15 @@ export default tseslint.config(
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
+      'import/newline-after-import': 'error',
+      'max-params': ['error', 3],
+      'no-unused-vars': 'error',
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },
       ],
       'simple-import-sort/exports': 'error',
       'simple-import-sort/imports': 'error',
-      'import/newline-after-import': 'error',
     },
   }
 )

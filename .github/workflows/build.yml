@@ -1,0 +1,46 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - develop
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    env:
+      VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+      VITE_APP_AUTH_BASE_URL: ${{ vars.VITE_APP_AUTH_BASE_URL }}
+      VITE_APP_REFRESH_AUTH_BASE_URL: ${{ vars.VITE_APP_REFRESH_AUTH_BASE_URL }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 23
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: "pnpm install --frozen-lockfile"
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Upload production-ready build files
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-files
+          path: ./dist

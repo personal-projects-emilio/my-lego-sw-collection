@@ -28,8 +28,9 @@
   "homepage": "/my-lego-sw-collection",
   "license": "MIT",
   "lint-staged": {
-    "*.{js, jsx, ts, tsx, css, html, json}": "pnpm prettier",
-    "*.{js, jsx, ts, tsx, css, html}": "pnpm lint"
+    "*.{ts, tsx}": "pnpm tsc",
+    "*.{js, ts, tsx, css, html}": "pnpm lint",
+    "*.{js, ts, tsx, css, html, json}": "pnpm prettier"
   },
   "name": "my-lego-sw-collection",
   "private": true,
