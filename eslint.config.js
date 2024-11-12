@@ -12,9 +12,9 @@ export default tseslint.config(
   {
     extends: [
       js.configs.recommended,
-      ...tseslint.configs.recommended,
       eslintConfigPrettier,
       importPlugin.flatConfigs.recommended,
+      ...tseslint.configs.recommended,
     ],
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
@@ -30,13 +30,31 @@ export default tseslint.config(
       ...reactHooks.configs.recommended.rules,
       'import/newline-after-import': 'error',
       'max-params': ['error', 3],
-      'no-unused-vars': 'error',
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },
       ],
       'simple-import-sort/exports': 'error',
-      'simple-import-sort/imports': 'error',
+      'simple-import-sort/imports': [
+        'error',
+        {
+          groups: [
+            // Side effect first
+            ['^\\u0000'],
+            // React
+            ['^react'],
+            ['^@?\\w'],
+          ],
+        },
+      ],
+    },
+    settings: {
+      'import/resolver': {
+        node: {
+          extensions: ['.js', '.jsx', '.ts', '.tsx'],
+          moduleDirectory: ['node_modules', 'src/'],
+        },
+      },
     },
   }
 )
