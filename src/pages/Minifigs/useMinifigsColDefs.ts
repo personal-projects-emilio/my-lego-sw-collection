@@ -32,6 +32,7 @@ const useMinifigsColDefs = () => {
           field: 'name',
           flex: 1,
           headerName: 'Name',
+          minWidth: 120,
         },
         {
           field: 'characterName',
@@ -48,6 +49,7 @@ const useMinifigsColDefs = () => {
           field: 'tags',
           flex: 1,
           headerName: 'Tags',
+          minWidth: 120,
           valueFormatter: ({ value }) => listValueFormatter(value),
         },
         {
@@ -55,6 +57,7 @@ const useMinifigsColDefs = () => {
           field: 'timelines',
           flex: 1,
           headerName: 'Timelines',
+          minWidth: 120,
           valueFormatter: ({ value }) => listValueFormatter(value),
         },
         {
@@ -62,6 +65,7 @@ const useMinifigsColDefs = () => {
           field: 'appearances',
           flex: 1,
           headerName: 'Appearances',
+          minWidth: 120,
           valueFormatter: ({ value }) => listValueFormatter(value),
         },
         {

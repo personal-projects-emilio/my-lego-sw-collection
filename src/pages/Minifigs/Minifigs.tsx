@@ -7,7 +7,7 @@ import { AgGridTable } from 'components/AgGrid/table'
 import { defaultMinifigsColumnDefs } from './Minifigs.constants'
 import useMinifigsColDefs from './useMinifigsColDefs'
 
-export const Minifigs: FC = () => {
+const Minifigs: FC = () => {
   const { data, isLoading } = useMinifigsQuery()
   const minifigsColumnDefs = useMinifigsColDefs()
 
