@@ -5,14 +5,13 @@ import '@fontsource/roboto/400.css'
 import '@fontsource/roboto/500.css'
 import '@fontsource/roboto/700.css'
 
-import Layout from 'components/Layout'
-import { QueryClientProvider, ThemeProvider } from 'providers'
+import { QueryClientProvider, RouterProvider, ThemeProvider } from 'providers'
 
 function App() {
   return (
     <ThemeProvider>
       <QueryClientProvider>
-        <Layout />
+        <RouterProvider />
       </QueryClientProvider>
     </ThemeProvider>
   )
