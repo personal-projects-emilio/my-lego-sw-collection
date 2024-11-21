@@ -22,6 +22,9 @@ const useStyles = makeStyles()((theme) => ({
     display: 'grid',
     gap: theme.spacing(2),
   },
+  button: {
+    justifySelf: 'center',
+  },
 }))
 
 const Auth: FC = () => {
@@ -98,11 +101,11 @@ const Auth: FC = () => {
         }}
       />
       <Button
-        type="submit"
+        className={classes.button}
         color="primary"
-        variant="contained"
         disabled={isLoading}
-        sx={{ justifySelf: 'center' }}
+        type="submit"
+        variant="contained"
       >
         Login
       </Button>
