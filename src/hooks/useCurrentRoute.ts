@@ -1,7 +1,11 @@
 import { useMatches } from '@tanstack/react-router'
-import { RouterRouteIds } from 'routes'
+import type { RouterRouteIds } from 'routes'
 
-const defaultRoutesToCheck = ['/auth', '/minifigs'] satisfies RouterRouteIds[]
+const defaultRoutesToCheck = [
+  '/auth',
+  '/minifigs',
+  '/sets',
+] satisfies RouterRouteIds[]
 
 export const useCurrentRoute = (routes = defaultRoutesToCheck) => {
   return useMatches({

@@ -1,4 +1,4 @@
-import { FC } from 'react'
+import type { FC } from 'react'
 
 import { Tab, Tabs } from '@mui/material'
 import { Link } from '@tanstack/react-router'
@@ -16,6 +16,7 @@ const TabsNavigation: FC = () => {
       component="nav"
     >
       <Tab component={Link} label="Minifigs" to="/minifigs" value="/minifigs" />
+      <Tab component={Link} label="Sets" to="/sets" value="/sets" />
       {idToken ? (
         <Tab label="Logout" onClick={logout} />
       ) : (

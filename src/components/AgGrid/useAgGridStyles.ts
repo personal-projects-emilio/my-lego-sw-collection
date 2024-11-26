@@ -1,6 +1,6 @@
 import { makeStyles } from 'tss-react/mui'
 
-const useAgGridStyles = makeStyles()((theme) => ({
+const useAgGridStyles = makeStyles({ name: 'useAgGridStyles' })((theme) => ({
   flexAlignCenter: {
     display: 'flex',
     alignItems: 'center',

@@ -1,4 +1,4 @@
-import { FC, PropsWithChildren } from 'react'
+import type { FC, PropsWithChildren } from 'react'
 
 import { QueryClientProvider as OriginalQueryClientProvider } from '@tanstack/react-query'
 import { queryClient } from 'api'

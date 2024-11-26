@@ -1,4 +1,4 @@
-import { FC } from 'react'
+import type { FC } from 'react'
 
 import {
   AppBar,
@@ -13,7 +13,7 @@ import { makeStyles } from 'tss-react/mui'
 import BurgerMenuNavigation from './BurgerMenuNavigation'
 import TabsNavigation from './TabsNavigation'
 
-const useStyles = makeStyles()((theme) => ({
+const useStyles = makeStyles({ name: 'Header' })((theme) => ({
   toolbar: {
     gap: theme.spacing(1),
   },

@@ -1,18 +1,19 @@
 import { useMemo } from 'react'
+import { FaPerson } from 'react-icons/fa6'
 
-import { type ColDef } from 'ag-grid-community'
+import type { ColDef } from 'ag-grid-community'
 import { useAgGridStyles } from 'components/AgGrid'
 import {
+  ExternalLinksCellRenderer,
+  type ExternalLinksCellRenderParams,
+  ItemIdCellRenderer,
+  type ItemIdCellRenderParams,
   listValueFormatter,
   OverflowTypographyCellRenderer,
 } from 'components/AgGrid/column'
-import { Minifig } from 'types/minifigs'
+import type { Minifig } from 'types/minifigs'
 
-import {
-  ExternalLinksCellRenderer,
-  MinifigIdCellRenderer,
-  OwnedCellRenderer,
-} from './components'
+import { OwnedCellRenderer } from './components'
 
 const useMinifigsColDefs = () => {
   const { classes: agGridClasses } = useAgGridStyles()
@@ -21,7 +22,11 @@ const useMinifigsColDefs = () => {
       [
         {
           cellClass: [agGridClasses.flexAlignCenter, agGridClasses.gap1],
-          cellRenderer: MinifigIdCellRenderer,
+          cellRenderer: ItemIdCellRenderer,
+          cellRendererParams: {
+            icon: <FaPerson />,
+            variant: 'minifig',
+          } satisfies ItemIdCellRenderParams,
           field: 'id',
           headerName: 'Id',
           sort: 'asc',
@@ -80,6 +85,9 @@ const useMinifigsColDefs = () => {
         {
           cellClass: [agGridClasses.flexAlignCenter, agGridClasses.gap1],
           cellRenderer: ExternalLinksCellRenderer,
+          cellRendererParams: {
+            variant: 'minifig',
+          } satisfies ExternalLinksCellRenderParams,
           colId: 'externalLinks',
           field: 'id',
           filter: false,

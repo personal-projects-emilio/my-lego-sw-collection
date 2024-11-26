@@ -10,11 +10,11 @@ import {
   TableRow,
   Tooltip,
 } from '@mui/material'
-import { type CustomCellRendererProps } from 'ag-grid-react'
+import type { CustomCellRendererProps } from 'ag-grid-react'
 import { makeStyles } from 'tss-react/mui'
-import { Minifig } from 'types/minifigs'
+import type { Minifig } from 'types/minifigs'
 
-const useStyles = makeStyles()((theme) => ({
+const useStyles = makeStyles({ name: 'OwnedCellRenderer' })((theme) => ({
   avatar: {
     backgroundColor: theme.palette.primary.dark,
     height: 24,

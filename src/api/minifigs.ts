@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { MinifigsList } from 'types/minifigs'
+import type { MinifigsList } from 'types/minifigs'
 
 import { endPoints, queryKeys } from './api.constants'
 import { api, queryClient } from './index'

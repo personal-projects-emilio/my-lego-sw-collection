@@ -1,7 +1,7 @@
 import { createContext, useContext } from 'react'
 
-import { UseMutateFunction } from '@tanstack/react-query'
-import { LoginData, LoginInputs } from 'types/auth'
+import type { UseMutateFunction } from '@tanstack/react-query'
+import type { LoginData, LoginInputs } from 'types/auth'
 
 type Auth = {
   idToken?: LoginData['idToken']
