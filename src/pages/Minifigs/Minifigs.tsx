@@ -1,4 +1,4 @@
-import { FC } from 'react'
+import type { FC } from 'react'
 
 import { Skeleton } from '@mui/material'
 import { useMinifigsQuery } from 'api/minifigs'

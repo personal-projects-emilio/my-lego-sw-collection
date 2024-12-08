@@ -1,4 +1,4 @@
-import { FC, PropsWithChildren, useEffect, useRef, useState } from 'react'
+import { type FC, type PropsWithChildren, useEffect, useRef, useState } from 'react'
 
 import {
   Tooltip,

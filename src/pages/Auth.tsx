@@ -1,4 +1,4 @@
-import { FC, useState } from 'react'
+import { type FC, useState } from 'react'
 import { Controller, type SubmitHandler, useForm } from 'react-hook-form'
 import { MdVisibility, MdVisibilityOff } from 'react-icons/md'
 
@@ -12,9 +12,9 @@ import {
 } from '@mui/material'
 import { useAuth } from 'providers'
 import { makeStyles } from 'tss-react/mui'
-import { authValidationSchema, LoginInputs } from 'types/auth'
+import { authValidationSchema, type LoginInputs } from 'types/auth'
 
-const useStyles = makeStyles()((theme) => ({
+const useStyles = makeStyles({ name: 'Auth' })((theme) => ({
   container: {
     padding: theme.spacing(2),
     margin: theme.spacing(2),
@@ -57,13 +57,14 @@ const Auth: FC = () => {
           return (
             <TextField
               {...field}
-              label="Email"
-              id="email"
-              placeholder="Email@exemple.com"
+              autoComplete="username"
               error={fieldState.invalid}
-              helperText={fieldState.error?.message}
-              required
               fullWidth
+              helperText={fieldState.error?.message}
+              id="email"
+              label="Email"
+              placeholder="Email@exemple.com"
+              required
             />
           )
         }}
@@ -75,13 +76,13 @@ const Auth: FC = () => {
           return (
             <TextField
               {...field}
-              label="Password"
-              id="password"
+              autoComplete="current-password"
               error={fieldState.invalid}
-              helperText={fieldState.error?.message}
-              required
               fullWidth
-              type={showPassword ? 'text' : 'password'}
+              helperText={fieldState.error?.message}
+              id="password"
+              label="Password"
+              required
               slotProps={{
                 input: {
                   endAdornment: (
@@ -96,6 +97,7 @@ const Auth: FC = () => {
                   ),
                 },
               }}
+              type={showPassword ? 'text' : 'password'}
             />
           )
         }}

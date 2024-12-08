@@ -1,4 +1,4 @@
-import { FC } from 'react'
+import type { FC } from 'react'
 
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Outlet } from '@tanstack/react-router'

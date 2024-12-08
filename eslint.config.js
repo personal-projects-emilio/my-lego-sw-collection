@@ -28,6 +28,14 @@ export default tseslint.config(
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
+      '@typescript-eslint/consistent-type-imports': [
+        'error',
+        {
+          fixStyle: 'inline-type-imports',
+        },
+      ],
+      '@typescript-eslint/no-import-type-side-effects': 'error',
+      'import/no-duplicates': ['error', { 'prefer-inline': true }],
       'import/newline-after-import': 'error',
       'max-params': ['error', 3],
       'react-refresh/only-export-components': [

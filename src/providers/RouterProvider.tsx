@@ -1,4 +1,4 @@
-import { FC } from 'react'
+import type { FC } from 'react'
 
 import { RouterProvider as OriginalRouterProvider } from '@tanstack/react-router'
 import { router } from 'routes'

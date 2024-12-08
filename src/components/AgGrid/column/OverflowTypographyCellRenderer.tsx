@@ -1,14 +1,16 @@
-import { type CustomCellRendererProps } from 'ag-grid-react'
+import type { CustomCellRendererProps } from 'ag-grid-react'
 import OverflowTypography from 'components/OverflowTypography'
 import { makeStyles } from 'tss-react/mui'
 
-const useStyles = makeStyles()(() => ({
-  typography: {
-    position: 'relative',
-    top: '50%',
-    transform: 'translateY(-50%)',
-  },
-}))
+const useStyles = makeStyles({ name: 'OverflowTypographyCellRenderer' })(
+  () => ({
+    typography: {
+      position: 'relative',
+      top: '50%',
+      transform: 'translateY(-50%)',
+    },
+  })
+)
 
 const OverflowTypographyCellRenderer = ({
   value,

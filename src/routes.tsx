@@ -2,12 +2,14 @@ import {
   createRootRoute,
   createRoute,
   createRouter,
+  Navigate,
   redirect,
   type RouteIds,
 } from '@tanstack/react-router'
 import Layout from 'components/Layout'
 import Auth from 'pages/Auth'
 import Minifigs from 'pages/Minifigs'
+import Sets from 'pages/Sets'
 
 const basePath = '/my-lego-sw-collection'
 
@@ -17,6 +19,7 @@ const rootRoute = createRootRoute({
     if (props.cause !== 'enter' || props.location.pathname !== basePath) return
     throw redirect({ to: '/minifigs' })
   },
+  notFoundComponent: () => <Navigate to="/minifigs" />,
 })
 
 const minifigsRoute = createRoute({
@@ -25,13 +28,19 @@ const minifigsRoute = createRoute({
   component: Minifigs,
 })
 
+const setsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/sets',
+  component: Sets,
+})
+
 const authRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/auth',
   component: Auth,
 })
 
-const routeTree = rootRoute.addChildren([minifigsRoute, authRoute])
+const routeTree = rootRoute.addChildren([minifigsRoute, setsRoute, authRoute])
 
 export const router = createRouter({
   routeTree,

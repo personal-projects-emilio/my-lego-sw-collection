@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { LoginData, LoginInputs, RefreshTokenData } from 'types/auth'
+import type { LoginData, LoginInputs, RefreshTokenData } from 'types/auth'
 
 export const loginUser = async (loginInputs: LoginInputs) => {
   const response = await axios.post<LoginData>(

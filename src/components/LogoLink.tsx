@@ -1,45 +1,40 @@
-import { FC } from 'react'
+import type { FC } from 'react'
 
 import { type ButtonProps, IconButton, Tooltip } from '@mui/material'
 import bricklinkLogo from 'assets/bricklink.png'
 import bricksetLogo from 'assets/brickset.png'
 import { makeStyles } from 'tss-react/mui'
-import { Minifig } from 'types/minifigs'
+import type { Item,ItemId } from 'types/common'
 
-// TODO: Add set support when adding Set page
-type LogoLinkProps = {
-  id: Minifig['id'] // | Set['id']
+export type LogoLinkProps = {
+  id: ItemId
   target: 'bricklink' | 'brickset'
-  variant: 'minifig' | 'set'
+  variant: Item
 } & Pick<ButtonProps, 'size'>
 
-type FormatUrlOrTooltip = (
-  id: LogoLinkProps['id'],
-  isMinifig: boolean
-) => string
-
 const mapLogoLinkTargetToProps = {
-  bricklink: {
-    alt: 'bricklink logo',
-    src: bricklinkLogo,
-    url: (id, isMinifig) =>
-      `https://www.bricklink.com/v2/catalog/catalogitem.page?${isMinifig ? 'M' : 'S'}=${id}` as const,
-    tooltip: (id, isMinifig) =>
-      `Link to the bricklink page of the ${isMinifig ? 'minifig' : 'set'} ${id}` as const,
-  },
-  brickset: {
-    alt: 'brickset logo',
-    src: bricksetLogo,
-    url: (id, isMinifig) =>
-      `https://brickset.com/${isMinifig ? 'minifigs' : 'sets'}/${id}` as const,
-    tooltip: (id, isMinifig) =>
-      `Link to the brickset page of the ${isMinifig ? 'minifig' : 'set'} ${id}` as const,
-  },
+  bricklink: (id, isMinifig) =>
+    ({
+      alt: 'Bricklink logo',
+      src: bricklinkLogo,
+      url: `https://www.bricklink.com/v2/catalog/catalogitem.page?${isMinifig ? 'M' : 'S'}=${id}`,
+      tooltip: `Link to the bricklink page of the ${isMinifig ? 'minifig' : 'set'} ${id}`,
+    }) as const,
+  brickset: (id, isMinifig) =>
+    ({
+      alt: 'Brickset logo',
+      src: bricksetLogo,
+      url: `https://brickset.com/${isMinifig ? 'minifigs' : 'sets'}/${id}`,
+      tooltip: `Link to the brickset page of the ${isMinifig ? 'minifig' : 'set'} ${id}`,
+    }) as const,
 } as const satisfies Record<
   LogoLinkProps['target'],
-  {
-    url: FormatUrlOrTooltip
-    tooltip: FormatUrlOrTooltip
+  (
+    id: string,
+    isMinifig: boolean
+  ) => {
+    url: string
+    tooltip: string
     src: string
     alt: string
   }
@@ -73,20 +68,14 @@ const LogoLink: FC<LogoLinkProps> = ({
   size = 'medium',
 }) => {
   const { classes } = useStyles()
-  const { url, tooltip, ...rest } = mapLogoLinkTargetToProps[target]
-  const isMinifig = variant === 'minifig'
+  const { url, tooltip, alt, src } = mapLogoLinkTargetToProps[target](
+    String(id),
+    variant === 'minifig'
+  )
   return (
-    <Tooltip
-      enterDelay={500}
-      enterNextDelay={500}
-      title={tooltip(id, isMinifig)}
-    >
-      <IconButton
-        className={classes[size]}
-        href={url(id, isMinifig)}
-        size={size}
-      >
-        <img {...rest} />
+    <Tooltip enterDelay={500} enterNextDelay={500} title={tooltip}>
+      <IconButton className={classes[size]} href={url} size={size}>
+        <img alt={alt} src={src} />
       </IconButton>
     </Tooltip>
   )
