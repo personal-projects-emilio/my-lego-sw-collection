@@ -5,11 +5,19 @@ import {
   Navigate,
   redirect,
   type RouteIds,
+  stripSearchParams,
 } from '@tanstack/react-router'
+import { zodValidator } from '@tanstack/zod-adapter'
 import Layout from 'components/Layout'
+import { addMinifigSearchSchema } from 'constants/routes'
 import Auth from 'pages/Auth'
 import Minifigs from 'pages/Minifigs'
+import {
+  AddMinifigFormModal,
+  EditMinifigFormModal,
+} from 'pages/Minifigs/components'
 import Sets from 'pages/Sets'
+import { object } from 'zod'
 
 const basePath = import.meta.env.BASE_URL
 
@@ -28,6 +36,23 @@ const minifigsRoute = createRoute({
   component: Minifigs,
 })
 
+const minifigEdit = createRoute({
+  getParentRoute: () => minifigsRoute,
+  path: '/edit/$minifigId',
+  component: () => <EditMinifigFormModal />,
+  validateSearch: zodValidator(object({})),
+  search: {
+    middlewares: [stripSearchParams(true)],
+  },
+})
+
+const minifigAdd = createRoute({
+  getParentRoute: () => minifigsRoute,
+  path: '/add',
+  component: () => <AddMinifigFormModal />,
+  validateSearch: zodValidator(addMinifigSearchSchema),
+})
+
 const setsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/sets',
@@ -40,7 +65,11 @@ const authRoute = createRoute({
   component: Auth,
 })
 
-const routeTree = rootRoute.addChildren([minifigsRoute, setsRoute, authRoute])
+const routeTree = rootRoute.addChildren([
+  minifigsRoute.addChildren([minifigAdd, minifigEdit]),
+  setsRoute,
+  authRoute,
+])
 
 export const router = createRouter({
   routeTree,

@@ -5,6 +5,7 @@ import type { CustomCellRendererProps } from 'ag-grid-react'
 import { mapItemToImageProps } from 'constants/common'
 import { makeStyles } from 'tss-react/mui'
 import type { Item, ItemId } from 'types/common'
+import { assert, isNotNullOrUndefined } from 'utils/typescript'
 
 const useStyles = makeStyles({ name: 'ItemIdCellRenderer' })((theme) => ({
   avatar: {
@@ -23,7 +24,7 @@ const useStyles = makeStyles({ name: 'ItemIdCellRenderer' })((theme) => ({
   },
 }))
 
-export type ItemIdCellRenderParams = {
+export type ItemIdCellRenderProps = {
   icon: ReactElement
   variant: Item
 }
@@ -32,9 +33,9 @@ const ItemIdCellRenderer = ({
   value: id,
   icon,
   variant,
-}: CustomCellRendererProps<unknown, ItemId> & ItemIdCellRenderParams) => {
+}: CustomCellRendererProps<unknown, ItemId> & ItemIdCellRenderProps) => {
+  assert(isNotNullOrUndefined(id))
   const { classes } = useStyles()
-  if (!id) return null
   const { alt, src } = mapItemToImageProps[variant](String(id))
 
   return (

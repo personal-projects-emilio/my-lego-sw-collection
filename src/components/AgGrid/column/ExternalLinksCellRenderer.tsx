@@ -1,15 +1,15 @@
 import type { CustomCellRendererProps } from 'ag-grid-react'
 import LogoLink, { type LogoLinkProps } from 'components/LogoLink'
 import type { ItemId } from 'types/common'
+import { assert, isNotNullOrUndefined } from 'utils/typescript'
 
-export type ExternalLinksCellRenderParams = Pick<LogoLinkProps, 'variant'>
+export type ExternalLinksCellRenderProps = Pick<LogoLinkProps, 'variant'>
 
 const ExternalLinksCellRenderer = ({
   value: id,
   variant,
-}: CustomCellRendererProps<unknown, ItemId> &
-  ExternalLinksCellRenderParams) => {
-  if (!id) return null
+}: CustomCellRendererProps<unknown, ItemId> & ExternalLinksCellRenderProps) => {
+  assert(isNotNullOrUndefined(id))
 
   return (
     <>

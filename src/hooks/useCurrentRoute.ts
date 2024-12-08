@@ -5,13 +5,15 @@ const defaultRoutesToCheck = [
   '/auth',
   '/minifigs',
   '/sets',
-] satisfies RouterRouteIds[]
+] satisfies RouterRouteIds[] as string[]
 
-export const useCurrentRoute = (routes = defaultRoutesToCheck) => {
+const useCurrentRoute = (routes = defaultRoutesToCheck) => {
   return useMatches({
     select: (matches) =>
-      matches.find((el) => routes.includes(el.id as RouterRouteIds)) ?? {
+      matches.find((el) => routes.includes(el.id)) ?? {
         id: '/',
       },
   })
 }
+
+export default useCurrentRoute

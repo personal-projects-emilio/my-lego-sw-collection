@@ -5,18 +5,26 @@ import type { ColDef } from 'ag-grid-community'
 import { useAgGridStyles } from 'components/AgGrid'
 import {
   ExternalLinksCellRenderer,
-  type ExternalLinksCellRenderParams,
+  type ExternalLinksCellRenderProps,
   ItemIdCellRenderer,
-  type ItemIdCellRenderParams,
+  type ItemIdCellRenderProps,
   listValueFormatter,
   OverflowTypographyCellRenderer,
 } from 'components/AgGrid/column'
+import { useMinifigsMutations } from 'hooks'
 import type { Minifig } from 'types/minifigs'
 
-import { OwnedCellRenderer } from './components'
+import {
+  MinifigActionsCellRenderer,
+  type MinifigActionsCellRendererProps,
+  OwnedCellRenderer,
+} from './components'
 
 const useMinifigsColDefs = () => {
   const { classes: agGridClasses } = useAgGridStyles()
+  const { deleteMinifig, isPending, toggleMinifigPossession } =
+    useMinifigsMutations()
+
   return useMemo(
     () =>
       [
@@ -26,10 +34,10 @@ const useMinifigsColDefs = () => {
           cellRendererParams: {
             icon: <FaPerson />,
             variant: 'minifig',
-          } satisfies ItemIdCellRenderParams,
+          } satisfies ItemIdCellRenderProps,
           field: 'id',
           headerName: 'Id',
-          sort: 'asc',
+          initialSort: 'asc',
           width: 120,
         },
         {
@@ -46,7 +54,17 @@ const useMinifigsColDefs = () => {
         {
           field: 'possessed',
           headerName: 'Possessed',
+          editable: true,
           suppressFloatingFilterButton: false,
+          valueSetter: ({ api, column, data, node }) => {
+            toggleMinifigPossession(data.id).then(() =>
+              api.refreshCells({
+                columns: [column],
+                rowNodes: node ? [node] : undefined,
+              })
+            )
+            return false
+          },
           width: 120,
         },
         {
@@ -87,7 +105,7 @@ const useMinifigsColDefs = () => {
           cellRenderer: ExternalLinksCellRenderer,
           cellRendererParams: {
             variant: 'minifig',
-          } satisfies ExternalLinksCellRenderParams,
+          } satisfies ExternalLinksCellRenderProps,
           colId: 'externalLinks',
           field: 'id',
           filter: false,
@@ -97,8 +115,24 @@ const useMinifigsColDefs = () => {
           sortable: false,
           width: 100,
         },
+        {
+          cellClass: [agGridClasses.flexAlignCenter, agGridClasses.gap1],
+          cellRenderer: MinifigActionsCellRenderer,
+          cellRendererParams: {
+            deleteMinifig,
+            isPending,
+          } satisfies MinifigActionsCellRendererProps,
+          colId: 'actions',
+          field: 'id',
+          filter: false,
+          floatingFilter: false,
+          headerName: 'Actions',
+          resizable: false,
+          sortable: false,
+          width: 140,
+        },
       ] as const satisfies Array<ColDef<Minifig>>,
-    [agGridClasses]
+    [agGridClasses, deleteMinifig, isPending, toggleMinifigPossession]
   )
 }
 

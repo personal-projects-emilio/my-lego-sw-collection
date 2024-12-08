@@ -8,13 +8,9 @@ const fetchMinifigs = () =>
   api.get<MinifigsList>(endPoints.minifigs).then((res) => res.data)
 
 export const mutateMinifigs = async (data: MinifigsList) =>
-  await api.put(endPoints.minifigs, data)
+  await api.put<MinifigsList>(endPoints.minifigs, data)
 
-// Refetch the minifigs (after a mutation)
-export const invalidateMinifigsQuery = () =>
-  queryClient.invalidateQueries({ queryKey: [queryKeys.minifigs] })
-
-// Used to update local query cache for non authorized users
+/** Used to update local query cache */
 export const setMinifigsQueryData = (data: MinifigsList) =>
   queryClient.setQueryData([queryKeys.minifigs], data)
 
