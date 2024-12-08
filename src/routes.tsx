@@ -11,7 +11,7 @@ import Auth from 'pages/Auth'
 import Minifigs from 'pages/Minifigs'
 import Sets from 'pages/Sets'
 
-const basePath = '/my-lego-sw-collection'
+const basePath = import.meta.env.BASE_URL
 
 const rootRoute = createRootRoute({
   component: Layout,
