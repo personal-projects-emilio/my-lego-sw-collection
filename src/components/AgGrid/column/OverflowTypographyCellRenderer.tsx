@@ -1,6 +1,7 @@
 import type { CustomCellRendererProps } from 'ag-grid-react'
 import OverflowTypography from 'components/OverflowTypography'
 import { makeStyles } from 'tss-react/mui'
+import { isNotNullOrUndefined } from 'utils/typescript'
 
 const useStyles = makeStyles({ name: 'OverflowTypographyCellRenderer' })(
   () => ({
@@ -17,7 +18,8 @@ const OverflowTypographyCellRenderer = ({
   valueFormatted,
 }: CustomCellRendererProps) => {
   const { classes } = useStyles()
-  if (!value) return null
+  if (!isNotNullOrUndefined(value) && !isNotNullOrUndefined(valueFormatted))
+    return null
 
   return (
     <OverflowTypography className={classes.typography} variant="body2">

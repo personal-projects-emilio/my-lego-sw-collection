@@ -1,10 +1,10 @@
 export { listValueFormatter } from './column.valueFormatters'
 export {
   default as ExternalLinksCellRenderer,
-  type ExternalLinksCellRenderParams,
+  type ExternalLinksCellRenderProps,
 } from './ExternalLinksCellRenderer'
 export {
   default as ItemIdCellRenderer,
-  type ItemIdCellRenderParams,
+  type ItemIdCellRenderProps,
 } from './ItemIdCellRenderer'
 export { default as OverflowTypographyCellRenderer } from './OverflowTypographyCellRenderer'

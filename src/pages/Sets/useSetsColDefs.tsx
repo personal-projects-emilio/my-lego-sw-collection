@@ -5,9 +5,9 @@ import type { ColDef } from 'ag-grid-community'
 import { useAgGridStyles } from 'components/AgGrid'
 import {
   ExternalLinksCellRenderer,
-  type ExternalLinksCellRenderParams,
+  type ExternalLinksCellRenderProps,
   ItemIdCellRenderer,
-  type ItemIdCellRenderParams,
+  type ItemIdCellRenderProps,
   listValueFormatter,
   OverflowTypographyCellRenderer,
 } from 'components/AgGrid/column'
@@ -30,7 +30,7 @@ const useSetsColDefs = () => {
           cellRendererParams: {
             icon: <MdLocalSee />,
             variant: 'set',
-          } satisfies ItemIdCellRenderParams,
+          } satisfies ItemIdCellRenderProps,
           field: 'id',
           headerName: 'Id',
           sort: 'asc',
@@ -125,7 +125,7 @@ const useSetsColDefs = () => {
           cellRenderer: ExternalLinksCellRenderer,
           cellRendererParams: {
             variant: 'set',
-          } satisfies ExternalLinksCellRenderParams,
+          } satisfies ExternalLinksCellRenderProps,
           colId: 'externalLinks',
           field: 'id',
           filter: false,

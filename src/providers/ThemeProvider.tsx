@@ -12,6 +12,20 @@ const theme = createTheme({
     mode: 'dark',
   },
   components: {
+    MuiInputLabel: {
+      defaultProps: {
+        shrink: true,
+      },
+    },
+    MuiTextField: {
+      defaultProps: {
+        slotProps: {
+          inputLabel: {
+            shrink: true,
+          },
+        },
+      },
+    },
     MuiTooltip: {
       styleOverrides: {
         tooltip: ({ theme }) => ({
