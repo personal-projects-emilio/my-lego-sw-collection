@@ -1,11 +1,6 @@
-import {
-  Avatar,
-  Checkbox,
-  FormControlLabel,
-  Paper,
-  Tooltip,
-} from '@mui/material'
+import { Checkbox, FormControlLabel, Paper, Tooltip } from '@mui/material'
 import type { CustomCellRendererProps } from 'ag-grid-react'
+import Avatar from 'components/Avatar'
 import OverflowTypography from 'components/OverflowTypography'
 import { mapItemToImageProps } from 'constants/common'
 import { makeStyles } from 'tss-react/mui'
@@ -14,12 +9,6 @@ import type { Set } from 'types/sets'
 const useStyles = makeStyles<{ numberOfColumns: number }>({
   name: 'SetMinifigsCellRenderer',
 })((theme, { numberOfColumns }) => ({
-  avatar: {
-    backgroundColor: theme.palette.primary.dark,
-    fontSize: theme.typography.button.fontSize,
-    height: 24,
-    width: 24,
-  },
   characterName: {
     justifySelf: 'normal',
     textAlign: 'center',
@@ -82,7 +71,7 @@ const SetMinifigsCellRenderer = ({
         </Paper>
       ))}
     >
-      <Avatar className={classes.avatar}>
+      <Avatar variant="rounded">
         {setMinifigs.reduce((total, minifig) => total + minifig.quantity, 0)}
       </Avatar>
     </Tooltip>

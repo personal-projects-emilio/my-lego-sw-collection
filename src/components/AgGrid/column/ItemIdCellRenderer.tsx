@@ -1,19 +1,14 @@
 import type { ReactElement } from 'react'
 
-import { Avatar, Tooltip } from '@mui/material'
+import { Tooltip } from '@mui/material'
 import type { CustomCellRendererProps } from 'ag-grid-react'
+import Avatar from 'components/Avatar'
 import { mapItemToImageProps } from 'constants/common'
 import { makeStyles } from 'tss-react/mui'
 import type { Item, ItemId } from 'types/common'
 import { assert, isNotNullOrUndefined } from 'utils/typescript'
 
-const useStyles = makeStyles({ name: 'ItemIdCellRenderer' })((theme) => ({
-  avatar: {
-    backgroundColor: theme.palette.primary.dark,
-    height: 24,
-    width: 24,
-    fontSize: theme.typography.button.fontSize,
-  },
+const useStyles = makeStyles({ name: 'ItemIdCellRenderer' })({
   tooltip: {
     maxHeight: '50vh',
     padding: 0,
@@ -22,7 +17,7 @@ const useStyles = makeStyles({ name: 'ItemIdCellRenderer' })((theme) => ({
   image: {
     minHeight: 300,
   },
-}))
+})
 
 export type ItemIdCellRenderProps = {
   icon: ReactElement
@@ -49,9 +44,7 @@ const ItemIdCellRenderer = ({
         placement="right-start"
         title={<img alt={alt} className={classes.image} src={src} />}
       >
-        <Avatar aria-label={`Show ${alt}`} className={classes.avatar}>
-          {icon}
-        </Avatar>
+        <Avatar aria-label={`Show ${alt}`}>{icon}</Avatar>
       </Tooltip>
       {id}
     </>

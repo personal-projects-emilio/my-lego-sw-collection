@@ -5,4 +5,5 @@ export {
   type MinifigActionsCellRendererProps,
 } from './MinifigActionsCellRenderer'
 export { default as MinifigFormModal } from './MinifigFormModal/MinifigFormModal'
+export { default as ModuleHeader } from '../../../components/ModuleHeader'
 export { default as OwnedCellRenderer } from './OwnedCellRenderer'
