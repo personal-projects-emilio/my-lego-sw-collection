@@ -102,7 +102,10 @@ const useMinifigsColDefs = () => {
           getQuickFilterText: ({
             data: { owned },
           }: GetQuickFilterTextParams<Minifig>) =>
-            `${owned.inSet?.map((el) => el.setId).join(', ')}${owned.loose?.quantity > 0 ? ' loose' : ''}`,
+            (owned.inSet ?? []).reduce(
+              (quickFilterText, { setId }) => `${quickFilterText}, ${setId}`,
+              owned.loose?.quantity > 0 ? 'loose' : ''
+            ),
         },
         {
           cellClass: [agGridClasses.flexAlignCenter, agGridClasses.gap1],

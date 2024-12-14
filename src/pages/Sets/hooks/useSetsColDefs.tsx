@@ -97,9 +97,11 @@ const useSetsColDefs = () => {
               content: { minifigs },
             },
           }: GetQuickFilterTextParams<Set>) =>
-            minifigs
-              ?.map((minifig) => `${minifig.id}, ${minifig.characterName}`)
-              .join(', '),
+            (minifigs ?? []).reduce(
+              (quickFilterText, minifig) =>
+                `${quickFilterText}, ${minifig.id}, ${minifig.characterName}`,
+              ''
+            ),
           width: 100,
         },
         ...spreadArrayIf<ColDef<Set>>(idToken !== undefined, [
