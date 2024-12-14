@@ -3,7 +3,7 @@ import { useMemo } from 'react'
 import { useMinifigsQuery } from 'api/minifigs'
 import { uniqueAndSortedArray } from 'utils/array'
 
-type UseMinifigsListStats = {
+type MinifigsAutocompleteOptions = {
   appearances: string[]
   characterNames: string[]
   ids: string[]
@@ -11,11 +11,11 @@ type UseMinifigsListStats = {
   timelines: string[]
 }
 
-const useMinifigsListStats = () => {
+const useMinifigsAutocompleteOptions = () => {
   const { data: minifigsList = [] } = useMinifigsQuery()
 
-  return useMemo<UseMinifigsListStats>(() => {
-    const statistics = minifigsList.reduce<UseMinifigsListStats>(
+  return useMemo<MinifigsAutocompleteOptions>(() => {
+    const statistics = minifigsList.reduce<MinifigsAutocompleteOptions>(
       (acc, minifig) => {
         return {
           appearances: [...acc.appearances, ...(minifig.appearances ?? [])],
@@ -43,4 +43,4 @@ const useMinifigsListStats = () => {
   }, [minifigsList])
 }
 
-export default useMinifigsListStats
+export default useMinifigsAutocompleteOptions

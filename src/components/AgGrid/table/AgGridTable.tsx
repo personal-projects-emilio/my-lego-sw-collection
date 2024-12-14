@@ -7,8 +7,8 @@ const useStyles = makeStyles({ name: 'AgGridTable' })((theme) => ({
   container: {
     '--ag-cell-horizontal-padding': 'calc(var(--ag-grid-size) * 2)',
     boxSizing: 'border-box',
-    height: 'calc(100vh - 48px)',
-    maxHeight: 'calc(100vh - 48px)',
+    height: 'calc(100vh - 48px - 57px)',
+    maxHeight: 'calc(100vh - 48px - 57px)',
     overflow: 'hidden',
     padding: theme.spacing(1),
     width: '100%',

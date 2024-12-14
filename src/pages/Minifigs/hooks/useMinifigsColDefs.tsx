@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { FaPerson } from 'react-icons/fa6'
 
-import type { ColDef } from 'ag-grid-community'
+import type { ColDef, GetQuickFilterTextParams } from 'ag-grid-community'
 import { useAgGridStyles } from 'components/AgGrid'
 import {
   ExternalLinksCellRenderer,
@@ -11,14 +11,14 @@ import {
   listValueFormatter,
   OverflowTypographyCellRenderer,
 } from 'components/AgGrid/column'
-import { useMinifigsMutations } from 'hooks'
 import type { Minifig } from 'types/minifigs'
 
 import {
   MinifigActionsCellRenderer,
   type MinifigActionsCellRendererProps,
   OwnedCellRenderer,
-} from './components'
+} from '../components'
+import useMinifigsMutations from './useMinifigsMutations'
 
 const useMinifigsColDefs = () => {
   const { classes: agGridClasses } = useAgGridStyles()
@@ -99,6 +99,13 @@ const useMinifigsColDefs = () => {
           resizable: false,
           valueFormatter: ({ value }) => value.total,
           width: 70,
+          getQuickFilterText: ({
+            data: { owned },
+          }: GetQuickFilterTextParams<Minifig>) =>
+            (owned.inSet ?? []).reduce(
+              (quickFilterText, { setId }) => `${quickFilterText}, ${setId}`,
+              owned.loose?.quantity > 0 ? 'loose' : ''
+            ),
         },
         {
           cellClass: [agGridClasses.flexAlignCenter, agGridClasses.gap1],

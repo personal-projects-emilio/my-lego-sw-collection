@@ -1,7 +1,6 @@
 import { FaCheck } from 'react-icons/fa'
 
 import {
-  Avatar,
   Table,
   TableBody,
   TableCell,
@@ -11,23 +10,18 @@ import {
   Tooltip,
 } from '@mui/material'
 import type { CustomCellRendererProps } from 'ag-grid-react'
+import Avatar from 'components/Avatar'
 import { makeStyles } from 'tss-react/mui'
 import type { Minifig } from 'types/minifigs'
 
-const useStyles = makeStyles({ name: 'OwnedCellRenderer' })((theme) => ({
-  avatar: {
-    backgroundColor: theme.palette.primary.dark,
-    height: 24,
-    width: 24,
-    fontSize: theme.typography.button.fontSize,
-  },
+const useStyles = makeStyles({ name: 'OwnedCellRenderer' })({
   tooltip: {
     maxHeight: '40vh',
     overflowX: 'auto',
     maxWidth: 'unset',
     width: '100%',
   },
-}))
+})
 
 const OwnedCellRenderer = ({
   value: owned,
@@ -36,7 +30,7 @@ const OwnedCellRenderer = ({
   if (!owned) return null
   const { inSet, loose, total } = owned
 
-  const avatar = <Avatar className={classes.avatar}>{total}</Avatar>
+  const avatar = <Avatar variant="rounded">{total}</Avatar>
 
   if (total === 0) return avatar
 

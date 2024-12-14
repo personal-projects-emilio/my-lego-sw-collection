@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { MdLocalSee } from 'react-icons/md'
 
-import type { ColDef } from 'ag-grid-community'
+import type { ColDef, GetQuickFilterTextParams } from 'ag-grid-community'
 import { useAgGridStyles } from 'components/AgGrid'
 import {
   ExternalLinksCellRenderer,
@@ -16,7 +16,7 @@ import type { Set } from 'types/sets'
 import { spreadArrayIf } from 'utils/array'
 import { formatFrEuroCurrency } from 'utils/format'
 
-import { SetMinifigsCellRenderer } from './components'
+import { SetMinifigsCellRenderer } from '../components'
 
 const useSetsColDefs = () => {
   const { classes: agGridClasses } = useAgGridStyles()
@@ -92,6 +92,16 @@ const useSetsColDefs = () => {
           field: 'content.minifigs',
           filter: false,
           headerName: 'Minifigs',
+          getQuickFilterText: ({
+            data: {
+              content: { minifigs },
+            },
+          }: GetQuickFilterTextParams<Set>) =>
+            (minifigs ?? []).reduce(
+              (quickFilterText, minifig) =>
+                `${quickFilterText}, ${minifig.id}, ${minifig.characterName}`,
+              ''
+            ),
           width: 100,
         },
         ...spreadArrayIf<ColDef<Set>>(idToken !== undefined, [

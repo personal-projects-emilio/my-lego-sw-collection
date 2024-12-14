@@ -14,7 +14,10 @@ import {
 } from '@mui/material'
 import { useNavigate } from '@tanstack/react-router'
 import { Autocomplete } from 'components/inputs'
-import { useMinifigsListStats, useMinifigsMutations } from 'hooks'
+import {
+  useMinifigsAutocompleteOptions,
+  useMinifigsMutations,
+} from 'pages/Minifigs/hooks'
 import { type Minifig, minifigValidationSchema } from 'types/minifigs'
 
 import { defaultMinifigFormValues } from './MinifigFormModal.constant'
@@ -25,7 +28,7 @@ const MinifigFormModal: FC<MinifigFormModalProps> = ({
   minifigData,
 }) => {
   const { appearances, characterNames, ids, tags, timelines } =
-    useMinifigsListStats()
+    useMinifigsAutocompleteOptions()
   const { addMinifig, editMinifig, isPending } = useMinifigsMutations()
   const navigate = useNavigate()
 

@@ -1,7 +1,13 @@
-import { type FC, type PropsWithChildren, useCallback, useEffect, useState } from 'react'
+import {
+  type FC,
+  type PropsWithChildren,
+  useCallback,
+  useEffect,
+  useState,
+} from 'react'
 
 import { useMutation } from '@tanstack/react-query'
-import { useNavigate, useRouter } from '@tanstack/react-router'
+import { useRouter } from '@tanstack/react-router'
 import { loginUser, refreshSecureToken } from 'api/auth'
 
 import { AuthContext } from './AuthProvider.constants'
@@ -15,7 +21,6 @@ const clearAuthLocalStorage = () => {
 let expireAuthTiemout: ReturnType<typeof setTimeout>
 
 const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
-  const navigate = useNavigate()
   const { history } = useRouter()
   const [idToken, setIdToken] = useState<string>()
 
@@ -62,9 +67,8 @@ const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
   const logout = useCallback(() => {
     clearAuthLocalStorage()
     setIdToken(undefined)
-    navigate({ to: '/auth' })
     clearTimeout(expireAuthTiemout)
-  }, [navigate])
+  }, [])
 
   const setAuthTimeout = useCallback(
     (expirationDate: string) => {
