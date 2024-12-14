@@ -29,20 +29,13 @@ const MinifigFormModal: FC<MinifigFormModalProps> = ({
   const { addMinifig, editMinifig, isPending } = useMinifigsMutations()
   const navigate = useNavigate()
 
-  const minifigValidationSchemaWithRefinedIdCheck = useMemo(
-    () =>
-      minifigValidationSchema.refine(
-        ({ id }) => {
-          if (isEdit) return minifigData.id === id
-          return !ids.includes(id)
-        },
-        {
-          path: ['id'],
-          message: 'This minifig already exists',
-        }
-      ),
-    [isEdit, ids, minifigData]
-  )
+  const minifigValidationSchemaWithRefinedIdCheck = useMemo(() => {
+    if (isEdit) return minifigValidationSchema
+    return minifigValidationSchema.refine(({ id }) => !ids.includes(id), {
+      path: ['id'],
+      message: 'This minifig already exists',
+    })
+  }, [isEdit, ids])
 
   const { control, handleSubmit } = useForm<Minifig>({
     defaultValues: {

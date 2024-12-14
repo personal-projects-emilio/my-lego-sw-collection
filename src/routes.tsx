@@ -1,4 +1,5 @@
 import {
+  createHashHistory,
   createRootRoute,
   createRoute,
   createRouter,
@@ -74,6 +75,7 @@ const routeTree = rootRoute.addChildren([
 export const router = createRouter({
   routeTree,
   basepath: basePath,
+  history: createHashHistory(),
 })
 
 export type RouterRouteIds = Exclude<RouteIds<typeof routeTree>, '__root__'>
