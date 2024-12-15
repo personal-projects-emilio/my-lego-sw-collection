@@ -23,9 +23,9 @@ const useMinifigsMutations = () => {
     async (minifig: Minifig) => {
       assert(isNotNullOrUndefined(minifigsList))
 
-      const updatedMinifigsList = minifigsList
-        .concat(minifig)
-        .sort((a, b) => a.id.localeCompare(b.id))
+      const updatedMinifigsList = [...minifigsList, minifig].sort((a, b) =>
+        a.id.localeCompare(b.id)
+      )
 
       if (!idToken) {
         setMinifigsQueryData(updatedMinifigsList)

@@ -4,6 +4,11 @@ export {
   type ExternalLinksCellRenderProps,
 } from './ExternalLinksCellRenderer'
 export {
+  default as ItemActionsCellRenderer,
+  type MinifigActionsCellRendererProps,
+  type SetActionsCellRendererProps,
+} from './ItemActionsCellRenderer'
+export {
   default as ItemIdCellRenderer,
   type ItemIdCellRenderProps,
 } from './ItemIdCellRenderer'
