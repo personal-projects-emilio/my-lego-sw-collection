@@ -6,10 +6,12 @@ import { useAgGridStyles } from 'components/AgGrid'
 import {
   ExternalLinksCellRenderer,
   type ExternalLinksCellRenderProps,
+  ItemActionsCellRenderer,
   ItemIdCellRenderer,
   type ItemIdCellRenderProps,
   listValueFormatter,
   OverflowTypographyCellRenderer,
+  type SetActionsCellRendererProps,
 } from 'components/AgGrid/column'
 import { useAuth } from 'providers'
 import type { Set } from 'types/sets'
@@ -17,9 +19,11 @@ import { spreadArrayIf } from 'utils/array'
 import { formatFrEuroCurrency } from 'utils/format'
 
 import { SetMinifigsCellRenderer } from '../components'
+import useSetsMutations from './useSetsMutations'
 
 const useSetsColDefs = () => {
   const { classes: agGridClasses } = useAgGridStyles()
+  const { deleteSet, isPending } = useSetsMutations()
   const { idToken } = useAuth()
   return useMemo(
     () =>
@@ -146,6 +150,23 @@ const useSetsColDefs = () => {
           width: 100,
         },
         {
+          cellClass: [agGridClasses.flexAlignCenter, agGridClasses.gap1],
+          cellRenderer: ItemActionsCellRenderer,
+          cellRendererParams: {
+            deleteItem: deleteSet,
+            isPending,
+            variant: 'set',
+          } satisfies SetActionsCellRendererProps,
+          colId: 'actions',
+          field: 'id',
+          filter: false,
+          floatingFilter: false,
+          headerName: 'Actions',
+          resizable: false,
+          sortable: false,
+          width: 140,
+        },
+        {
           cellRenderer: OverflowTypographyCellRenderer,
           field: 'location',
           headerName: 'Location',
@@ -182,7 +203,7 @@ const useSetsColDefs = () => {
           headerName: 'Notice',
         },
       ] as const satisfies Array<ColDef<Set>>,
-    [agGridClasses, idToken]
+    [agGridClasses, deleteSet, idToken, isPending]
   )
 }
 

@@ -20,9 +20,11 @@ type AutocompleteProps = Omit<
   textFieldProps?: Partial<TextFieldProps>
 }
 
-const asNoValue = (option: string | string[] | null | undefined): boolean =>
-  !isNotNullOrUndefined(option) ||
-  (Array.isArray(option) && option.length === 0)
+const asNoValue = (option: string | string[] | null | undefined): boolean => {
+  return Array.isArray(option)
+    ? option.length === 0
+    : isNotNullOrUndefined(option) && option === ''
+}
 
 const Autocomplete = forwardRef<HTMLInputElement, AutocompleteProps>(
   (
@@ -63,15 +65,8 @@ const Autocomplete = forwardRef<HTMLInputElement, AutocompleteProps>(
     return (
       <MuiAutocomplete
         {...rest}
-        multiple={multiple}
-        options={options}
-        value={optionValue}
         autoHighlight
-        freeSolo={freeSolo}
-        openOnFocus
-        onChange={(_e, value) => {
-          onChangeHandler(value)
-        }}
+        disableClearable={asNoValue(optionValue)}
         filterOptions={(options, params) => {
           const filtered = filter(options, params)
           const trimedInputValue = params.inputValue.trim()
@@ -88,7 +83,14 @@ const Autocomplete = forwardRef<HTMLInputElement, AutocompleteProps>(
           }
           return filtered
         }}
+        freeSolo={freeSolo}
         getOptionDisabled={getOptiondDisabled}
+        multiple={multiple}
+        onChange={(_e, value) => {
+          onChangeHandler(value)
+        }}
+        openOnFocus
+        options={options}
         renderInput={(params) => (
           <TextField
             {...params}
@@ -100,6 +102,7 @@ const Autocomplete = forwardRef<HTMLInputElement, AutocompleteProps>(
             }
           />
         )}
+        value={optionValue}
       />
     )
   }
