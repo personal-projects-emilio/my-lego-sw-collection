@@ -13,9 +13,9 @@ export const setValidationSchema = z.object({
         })
       )
       .default([]),
-    box: z.nullable(z.boolean()),
-    notice: z.nullable(z.boolean()),
-    bags: z.nullable(z.boolean()),
+    box: z.nullable(z.boolean()).default(null),
+    notice: z.nullable(z.boolean()).default(null),
+    bags: z.nullable(z.boolean()).default(null),
     partsQuantity: z.nullable(z.number()),
   }),
   id: z

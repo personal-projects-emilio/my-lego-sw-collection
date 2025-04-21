@@ -12,7 +12,12 @@ import {
 } from '@mui/material'
 import { Link, type LinkProps } from '@tanstack/react-router'
 import Avatar from 'components/Avatar'
+import DisplayIfAuthenticated from 'components/DisplayIfAuthenticated'
+import { useAuth } from 'providers'
 import { makeStyles } from 'tss-react/mui'
+import { isNotNullOrUndefined } from 'utils/typescript'
+
+import SyncMinifigsButton from './SyncMinifigsButton'
 
 type ModuleHeaderProps = {
   addTo: NonNullable<LinkProps['to']>
@@ -25,11 +30,14 @@ const useStyles = makeStyles({ name: 'ModuleHeader' })((theme) => ({
     alignItems: 'center',
     display: 'grid',
     gap: theme.spacing(1),
-    gridTemplateColumns: '1fr repeat(2,max-content)',
+    gridTemplateColumns: '1fr max-content',
     justifyItems: 'baseline',
     padding: theme.spacing(1),
     borderBottom: '1px solid',
     borderColor: theme.palette.divider,
+  },
+  authenticatedHeader: {
+    gridTemplateColumns: '1fr repeat(3,max-content)',
   },
 }))
 
@@ -38,9 +46,14 @@ const ModuleHeader: FC<ModuleHeaderProps> = ({
   addTo,
   statisticsTooltipTitle,
 }) => {
-  const { classes } = useStyles()
+  const { classes, cx } = useStyles()
+  const { idToken } = useAuth()
   return (
-    <header className={classes.header}>
+    <header
+      className={cx(classes.header, {
+        [classes.authenticatedHeader]: isNotNullOrUndefined(idToken),
+      })}
+    >
       <TextField
         label="Search"
         onChange={debounce((e) => setQuickFilter(e.target.value), 500)}
@@ -56,11 +69,14 @@ const ModuleHeader: FC<ModuleHeaderProps> = ({
         }}
         variant="outlined"
       />
-      <Tooltip title={statisticsTooltipTitle}>
-        <Avatar>
-          <MdBarChart />
-        </Avatar>
-      </Tooltip>
+      <DisplayIfAuthenticated>
+        <Tooltip title={statisticsTooltipTitle}>
+          <Avatar>
+            <MdBarChart />
+          </Avatar>
+        </Tooltip>
+        <SyncMinifigsButton />
+      </DisplayIfAuthenticated>
       <Button size="small" component={Link} to={addTo} variant="contained">
         Add
       </Button>
