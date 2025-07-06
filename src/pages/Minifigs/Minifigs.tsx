@@ -4,7 +4,7 @@ import { Skeleton } from '@mui/material'
 import { Outlet } from '@tanstack/react-router'
 import { useMinifigsQuery } from 'api/minifigs'
 import { AgGridTable } from 'components/AgGrid/table'
-import ModuleHeader from 'components/ModuleHeader'
+import ModuleHeader from 'components/ModuleHeader/ModuleHeader'
 import { formatPercentage } from 'utils/format'
 
 import { useMinifigsColDefs, useMinifigsStatistics } from './hooks'

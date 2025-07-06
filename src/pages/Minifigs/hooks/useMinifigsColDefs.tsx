@@ -6,18 +6,16 @@ import { useAgGridStyles } from 'components/AgGrid'
 import {
   ExternalLinksCellRenderer,
   type ExternalLinksCellRenderProps,
+  ItemActionsCellRenderer,
   ItemIdCellRenderer,
   type ItemIdCellRenderProps,
   listValueFormatter,
+  type MinifigActionsCellRendererProps,
   OverflowTypographyCellRenderer,
 } from 'components/AgGrid/column'
 import type { Minifig } from 'types/minifigs'
 
-import {
-  MinifigActionsCellRenderer,
-  type MinifigActionsCellRendererProps,
-  OwnedCellRenderer,
-} from '../components'
+import { OwnedCellRenderer } from '../components'
 import useMinifigsMutations from './useMinifigsMutations'
 
 const useMinifigsColDefs = () => {
@@ -124,10 +122,11 @@ const useMinifigsColDefs = () => {
         },
         {
           cellClass: [agGridClasses.flexAlignCenter, agGridClasses.gap1],
-          cellRenderer: MinifigActionsCellRenderer,
+          cellRenderer: ItemActionsCellRenderer,
           cellRendererParams: {
-            deleteMinifig,
+            deleteItem: deleteMinifig,
             isPending,
+            variant: 'minifig',
           } satisfies MinifigActionsCellRendererProps,
           colId: 'actions',
           field: 'id',

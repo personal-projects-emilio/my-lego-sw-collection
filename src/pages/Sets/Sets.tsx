@@ -1,9 +1,10 @@
 import { type FC, useState } from 'react'
 
 import { Skeleton } from '@mui/material'
+import { Outlet } from '@tanstack/react-router'
 import { useSetsQuery } from 'api/sets'
 import { AgGridTable } from 'components/AgGrid/table'
-import ModuleHeader from 'components/ModuleHeader'
+import ModuleHeader from 'components/ModuleHeader/ModuleHeader'
 import { useAuth } from 'providers'
 import { formatFrEuroCurrency, formatPercentage } from 'utils/format'
 
@@ -30,7 +31,7 @@ const Sets: FC = () => {
   return (
     <>
       <ModuleHeader
-        addTo="/sets"
+        addTo="/sets/add"
         setQuickFilter={setQuickFilter}
         statisticsTooltipTitle={`You owned ${owned} of the ${total} sets in our database (${formatPercentage(percentageOwned)})${idToken ? `. You have spend ${formatFrEuroCurrency(totalBought)} on your collection. The store value of your collection is ${formatFrEuroCurrency(totalStoreValue)} and the market value ${formatFrEuroCurrency(totalMarketValue)}` : ''}`}
       />
@@ -40,6 +41,7 @@ const Sets: FC = () => {
         quickFilterText={quickFilter}
         rowData={data}
       />
+      <Outlet />
     </>
   )
 }

@@ -21,6 +21,7 @@ import {
 import { type Minifig, minifigValidationSchema } from 'types/minifigs'
 
 import { defaultMinifigFormValues } from './MinifigFormModal.constant'
+import useStyles from './MinifigFormModal.styles'
 import type { MinifigFormModalProps } from './MinifigFormModal.types'
 
 const MinifigFormModal: FC<MinifigFormModalProps> = ({
@@ -31,6 +32,7 @@ const MinifigFormModal: FC<MinifigFormModalProps> = ({
     useMinifigsAutocompleteOptions()
   const { addMinifig, editMinifig, isPending } = useMinifigsMutations()
   const navigate = useNavigate()
+  const { classes } = useStyles()
 
   const minifigValidationSchemaWithRefinedIdCheck = useMemo(
     () =>
@@ -76,7 +78,7 @@ const MinifigFormModal: FC<MinifigFormModalProps> = ({
       <DialogContent dividers>
         <form
           id="minifig-form"
-          style={{ display: 'grid', gap: '16px' }}
+          className={classes.container}
           onSubmit={handleSubmit(onSubmit)}
           noValidate
         >
