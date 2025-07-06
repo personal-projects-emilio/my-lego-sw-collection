@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Redirecting...</title>
+    <meta http-equiv="refresh" content="0; url=./index.html" />
+    <script>
+      // For client-side routing: redirect to index.html and preserve the path
+      var baseUrl = '__BASE_URL__'
+      var redirectTo = baseUrl + '/index.html' + location.search + location.hash
+      if (
+        location.pathname !== baseUrl + '/' &&
+        location.pathname !== baseUrl + '/index.html'
+      ) {
+        redirectTo =
+          baseUrl +
+          '/index.html?redirect=' +
+          encodeURIComponent(
+            location.pathname + location.search + location.hash
+          )
+      }
+      window.location.replace(redirectTo)
+    </script>
+  </head>
+  <body>
+    <p>Redirecting...</p>
+  </body>
+</html>
