@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Redirecting...</title>
+    <script>
+      ;(function () {
+        var pathName = window.location.pathname
+        var baseUrl
+
+        var prPreviewMatch = pathName.match(/^(\/[^/]+\/pr-preview\/pr-\d+)/)
+        if (prPreviewMatch) {
+          baseUrl = prPreviewMatch[1]
+        } else {
+          baseUrl = '__BASE_URL__'
+          if (baseUrl === '__' + 'BASE_URL__') {
+            var repoMatch = pathName.match(/^(\/[^/]+)/)
+            if (repoMatch) {
+              baseUrl = repoMatch[1]
+            }
+          }
+        }
+
+        var appRoute = pathName
+        if (pathName.indexOf(baseUrl) === 0) {
+          appRoute = pathName.substring(baseUrl.length)
+        }
+
+        if (appRoute && appRoute[0] !== '/') {
+          appRoute = '/' + appRoute
+        }
+
+        if (!appRoute || appRoute === '/' || appRoute === '/index.html') {
+          window.location.replace(baseUrl + '/')
+          return
+        }
+
+        var redirect =
+          baseUrl +
+          '/?redirect=' +
+          encodeURIComponent(
+            appRoute + window.location.search + window.location.hash
+          )
+        window.location.replace(redirect)
+      })()
+    </script>
+  </head>
+  <body>
+    <p>Redirecting...</p>
+  </body>
+</html>
