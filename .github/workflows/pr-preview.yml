@@ -68,3 +68,15 @@ jobs:
         with:
           source-dir: ./dist
           umbrella-dir: pr-preview
+
+      - name: Deploy 404.html to root
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: ./dist
+          target-folder: .
+          clean: false
+          clean-exclude: |
+            pr-preview/
+            index.html
+            *
+            !404.html
