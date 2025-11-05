@@ -3,23 +3,34 @@
   <head>
     <meta charset="utf-8" />
     <title>Redirecting...</title>
-    <meta http-equiv="refresh" content="0; url=./index.html" />
     <script>
-      // For client-side routing: redirect to index.html and preserve the path
-      var baseUrl = '__BASE_URL__'
-      var redirectTo = baseUrl + '/index.html' + location.search + location.hash
-      if (
-        location.pathname !== baseUrl + '/' &&
-        location.pathname !== baseUrl + '/index.html'
-      ) {
-        redirectTo =
+      // GitHub Pages SPA redirect hack
+      // This script takes the current pathname and encodes it as a query parameter
+      // to pass to index.html, which will then restore the correct route
+      ;(function () {
+        var baseUrl = '/my-lego-sw-collection/pr-preview/pr-7'
+        var pathName = window.location.pathname
+
+        // Remove the base URL from the pathname to get the app route
+        if (pathName.indexOf(baseUrl) === 0) {
+          pathName = pathName.substring(baseUrl.length)
+        }
+
+        // If we're at the root or index.html, redirect to the base
+        if (pathName === '/' || pathName === '/index.html' || pathName === '') {
+          window.location.replace(baseUrl + '/')
+          return
+        }
+
+        // Otherwise, redirect to index.html with the path as a query parameter
+        var redirect =
           baseUrl +
-          '/index.html?redirect=' +
+          '/?redirect=' +
           encodeURIComponent(
-            location.pathname + location.search + location.hash
+            pathName + window.location.search + window.location.hash
           )
-      }
-      window.location.replace(redirectTo)
+        window.location.replace(redirect)
+      })()
     </script>
   </head>
   <body>
