@@ -2,11 +2,22 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image" href="/my-lego-sw-collection/favicon.ico" />
+    <link rel="icon" type="image" href="/my-lego-sw-collection/pr-preview/pr-7/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>My Lego SW Collection</title>
-    <script type="module" crossorigin src="/my-lego-sw-collection/assets/index-BTogGUTv.js"></script>
-    <link rel="stylesheet" crossorigin href="/my-lego-sw-collection/assets/index-4GlZqNeA.css">
+    <script>
+      ;(function () {
+        var redirect = new URLSearchParams(window.location.search).get(
+          'redirect'
+        )
+        if (redirect) {
+          var newUrl = window.location.pathname + redirect
+          window.history.replaceState(null, '', newUrl)
+        }
+      })()
+    </script>
+    <script type="module" crossorigin src="/my-lego-sw-collection/pr-preview/pr-7/assets/index-D6ykH2x2.js"></script>
+    <link rel="stylesheet" crossorigin href="/my-lego-sw-collection/pr-preview/pr-7/assets/index-B633OCVL.css">
   </head>
   <body>
     <div id="root"></div>
