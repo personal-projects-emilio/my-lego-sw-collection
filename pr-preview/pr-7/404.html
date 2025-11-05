@@ -4,20 +4,28 @@
     <meta charset="utf-8" />
     <title>Redirecting...</title>
     <script>
-      // GitHub Pages SPA redirect hack
-      // This script takes the current pathname and encodes it as a query parameter
-      // to pass to index.html, which will then restore the correct route
+      // GitHub Pages SPA redirect hack for both main deployment and PR previews
+      // This script handles routing for paths like:
+      // - /my-lego-sw-collection/minifigs (main deployment)
+      // - /my-lego-sw-collection/pr-preview/pr-7/minifigs (PR preview)
       ;(function () {
-        var baseUrl = '/my-lego-sw-collection/pr-preview/pr-7'
         var pathName = window.location.pathname
+        var baseUrl = '/my-lego-sw-collection/pr-preview/pr-7' // Will be replaced during build for main deployment
 
-        // Remove the base URL from the pathname to get the app route
+        // Auto-detect if we're in a PR preview and adjust baseUrl accordingly
+        var prPreviewMatch = pathName.match(/^(\/[^/]+\/pr-preview\/pr-\d+)/)
+        if (prPreviewMatch) {
+          baseUrl = prPreviewMatch[1]
+        }
+
+        // Get the app route by removing the base URL
+        var appRoute = pathName
         if (pathName.indexOf(baseUrl) === 0) {
-          pathName = pathName.substring(baseUrl.length)
+          appRoute = pathName.substring(baseUrl.length)
         }
 
         // If we're at the root or index.html, redirect to the base
-        if (pathName === '/' || pathName === '/index.html' || pathName === '') {
+        if (appRoute === '/' || appRoute === '/index.html' || appRoute === '') {
           window.location.replace(baseUrl + '/')
           return
         }
@@ -27,7 +35,7 @@
           baseUrl +
           '/?redirect=' +
           encodeURIComponent(
-            pathName + window.location.search + window.location.hash
+            appRoute + window.location.search + window.location.hash
           )
         window.location.replace(redirect)
       })()
