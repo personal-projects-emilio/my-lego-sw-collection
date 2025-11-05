@@ -6,15 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>My Lego SW Collection</title>
     <script>
-      // GitHub Pages SPA redirect handling
-      // This script checks for a redirect query parameter and replaces the URL
-      // to restore the correct route after a 404 redirect
       ;(function () {
         var redirect = new URLSearchParams(window.location.search).get(
           'redirect'
         )
         if (redirect) {
-          // Remove the redirect parameter and replace the URL with the original path
           var newUrl = window.location.pathname + redirect
           window.history.replaceState(null, '', newUrl)
         }
