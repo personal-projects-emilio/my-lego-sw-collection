@@ -18,7 +18,7 @@ import {
   useMinifigsAutocompleteOptions,
   useMinifigsMutations,
 } from 'pages/Minifigs/hooks'
-import { type Minifig, minifigValidationSchema } from 'types/minifigs'
+import { type MinifigFormInput, minifigValidationSchema } from 'types/minifigs'
 
 import { defaultMinifigFormValues } from './MinifigFormModal.constant'
 import useStyles from './MinifigFormModal.styles'
@@ -49,7 +49,7 @@ const MinifigFormModal: FC<MinifigFormModalProps> = ({
     [isEdit, ids, minifigData]
   )
 
-  const { control, handleSubmit } = useForm<Minifig>({
+  const { control, handleSubmit } = useForm<MinifigFormInput>({
     defaultValues: {
       ...defaultMinifigFormValues,
       ...minifigData,
@@ -63,7 +63,7 @@ const MinifigFormModal: FC<MinifigFormModalProps> = ({
     navigate({ to: '/minifigs' })
   }
 
-  const onSubmit: SubmitHandler<Minifig> = (data) => {
+  const onSubmit: SubmitHandler<MinifigFormInput> = (data) => {
     if (isEdit) {
       return editMinifig(data).then(onClose)
     }

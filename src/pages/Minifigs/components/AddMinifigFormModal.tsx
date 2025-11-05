@@ -1,7 +1,8 @@
 import type { FC } from 'react'
 
-import { pick, useNavigate, useSearch } from '@tanstack/react-router'
+import { useNavigate, useSearch } from '@tanstack/react-router'
 import { useMinifigsQuery } from 'api/minifigs'
+import pick from 'lodash/pick'
 
 import MinifigFormModal from './MinifigFormModal'
 

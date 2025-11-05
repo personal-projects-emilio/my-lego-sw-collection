@@ -17,7 +17,7 @@ import { useNavigate } from '@tanstack/react-router'
 import DisplayIfAuthenticated from 'components/DisplayIfAuthenticated'
 import { Autocomplete, Checkbox } from 'components/inputs'
 import { useSetsAutocompleteOptions, useSetsMutations } from 'pages/Sets/hooks'
-import { type Set, setValidationSchema } from 'types/sets'
+import { type SetFormInput, setValidationSchema } from 'types/sets'
 
 import { defaultSetFormValues } from './SetFormModal.constant'
 import useStyles from './SetFormModal.styles'
@@ -67,7 +67,7 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
     [ids, isEdit, setData]
   )
 
-  const { control, handleSubmit, setValue, watch } = useForm<Set>({
+  const { control, handleSubmit, setValue, watch } = useForm<SetFormInput>({
     defaultValues: defaultSetFormValues(setData),
     resolver: zodResolver(setValidationSchemaWithRefinedIdCheck),
     mode: 'onSubmit',
@@ -78,7 +78,7 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
     navigate({ to: '/sets' })
   }
 
-  const onSubmit: SubmitHandler<Set> = (data) => {
+  const onSubmit: SubmitHandler<SetFormInput> = (data) => {
     if (isEdit) {
       return editSet(data).then(onClose)
     }

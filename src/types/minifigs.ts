@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 export const minifigValidationSchema = z.object({
-  appearances: z.array(z.string()).default([]),
+  appearances: z.array(z.string()),
   characterName: z.string().min(1, {
     message: 'Character name is required',
   }),
@@ -16,29 +16,26 @@ export const minifigValidationSchema = z.object({
   name: z.string().min(1, {
     message: 'Name is required',
   }),
-  possessed: z.boolean().default(false),
-  tags: z.array(z.string()).default([]),
-  timelines: z.array(z.string()).default([]),
+  possessed: z.boolean(),
+  tags: z.array(z.string()),
+  timelines: z.array(z.string()),
   owned: z.object({
-    loose: z
-      .object({
-        quantity: z.number().default(0),
-        isInFrame: z.boolean().default(false),
+    loose: z.object({
+      quantity: z.number(),
+      isInFrame: z.boolean(),
+    }),
+    total: z.number(),
+    inSet: z.array(
+      z.object({
+        setId: z.string().min(1).or(z.number().min(1)),
+        quantity: z.number().min(1),
+        isInFrame: z.boolean(),
       })
-      .default({ quantity: 0, isInFrame: false }),
-    total: z.number().default(0),
-    inSet: z
-      .array(
-        z.object({
-          setId: z.string().min(1).or(z.number().min(1)),
-          quantity: z.number().min(1),
-          isInFrame: z.boolean().default(false),
-        })
-      )
-      .default([]),
+    ),
   }),
 })
 
 export type Minifig = z.infer<typeof minifigValidationSchema>
+export type MinifigFormInput = z.input<typeof minifigValidationSchema>
 
 export type MinifigsList = Minifig[]
