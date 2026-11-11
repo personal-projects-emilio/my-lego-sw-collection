@@ -7,7 +7,6 @@ import {
   type RouteIds,
   stripSearchParams,
 } from '@tanstack/react-router'
-import { zodValidator } from '@tanstack/zod-adapter'
 import Layout from 'components/Layout'
 import { addMinifigSearchSchema, addSetSearchSchema } from 'constants/routes'
 import Auth from 'pages/Auth'
@@ -18,7 +17,7 @@ import {
 } from 'pages/Minifigs/components'
 import Sets from 'pages/Sets'
 import { AddSetFormModal, EditSetFormModal } from 'pages/Sets/components'
-import { object } from 'zod'
+import { looseObject } from 'zod'
 
 const basePath = import.meta.env.BASE_URL
 
@@ -41,7 +40,8 @@ const minifigEditRoute = createRoute({
   getParentRoute: () => minifigsRoute,
   path: '/edit/$minifigId',
   component: () => <EditMinifigFormModal />,
-  validateSearch: zodValidator(object({})),
+  // zod 4 types object({}) as Record<string, never>, which breaks ToOptions unions; the middleware strips params anyway
+  validateSearch: looseObject({}),
   search: {
     middlewares: [stripSearchParams(true)],
   },
@@ -51,7 +51,7 @@ const minifigAddRoute = createRoute({
   getParentRoute: () => minifigsRoute,
   path: '/add',
   component: () => <AddMinifigFormModal />,
-  validateSearch: zodValidator(addMinifigSearchSchema),
+  validateSearch: addMinifigSearchSchema,
 })
 
 const setsRoute = createRoute({
@@ -69,7 +69,7 @@ const setEditRoute = createRoute({
     }),
   },
   component: () => <EditSetFormModal />,
-  validateSearch: zodValidator(object({})),
+  validateSearch: looseObject({}),
   search: {
     middlewares: [stripSearchParams(true)],
   },
@@ -79,7 +79,7 @@ const setAddRoute = createRoute({
   getParentRoute: () => setsRoute,
   path: '/add',
   component: () => <AddSetFormModal />,
-  validateSearch: zodValidator(addSetSearchSchema),
+  validateSearch: addSetSearchSchema,
 })
 
 const authRoute = createRoute({

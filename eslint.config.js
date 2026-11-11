@@ -38,6 +38,8 @@ export default tseslint.config(
       '@typescript-eslint/no-import-type-side-effects': 'error',
       'import/no-duplicates': ['error', { 'prefer-inline': true }],
       'import/newline-after-import': 'error',
+      // TypeScript already checks imports; the node resolver can't read `exports`-only packages like vite 8
+      'import/no-unresolved': 'off',
       'max-params': ['error', 3],
       'react-refresh/only-export-components': [
         'warn',
