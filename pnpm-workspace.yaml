@@ -1,3 +1,6 @@
+# Same rule locally as pnpm 12 applies on CI: skip releases younger than a day (in minutes)
+minimumReleaseAge: 1440
+
 # Their postinstall only checks native binaries, which come from optional platform packages
 allowBuilds:
   '@swc/core': false
