@@ -1,0 +1,4 @@
+# Their postinstall only checks native binaries, which come from optional platform packages
+allowBuilds:
+  '@swc/core': false
+  esbuild: false
