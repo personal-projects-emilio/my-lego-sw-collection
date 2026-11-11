@@ -14,6 +14,7 @@ export default tseslint.config(
       js.configs.recommended,
       eslintConfigPrettier,
       importPlugin.flatConfigs.recommended,
+      importPlugin.flatConfigs.typescript,
       ...tseslint.configs.recommended,
     ],
     files: ['**/*.{ts,tsx}'],
