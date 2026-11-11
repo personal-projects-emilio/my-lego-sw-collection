@@ -1,8 +1,8 @@
 import {
   type FC,
   type PropsWithChildren,
-  useCallback,
   useEffect,
+  useEffectEvent,
   useState,
 } from 'react'
 
@@ -12,17 +12,49 @@ import { loginUser, refreshSecureToken } from 'api/auth'
 
 import { AuthContext } from './AuthProvider.constants'
 
+type Session = { idToken: string; expirationDate: string }
+
 const clearAuthLocalStorage = () => {
   localStorage.removeItem('idToken')
   localStorage.removeItem('expirationDate')
   localStorage.removeItem('refreshToken')
 }
 
-let expireAuthTiemout: ReturnType<typeof setTimeout>
+const saveSession = (
+  idToken: string,
+  refreshToken: string,
+  expiresIn: string
+): Session => {
+  const expirationDate = new Date(
+    Date.now() + parseInt(expiresIn, 10) * 1000
+  ).toISOString()
+
+  localStorage.setItem('idToken', idToken)
+  localStorage.setItem('refreshToken', refreshToken)
+  localStorage.setItem('expirationDate', expirationDate)
+  return { idToken, expirationDate }
+}
+
+const readStoredSession = (): Session | undefined => {
+  const idToken = localStorage.getItem('idToken')
+  const expirationDate = localStorage.getItem('expirationDate')
+
+  if (!idToken || !expirationDate) return undefined
+  if (new Date(expirationDate) <= new Date()) {
+    clearAuthLocalStorage()
+    return undefined
+  }
+  return { idToken, expirationDate }
+}
 
 const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
   const { history } = useRouter()
-  const [idToken, setIdToken] = useState<string>()
+  const [session, setSession] = useState(readStoredSession)
+
+  const logout = () => {
+    clearAuthLocalStorage()
+    setSession(undefined)
+  }
 
   const { mutate: mutateRefreshToken, isPending: isRefreshPending } =
     useMutation({
@@ -30,16 +62,7 @@ const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
       onSuccess: (data) => {
         if (!data) return
         const { expires_in, id_token, refresh_token } = data
-        clearTimeout(expireAuthTiemout)
-        setIdToken(id_token)
-        const expirationDate = new Date(
-          new Date().getTime() + parseInt(expires_in, 10) * 1000
-        ).toISOString()
-
-        localStorage.setItem('idToken', id_token)
-        localStorage.setItem('refreshToken', refresh_token)
-        localStorage.setItem('expirationDate', expirationDate)
-        setAuthTimeout(expirationDate)
+        setSession(saveSession(id_token, refresh_token, expires_in))
       },
       onError: () => {
         logout()
@@ -48,15 +71,8 @@ const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
 
   const { mutate: login, isPending: isLoginPending } = useMutation({
     mutationFn: loginUser,
-    onSuccess: ({ expiresIn, idToken: newIdToken, refreshToken }) => {
-      setIdToken(newIdToken)
-      const expirationDate = new Date(
-        new Date().getTime() + parseInt(expiresIn, 10) * 1000
-      ).toISOString()
-
-      localStorage.setItem('idToken', newIdToken)
-      localStorage.setItem('refreshToken', refreshToken)
-      localStorage.setItem('expirationDate', expirationDate)
+    onSuccess: ({ expiresIn, idToken, refreshToken }) => {
+      setSession(saveSession(idToken, refreshToken, expiresIn))
       history.back()
     },
     onError: () => {
@@ -64,43 +80,27 @@ const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
     },
   })
 
-  const logout = useCallback(() => {
-    clearAuthLocalStorage()
-    setIdToken(undefined)
-    clearTimeout(expireAuthTiemout)
-  }, [])
+  const onSessionExpired = useEffectEvent(() => {
+    const refreshToken = localStorage.getItem('refreshToken')
+    if (!refreshToken) return logout()
+    mutateRefreshToken(refreshToken)
+  })
 
-  const setAuthTimeout = useCallback(
-    (expirationDate: string) => {
-      expireAuthTiemout = setTimeout(
-        () => {
-          const refreshToken = localStorage.getItem('refreshToken')
-          if (!refreshToken) return logout()
-          mutateRefreshToken(refreshToken)
-        },
-        new Date(expirationDate).getTime() - new Date().getTime()
-      )
-    },
-    [logout, mutateRefreshToken]
-  )
+  const expirationDate = session?.expirationDate
 
   useEffect(() => {
-    const storageIdToken = localStorage.getItem('idToken')
-    const storageExpirationDate = localStorage.getItem('expirationDate')
-
-    if (!storageIdToken || !storageExpirationDate)
-      return clearTimeout(expireAuthTiemout)
-    if (new Date(storageExpirationDate) <= new Date())
-      return clearAuthLocalStorage()
-
-    setIdToken(storageIdToken)
-    setAuthTimeout(storageExpirationDate)
-  }, [setAuthTimeout])
+    if (!expirationDate) return
+    const timeout = setTimeout(
+      onSessionExpired,
+      new Date(expirationDate).getTime() - Date.now()
+    )
+    return () => clearTimeout(timeout)
+  }, [expirationDate])
 
   return (
     <AuthContext.Provider
       value={{
-        idToken,
+        idToken: session?.idToken,
         login,
         logout,
         isLoading: isLoginPending || isRefreshPending,
