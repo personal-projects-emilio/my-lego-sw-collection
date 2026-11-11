@@ -5,7 +5,7 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 import eslintConfigPrettier from 'eslint-config-prettier'
 import simpleImportSort from 'eslint-plugin-simple-import-sort'
-import importPlugin from 'eslint-plugin-import'
+import { flatConfigs as importX } from 'eslint-plugin-import-x'
 
 export default tseslint.config(
   { ignores: ['dist', 'pnpm-lock.yaml'] },
@@ -13,7 +13,8 @@ export default tseslint.config(
     extends: [
       js.configs.recommended,
       eslintConfigPrettier,
-      importPlugin.flatConfigs.recommended,
+      importX.recommended,
+      importX.typescript,
       ...tseslint.configs.recommended,
     ],
     files: ['**/*.{ts,tsx}'],
@@ -35,8 +36,8 @@ export default tseslint.config(
         },
       ],
       '@typescript-eslint/no-import-type-side-effects': 'error',
-      'import/no-duplicates': ['error', { 'prefer-inline': true }],
-      'import/newline-after-import': 'error',
+      'import-x/no-duplicates': ['error', { 'prefer-inline': true }],
+      'import-x/newline-after-import': 'error',
       'max-params': ['error', 3],
       'react-refresh/only-export-components': [
         'warn',
@@ -57,10 +58,10 @@ export default tseslint.config(
       ],
     },
     settings: {
-      'import/resolver': {
-        node: {
-          extensions: ['.js', '.jsx', '.ts', '.tsx'],
-          moduleDirectory: ['node_modules', 'src/'],
+      'import-x/resolver': {
+        typescript: {
+          project: ['tsconfig.app.json', 'tsconfig.node.json'],
+          noWarnOnMultipleProjects: true,
         },
       },
     },

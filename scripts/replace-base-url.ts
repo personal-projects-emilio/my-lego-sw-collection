@@ -1,4 +1,4 @@
-import dotenv from 'dotenv'
+import { config } from 'dotenv'
 import { existsSync, readFileSync, writeFileSync } from 'fs'
 import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
@@ -8,7 +8,7 @@ const __dirname = dirname(__filename)
 
 const envPath = join(__dirname, '../.env')
 if (existsSync(envPath)) {
-  dotenv.config({ path: envPath })
+  config({ path: envPath })
 }
 
 const BASE_URL = process.env.VITE_BASE_URL || '/my-lego-sw-collection'

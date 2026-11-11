@@ -4,7 +4,7 @@ import { type ButtonProps, IconButton, Tooltip } from '@mui/material'
 import bricklinkLogo from 'assets/bricklink.png'
 import bricksetLogo from 'assets/brickset.png'
 import { makeStyles } from 'tss-react/mui'
-import type { Item,ItemId } from 'types/common'
+import type { Item, ItemId } from 'types/common'
 
 export type LogoLinkProps = {
   id: ItemId
