@@ -8,6 +8,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `type(scope
 - **Scope** (optional): the app area, matching the Linear area labels: `sets`, `minifigs`, `loose`, `resale`, `auth`, `api`.
 - **Footer**: `Refs: LSW-<n>` to link the Linear issue.
 - **PR titles** must use the same format. PRs are squash-merged, so the title becomes the commit on `develop`. The `PR title` workflow checks it.
+- No AI attribution anywhere: no `Co-Authored-By` trailers and no "Generated with" lines in commits, PRs or issues.
 - WIP commits on feature branches are fine in any format. No local hook enforces the convention, on purpose.
 
 ## Agent skills
