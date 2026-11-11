@@ -7,8 +7,8 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `type(scope
 - **Types**: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `ci`.
 - **Scope** (optional): the app area, matching the Linear area labels: `sets`, `minifigs`, `loose`, `resale`, `auth`, `api`.
 - **Footer**: `Refs: LSW-<n>` to link the Linear issue.
-- **PR titles** use the same format.
-- WIP commits on feature branches are fine and don't need the format. It isn't enforced by a hook on purpose. Squash or reword them before merging so `develop` only gets conventional messages.
+- **PR titles** must use the same format. PRs are squash-merged, so the title becomes the commit on `develop`. The `PR title` workflow checks it.
+- WIP commits on feature branches are fine in any format. No local hook enforces the convention, on purpose.
 
 ## Agent skills
 
