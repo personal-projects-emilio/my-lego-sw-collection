@@ -139,11 +139,12 @@ const rowLabel = ({ Number, Variant, SetName }: BricksetRow) =>
 const formatValue = (value: unknown) =>
   value === null || value === undefined || value === '' ? '—' : String(value)
 
-const Section: FC<{ title: string; count: number; children: ReactNode }> = ({
-  title,
-  count,
-  children,
-}) => {
+const Section: FC<{
+  title: string
+  count: number
+  countLabel?: string
+  children: ReactNode
+}> = ({ title, count, countLabel = String(count), children }) => {
   const [expanded, setExpanded] = useState(false)
   return (
     <Accordion
@@ -154,7 +155,7 @@ const Section: FC<{ title: string; count: number; children: ReactNode }> = ({
     >
       <AccordionSummary expandIcon={<MdExpandMore />}>
         <Typography>
-          {title} ({count})
+          {title} ({countLabel})
         </Typography>
       </AccordionSummary>
       <AccordionDetails>{children}</AccordionDetails>
@@ -215,6 +216,10 @@ const ImportBricksetCsv: FC = () => {
         ) ?? [],
     [report, addedKeys]
   )
+
+  const appliedChangesCount = updateRows.filter(
+    ({ key }) => !skippedKeys.includes(key)
+  ).length
 
   const appliedUpdatesCount =
     report?.updates.filter(({ set, changes }) =>
@@ -364,6 +369,7 @@ const ImportBricksetCsv: FC = () => {
                   <Section
                     title="Will be updated"
                     count={report.updates.length}
+                    countLabel={`${appliedChangesCount}/${updateRows.length} changes in ${appliedUpdatesCount}/${report.updates.length} sets`}
                   >
                     <AgGridTable
                       className={classes.updatesGrid}
