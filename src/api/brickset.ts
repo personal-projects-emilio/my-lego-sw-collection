@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { defaultBricksetIgnoreList } from 'constants/common'
-import { useAuth } from 'providers'
+import { useAuth } from 'providers/AuthProvider'
 import type { BricksetIgnoreList } from 'types/brickset'
 
 import { endPoints, queryKeys } from './api.constants'

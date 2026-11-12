@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 
 import { useMutation } from '@tanstack/react-query'
 import { mutateSets, setSetsQueryData, useSetsQuery } from 'api/sets'
-import { useAuth } from 'providers'
+import { useAuth } from 'providers/AuthProvider'
 import type { Set, SetsList } from 'types/sets'
 import { assert, isNotNullOrUndefined } from 'utils/typescript'
 

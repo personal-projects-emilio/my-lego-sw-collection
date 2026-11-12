@@ -17,7 +17,7 @@ import {
   OverflowTypographyCellRenderer,
   type SetActionsCellRendererProps,
 } from 'components/AgGrid/column'
-import { useAuth } from 'providers'
+import { useAuth } from 'providers/AuthProvider'
 import type { Set } from 'types/sets'
 import { spreadArrayIf } from 'utils/array'
 import { formatFrEuroCurrency } from 'utils/format'

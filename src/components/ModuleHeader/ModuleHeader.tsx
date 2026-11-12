@@ -13,7 +13,7 @@ import {
 import { Link, type LinkProps } from '@tanstack/react-router'
 import Avatar from 'components/Avatar'
 import DisplayIfAuthenticated from 'components/DisplayIfAuthenticated'
-import { useAuth } from 'providers'
+import { useAuth } from 'providers/AuthProvider'
 import { makeStyles } from 'tss-react/mui'
 import { isNotNullOrUndefined } from 'utils/typescript'
 

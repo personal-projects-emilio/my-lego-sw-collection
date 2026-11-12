@@ -5,7 +5,7 @@ import { Outlet } from '@tanstack/react-router'
 import { useSetsQuery } from 'api/sets'
 import { AgGridTable } from 'components/AgGrid/table'
 import ModuleHeader from 'components/ModuleHeader/ModuleHeader'
-import { useAuth } from 'providers'
+import { useAuth } from 'providers/AuthProvider'
 import { formatFrEuroCurrency, formatPercentage } from 'utils/format'
 
 import { useSetsColDefs, useSetsStatistics } from './hooks'

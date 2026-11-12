@@ -1,6 +1,6 @@
 import type { FC, PropsWithChildren } from 'react'
 
-import { useAuth } from 'providers'
+import { useAuth } from 'providers/AuthProvider'
 import { isNotNullOrUndefined } from 'utils/typescript'
 
 const DisplayIfAuthenticated: FC<PropsWithChildren> = ({ children }) => {

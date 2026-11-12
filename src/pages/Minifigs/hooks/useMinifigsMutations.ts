@@ -8,7 +8,7 @@ import {
 } from 'api/minifigs'
 import { useSetsQuery } from 'api/sets'
 import { useSetsMutations } from 'pages/Sets/hooks'
-import { useAuth } from 'providers'
+import { useAuth } from 'providers/AuthProvider'
 import type { Minifig, MinifigsList } from 'types/minifigs'
 import { renameMinifigInSets } from 'utils/lego'
 import { assert, isNotNullOrUndefined } from 'utils/typescript'
