@@ -46,13 +46,29 @@ import {
 import { readCsvFile } from 'utils/csv'
 
 const ignoreFields = [
-  { key: 'ids', label: 'Ignored set IDs', column: 'Number' },
-  { key: 'themes', label: 'Ignored themes', column: 'Theme' },
-  { key: 'subthemes', label: 'Ignored subthemes', column: 'Subtheme' },
+  {
+    key: 'ids',
+    label: 'Ignored set IDs',
+    column: 'Number',
+    buttonLabel: 'Ignore id',
+  },
+  {
+    key: 'themes',
+    label: 'Ignored themes',
+    column: 'Theme',
+    buttonLabel: 'Ignore theme',
+  },
+  {
+    key: 'subthemes',
+    label: 'Ignored subthemes',
+    column: 'Subtheme',
+    buttonLabel: 'Ignore subtheme',
+  },
 ] as const satisfies {
   key: keyof BricksetIgnoreList
   label: string
   column: string
+  buttonLabel: string
 }[]
 
 type UpdateRow = {
@@ -344,21 +360,28 @@ const ImportBricksetCsv: FC = () => {
                                 >
                                   {isAdded ? 'Added' : 'Add'}
                                 </Button>
-                                <Button
-                                  size="small"
-                                  onClick={() =>
-                                    ignoreList &&
-                                    updateIgnoreList(
-                                      'ids',
-                                      uniqueAndSortedArray([
-                                        ...ignoreList.ids,
-                                        row.Number,
-                                      ])
+                                {ignoreFields.map(
+                                  ({ key: listKey, column, buttonLabel }) =>
+                                    row[column] && (
+                                      <Button
+                                        key={listKey}
+                                        size="small"
+                                        title={row[column]}
+                                        onClick={() =>
+                                          ignoreList &&
+                                          updateIgnoreList(
+                                            listKey,
+                                            uniqueAndSortedArray([
+                                              ...ignoreList[listKey],
+                                              row[column],
+                                            ])
+                                          )
+                                        }
+                                      >
+                                        {buttonLabel}
+                                      </Button>
                                     )
-                                  }
-                                >
-                                  Ignore
-                                </Button>
+                                )}
                               </TableCell>
                             </TableRow>
                           )
