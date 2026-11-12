@@ -98,6 +98,7 @@ const updateColumnDefs: ColDef<UpdateRow>[] = [
   {
     field: 'from',
     headerName: 'Current',
+    cellDataType: false,
     valueFormatter: ({ value }) => formatValue(value),
     flex: 1,
     minWidth: 80,
@@ -105,6 +106,7 @@ const updateColumnDefs: ColDef<UpdateRow>[] = [
   {
     field: 'to',
     headerName: 'New',
+    cellDataType: false,
     valueFormatter: ({ value }) => formatValue(value),
     flex: 1,
     minWidth: 80,
