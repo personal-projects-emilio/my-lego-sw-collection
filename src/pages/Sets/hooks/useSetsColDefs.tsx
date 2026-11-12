@@ -1,7 +1,11 @@
 import { useMemo } from 'react'
 import { MdLocalSee } from 'react-icons/md'
 
-import type { ColDef, GetQuickFilterTextParams } from 'ag-grid-community'
+import type {
+  ColDef,
+  GetQuickFilterTextParams,
+  ValueFormatterParams,
+} from 'ag-grid-community'
 import { useAgGridStyles } from 'components/AgGrid'
 import {
   ExternalLinksCellRenderer,
@@ -93,6 +97,12 @@ const useSetsColDefs = () => {
         {
           field: 'content.minifigs',
           headerName: 'Minifigs',
+          valueFormatter: ({
+            value,
+          }: ValueFormatterParams<Set, Set['content']['minifigs']>) =>
+            listValueFormatter(
+              value?.map(({ id, quantity }) => `${id}: ${quantity}`)
+            ),
           cellClass: [agGridClasses.flexAlignCenter],
           cellRenderer: SetMinifigsCellRenderer,
           filter: false,
