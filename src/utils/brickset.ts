@@ -151,7 +151,7 @@ export const buildBricksetReport = ({
     const updatedSet = applyBricksetRow(set, matchedRows[0])
     const changes = trackedFields
       .map(([field, get]) => ({ field, from: get(set), to: get(updatedSet) }))
-      .filter(({ from, to }) => from !== to)
+      .filter(({ from, to }) => (from ?? null) !== (to ?? null))
     if (changes.length === 0) {
       report.unchangedCount++
     } else {

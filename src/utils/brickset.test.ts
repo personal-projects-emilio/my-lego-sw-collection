@@ -39,7 +39,7 @@ const row = (fields: Record<string, string>) => ({
 test('sorts rows into updates, unchanged, missing, ignored, not in CSV and conflicts', () => {
   const setsList = [
     set(75192),
-    set('75300', { releaseYear: 2021 }),
+    set('75300', { releaseYear: 2021, dimensions: undefined }),
     set(10331),
     set(75000),
     set(75001),

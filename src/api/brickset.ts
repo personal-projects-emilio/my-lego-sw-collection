@@ -1,5 +1,4 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { defaultBricksetIgnoreList } from 'constants/common'
 import { useAuth } from 'providers/AuthProvider'
 import type { BricksetIgnoreList } from 'types/brickset'
 
@@ -11,15 +10,12 @@ const fetchBricksetIgnoreList = (idToken: string) =>
     .get<Partial<BricksetIgnoreList> | null>(endPoints.bricksetIgnoreList, {
       params: { auth: idToken },
     })
-    .then(({ data }): BricksetIgnoreList => {
-      if (!data) return defaultBricksetIgnoreList
-      // The Realtime DB drops empty arrays
-      return {
-        ids: data.ids ?? [],
-        subthemes: data.subthemes ?? [],
-        themes: data.themes ?? [],
-      }
-    })
+    // The Realtime DB drops empty arrays
+    .then(({ data }): BricksetIgnoreList => ({
+      ids: data?.ids ?? [],
+      subthemes: data?.subthemes ?? [],
+      themes: data?.themes ?? [],
+    }))
 
 export const useBricksetIgnoreListQuery = () => {
   const { idToken } = useAuth()
