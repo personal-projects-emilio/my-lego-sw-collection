@@ -88,6 +88,16 @@ const useSetsColDefs = () => {
           width: 80,
         },
         {
+          field: 'exitDate',
+          headerName: 'Retired',
+          cellDataType: 'dateString',
+          filter: 'agDateColumnFilter',
+          suppressFloatingFilterButton: false,
+          valueFormatter: ({ value }) =>
+            value ? new Date(value).toLocaleDateString('fr-FR') : '',
+          width: 130,
+        },
+        {
           field: 'content.partsQuantity',
           headerName: 'Parts Qty',
           filter: 'agNumberColumnFilter',
