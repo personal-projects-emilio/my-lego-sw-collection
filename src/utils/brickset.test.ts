@@ -3,7 +3,12 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import type { Set } from 'types/sets'
 
-import { buildBricksetReport, newSetFromBricksetRow } from './brickset.ts'
+import {
+  buildBricksetReport,
+  changeKey,
+  newSetFromBricksetRow,
+  skipChanges,
+} from './brickset.ts'
 
 const set = (id: Set['id'], overrides: Partial<Set> = {}) =>
   ({
@@ -150,4 +155,44 @@ test('matches a set stored under its EU item number', () => {
     report.updates.map(({ set }) => set.id),
     [6346098]
   )
+})
+
+test('reads the exit date and piece count, and puts back skipped changes', () => {
+  const report = buildBricksetReport({
+    setsList: [
+      set(75192, {
+        content: {
+          minifigs: [],
+          bags: null,
+          box: null,
+          notice: null,
+          partsQuantity: 7541,
+        },
+      }),
+    ],
+    ignoreList: { ids: [], themes: [], subthemes: [] },
+    rows: [
+      row({
+        Number: '75192',
+        YearFrom: '2020',
+        ExitDate: '31/12/2028 00:00:00',
+        Pieces: '7500',
+        BrickLinkSoldPriceNew: '800',
+      }),
+    ],
+  })
+
+  assert.deepEqual(report.updates[0].changes, [
+    { field: 'exitDate', from: undefined, to: '2028-12-31' },
+    { field: 'content.partsQuantity', from: 7541, to: 7500 },
+    { field: 'prices.brickLinkSoldPriceNew', from: 0, to: 800 },
+  ])
+
+  const [saved] = skipChanges(report, [
+    changeKey(75192, 'content.partsQuantity'),
+  ])
+  assert.equal(saved.content.partsQuantity, 7541)
+  assert.equal(saved.exitDate, '2028-12-31')
+  assert.equal(saved.prices.brickLinkSoldPriceNew, 800)
+  assert.equal(saved.prices.bought, 10)
 })

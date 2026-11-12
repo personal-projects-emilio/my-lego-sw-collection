@@ -49,14 +49,23 @@ const toNumber = (value: string | undefined, fallback: number) => {
   return value && !Number.isNaN(number) ? number : fallback
 }
 
-const toDimension = (value: string | undefined, existing?: number | null) =>
-  Number(value) || existing || null
+const toPositiveNumber = (
+  value: string | undefined,
+  existing?: number | null
+) => Number(value) || existing || null
+
+const toIsoDate = (value: string | undefined) => {
+  const [, day, month, year] = value?.match(/^(\d{2})\/(\d{2})\/(\d{4})/) ?? []
+  return year ? `${year}-${month}-${day}` : undefined
+}
 
 const trackedFields: [string, (set: Set) => FieldChange['from']][] = [
   ['bricksetImagePath', (set) => set.bricksetImagePath],
   ['EAN', (set) => set.EAN],
   ['UPC', (set) => set.UPC],
   ['releaseYear', (set) => set.releaseYear],
+  ['exitDate', (set) => set.exitDate],
+  ['content.partsQuantity', (set) => set.content?.partsQuantity],
   ['prices.brickLinkSoldPriceNew', (set) => set.prices.brickLinkSoldPriceNew],
   ['prices.brickLinkSoldPriceUsed', (set) => set.prices.brickLinkSoldPriceUsed],
   ['dimensions.model.width', (set) => set.dimensions?.model?.width],
@@ -75,6 +84,11 @@ export const applyBricksetRow = (set: Set, row: BricksetRow): Set => ({
   EAN: row.EAN || set.EAN,
   UPC: row.UPC || set.UPC,
   releaseYear: toNumber(row.YearFrom, set.releaseYear),
+  exitDate: toIsoDate(row.ExitDate) ?? set.exitDate ?? null,
+  content: {
+    ...set.content,
+    partsQuantity: toPositiveNumber(row.Pieces, set.content?.partsQuantity),
+  },
   prices: {
     ...set.prices,
     brickLinkSoldPriceNew: toNumber(
@@ -88,14 +102,23 @@ export const applyBricksetRow = (set: Set, row: BricksetRow): Set => ({
   },
   dimensions: {
     model: {
-      width: toDimension(row.ModelDimension1, set.dimensions?.model?.width),
-      height: toDimension(row.ModelDimension2, set.dimensions?.model?.height),
-      depth: toDimension(row.ModelDimension3, set.dimensions?.model?.depth),
+      width: toPositiveNumber(
+        row.ModelDimension1,
+        set.dimensions?.model?.width
+      ),
+      height: toPositiveNumber(
+        row.ModelDimension2,
+        set.dimensions?.model?.height
+      ),
+      depth: toPositiveNumber(
+        row.ModelDimension3,
+        set.dimensions?.model?.depth
+      ),
     },
     box: {
-      width: toDimension(row.Width, set.dimensions?.box?.width),
-      height: toDimension(row.Height, set.dimensions?.box?.height),
-      depth: toDimension(row.Depth, set.dimensions?.box?.depth),
+      width: toPositiveNumber(row.Width, set.dimensions?.box?.width),
+      height: toPositiveNumber(row.Height, set.dimensions?.box?.height),
+      depth: toPositiveNumber(row.Depth, set.dimensions?.box?.depth),
     },
   },
 })
@@ -181,8 +204,37 @@ export const newSetFromBricksetRow = (row: BricksetRow, base: Set): Set => {
       subtheme: row.Subtheme || row.Theme,
       possessed: quantity > 0,
       ownedQuantity: quantity,
-      content: { ...base.content, partsQuantity: toNumber(row.Pieces, 0) },
     },
     row
   )
 }
+
+export const changeKey = (id: Set['id'], field: string) => `${id}|${field}`
+
+const withValueAt = (
+  object: Record<string, unknown>,
+  [key, ...path]: string[],
+  value: unknown
+): Record<string, unknown> => ({
+  ...object,
+  [key]: path.length
+    ? withValueAt((object[key] ?? {}) as Record<string, unknown>, path, value)
+    : value,
+})
+
+/** The sets list to save, with the current value put back for every skipped change. */
+export const skipChanges = (
+  { setsList, updates }: BricksetReport,
+  skippedKeys: string[]
+): SetsList =>
+  setsList.map((set) => {
+    const update = updates.find((update) => update.set === set)
+    if (!update) return set
+    return update.changes
+      .filter(({ field }) => skippedKeys.includes(changeKey(set.id, field)))
+      .reduce(
+        (result, { field, from }) =>
+          withValueAt(result, field.split('.'), from) as Set,
+        set
+      )
+  })

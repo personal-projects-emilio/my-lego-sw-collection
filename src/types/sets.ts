@@ -29,6 +29,7 @@ export const setValidationSchema = z.object({
     }),
   }),
   EAN: z.string().or(z.null()),
+  exitDate: z.string().nullable(),
   id: z
     .string()
     .min(1, {

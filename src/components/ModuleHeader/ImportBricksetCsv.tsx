@@ -24,7 +24,7 @@ import {
   TableRow,
   Typography,
 } from '@mui/material'
-import type { ColDef } from 'ag-grid-community'
+import type { ColDef, GridApi, RowSelectionOptions } from 'ag-grid-community'
 import {
   useBricksetIgnoreListMutation,
   useBricksetIgnoreListQuery,
@@ -40,8 +40,10 @@ import { uniqueAndSortedArray } from 'utils/array'
 import {
   bricksetRowKey,
   buildBricksetReport,
+  changeKey,
   type FieldChange,
   newSetFromBricksetRow,
+  skipChanges,
 } from 'utils/brickset'
 import { readCsvFile } from 'utils/csv'
 
@@ -72,6 +74,7 @@ const ignoreFields = [
 }[]
 
 type UpdateRow = {
+  key: string
   id: string
   name: string
   field: string
@@ -119,6 +122,11 @@ const updateColumnDefs: ColDef<UpdateRow>[] = [
   },
 ]
 
+const updateRowSelection: RowSelectionOptions<UpdateRow> = {
+  mode: 'multiRow',
+  selectAll: 'filtered',
+}
+
 const useStyles = makeStyles({ name: 'ImportBricksetCsv' })({
   updatesGrid: { height: 450, maxHeight: 450, padding: 0 },
 })
@@ -159,6 +167,7 @@ const ImportBricksetCsv: FC = () => {
   const [rows, setRows] = useState<BricksetRow[]>()
   const [editedIgnoreList, setEditedIgnoreList] = useState<BricksetIgnoreList>()
   const [addedKeys, setAddedKeys] = useState<string[]>([])
+  const [skippedKeys, setSkippedKeys] = useState<string[]>([])
   const { data: setsList } = useSetsQuery()
   const { data: savedIgnoreList, isError: isIgnoreListError } =
     useBricksetIgnoreListQuery()
@@ -180,6 +189,7 @@ const ImportBricksetCsv: FC = () => {
     () =>
       report?.updates.flatMap(({ set, changes }) =>
         changes.map(({ field, from, to }): UpdateRow => ({
+          key: changeKey(set.id, field),
           id: String(set.id),
           name: set.name,
           field,
@@ -204,6 +214,29 @@ const ImportBricksetCsv: FC = () => {
     [report, addedKeys]
   )
 
+  const appliedUpdatesCount =
+    report?.updates.filter(({ set, changes }) =>
+      changes.some(
+        ({ field }) => !skippedKeys.includes(changeKey(set.id, field))
+      )
+    ).length ?? 0
+
+  const selectNotSkipped = (api: GridApi<UpdateRow>) => {
+    const nodes: Parameters<typeof api.setNodesSelected>[0]['nodes'] = []
+    api.forEachNode((node) => {
+      if (node.data && !skippedKeys.includes(node.data.key)) nodes.push(node)
+    })
+    api.setNodesSelected({ nodes, newValue: true })
+  }
+
+  const onUpdateSelectionChanged = (api: GridApi<UpdateRow>) => {
+    const keys: string[] = []
+    api.forEachNode((node) => {
+      if (node.data && !node.isSelected()) keys.push(node.data.key)
+    })
+    setSkippedKeys(keys)
+  }
+
   const toggleAdded = (keys: string[], isAdded: boolean) =>
     setAddedKeys((previousKeys) =>
       isAdded
@@ -217,6 +250,7 @@ const ImportBricksetCsv: FC = () => {
     setRows(undefined)
     setEditedIgnoreList(undefined)
     setAddedKeys([])
+    setSkippedKeys([])
   }
 
   const onFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -233,9 +267,9 @@ const ImportBricksetCsv: FC = () => {
   const onValidate = async () => {
     if (!report || !ignoreList) return
     await saveIgnoreList(ignoreList)
-    if (report.updates.length > 0 || addedSets.length > 0) {
+    if (appliedUpdatesCount > 0 || addedSets.length > 0) {
       await editSetsList(
-        [...report.setsList, ...addedSets].sort((a, b) =>
+        [...skipChanges(report, skippedKeys), ...addedSets].sort((a, b) =>
           String(a.id).localeCompare(String(b.id), undefined, {
             numeric: true,
           })
@@ -246,7 +280,7 @@ const ImportBricksetCsv: FC = () => {
   }
 
   const hasChanges = Boolean(
-    editedIgnoreList || report?.updates.length || addedSets.length
+    editedIgnoreList || appliedUpdatesCount || addedSets.length
   )
 
   return (
@@ -321,7 +355,7 @@ const ImportBricksetCsv: FC = () => {
               {report && (
                 <div>
                   <Alert severity="info" sx={{ mb: 1 }}>
-                    {report.updates.length} sets will be updated,{' '}
+                    {appliedUpdatesCount} sets will be updated,{' '}
                     {addedSets.length} added, {report.unchangedCount} are
                     already up to date.
                   </Alert>
@@ -332,6 +366,13 @@ const ImportBricksetCsv: FC = () => {
                     <AgGridTable
                       className={classes.updatesGrid}
                       rowData={updateRows}
+                      getRowId={({ data }) => data.key}
+                      rowSelection={updateRowSelection}
+                      onFirstDataRendered={({ api }) => selectNotSkipped(api)}
+                      onRowDataUpdated={({ api }) => selectNotSkipped(api)}
+                      onSelectionChanged={({ api }) =>
+                        onUpdateSelectionChanged(api)
+                      }
                       columnDefs={updateColumnDefs}
                       defaultColDef={defaultUpdateColDef}
                     />

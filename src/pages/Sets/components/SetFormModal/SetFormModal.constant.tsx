@@ -30,6 +30,7 @@ export const defaultSetFormValues = (setData: SetFormModalProps['setData']) =>
     timelines: [],
     bricksetImagePath: null,
     EAN: null,
+    exitDate: null,
     UPC: null,
     ...setData,
     content: {
