@@ -9,7 +9,8 @@ export const mapItemToImageProps = {
   set: (id) =>
     ({
       alt: `set ${String(id)} bricklink picture`,
-      src: `https://img.bricklink.com/ItemImage/SN/0/${String(id)}-1.png`,
+      // BrickLink set numbers always carry a variant; ours only do when there are several
+      src: `https://img.bricklink.com/ItemImage/SN/0/${/-\d+$/.test(String(id)) ? String(id) : `${String(id)}-1`}.png`,
     }) as const,
 } as const satisfies Record<
   Item,
