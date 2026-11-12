@@ -23,5 +23,5 @@ export const mapItemToImageProps = {
 export const defaultBricksetIgnoreList: BricksetIgnoreList = {
   numbers: ['10331', '31216'],
   subthemes: ['Botanical Collection', 'Botanicals', 'Dorling Kindersley'],
-  themes: ['Ideas'],
+  themes: ['Botanicals', 'Ideas'],
 }
