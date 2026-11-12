@@ -21,20 +21,22 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableHead,
   TableRow,
   Typography,
 } from '@mui/material'
+import type { ColDef } from 'ag-grid-community'
 import {
   useBricksetIgnoreListMutation,
   useBricksetIgnoreListQuery,
 } from 'api/brickset'
 import { useSetsQuery } from 'api/sets'
+import { AgGridTable } from 'components/AgGrid/table'
 import { Autocomplete } from 'components/inputs'
 import { useSetsMutations } from 'pages/Sets/hooks'
+import { makeStyles } from 'tss-react/mui'
 import type { BricksetIgnoreList, BricksetRow } from 'types/brickset'
 import { uniqueAndSortedArray } from 'utils/array'
-import { buildBricksetReport } from 'utils/brickset'
+import { buildBricksetReport, type FieldChange } from 'utils/brickset'
 import { readCsvFile } from 'utils/csv'
 
 const ignoreFields = [
@@ -47,8 +49,57 @@ const ignoreFields = [
   column: string
 }[]
 
-const rowLabel = ({ Number, Variant, Name }: BricksetRow) =>
-  `${Number}-${Variant} ${Name ?? ''}`
+type UpdateRow = {
+  id: string
+  name: string
+  field: string
+  from: FieldChange['from']
+  to: FieldChange['to']
+  change: number | null
+}
+
+const defaultUpdateColDef = {
+  filter: true,
+  floatingFilter: true,
+  sortable: true,
+  suppressFloatingFilterButton: true,
+  suppressHeaderFilterButton: true,
+} as const satisfies ColDef<UpdateRow>
+
+const updateColumnDefs: ColDef<UpdateRow>[] = [
+  { field: 'id', headerName: 'Set', maxWidth: 110 },
+  { field: 'name', headerName: 'Name', flex: 2 },
+  { field: 'field', headerName: 'Field', flex: 1, minWidth: 240 },
+  {
+    field: 'from',
+    headerName: 'Current',
+    valueFormatter: ({ value }) => formatValue(value),
+    maxWidth: 130,
+  },
+  {
+    field: 'to',
+    headerName: 'New',
+    valueFormatter: ({ value }) => formatValue(value),
+    maxWidth: 130,
+  },
+  {
+    field: 'change',
+    headerName: 'Change',
+    filter: 'agNumberColumnFilter',
+    valueFormatter: ({ value }) =>
+      value === null || value === undefined
+        ? ''
+        : (value > 0 ? '+' : '') + Number(value.toFixed(2)),
+    maxWidth: 130,
+  },
+]
+
+const useStyles = makeStyles({ name: 'ImportBricksetCsv' })({
+  updatesGrid: { height: 450, maxHeight: 450, padding: 0 },
+})
+
+const rowLabel = ({ Number, Variant, SetName }: BricksetRow) =>
+  `${Number}-${Variant} ${SetName ?? ''}`
 
 const formatValue = (value: unknown) =>
   value === null || value === undefined || value === '' ? '—' : String(value)
@@ -69,12 +120,14 @@ const Section: FC<{ title: string; count: number; children: ReactNode }> = ({
 )
 
 const ImportBricksetCsv: FC = () => {
+  const { classes } = useStyles()
   const [open, setOpen] = useState(false)
   const [fileName, setFileName] = useState<string>()
   const [rows, setRows] = useState<BricksetRow[]>()
   const [editedIgnoreList, setEditedIgnoreList] = useState<BricksetIgnoreList>()
   const { data: setsList } = useSetsQuery()
-  const { data: savedIgnoreList } = useBricksetIgnoreListQuery()
+  const { data: savedIgnoreList, isError: isIgnoreListError } =
+    useBricksetIgnoreListQuery()
   const { editSetsList, isPending: isSetsPending } = useSetsMutations()
   const { mutateAsync: saveIgnoreList, isPending: isIgnoreListPending } =
     useBricksetIgnoreListMutation()
@@ -87,6 +140,24 @@ const ImportBricksetCsv: FC = () => {
       ignoreList &&
       buildBricksetReport({ rows, setsList, ignoreList }),
     [rows, setsList, ignoreList]
+  )
+
+  const updateRows = useMemo(
+    () =>
+      report?.updates.flatMap(({ set, changes }) =>
+        changes.map(({ field, from, to }): UpdateRow => ({
+          id: String(set.id),
+          name: set.name,
+          field,
+          from,
+          to,
+          change:
+            typeof from === 'number' && typeof to === 'number'
+              ? to - from
+              : null,
+        }))
+      ) ?? [],
+    [report]
   )
 
   const onClose = () => {
@@ -175,6 +246,11 @@ const ImportBricksetCsv: FC = () => {
                     textFieldProps={{ label, size: 'small' }}
                   />
                 ))
+              ) : isIgnoreListError ? (
+                <Alert severity="error">
+                  Unable to load the ignore list. Check that you are logged in
+                  and allowed to read /bricksetIgnoreList.
+                </Alert>
               ) : (
                 <Typography color="text.secondary">
                   Loading the ignore list…
@@ -190,30 +266,13 @@ const ImportBricksetCsv: FC = () => {
                     title="Will be updated"
                     count={report.updates.length}
                   >
-                    <Table size="small">
-                      <TableHead>
-                        <TableRow>
-                          <TableCell>Set</TableCell>
-                          <TableCell>Field</TableCell>
-                          <TableCell>Current</TableCell>
-                          <TableCell>New</TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {report.updates.flatMap(({ set, changes }) =>
-                          changes.map(({ field, from, to }) => (
-                            <TableRow key={`${set.id}-${field}`}>
-                              <TableCell>
-                                {set.id} {set.name}
-                              </TableCell>
-                              <TableCell>{field}</TableCell>
-                              <TableCell>{formatValue(from)}</TableCell>
-                              <TableCell>{formatValue(to)}</TableCell>
-                            </TableRow>
-                          ))
-                        )}
-                      </TableBody>
-                    </Table>
+                    <AgGridTable
+                      className={classes.updatesGrid}
+                      rowData={updateRows}
+                      columnDefs={updateColumnDefs}
+                      defaultColDef={defaultUpdateColDef}
+                      autoSizeStrategy={{ type: 'fitGridWidth' }}
+                    />
                   </Section>
                   <Section
                     title="In the CSV but not in the collection"
@@ -256,6 +315,9 @@ const ImportBricksetCsv: FC = () => {
                           <TableRow key={index}>
                             <TableCell>{rowLabel(row)}</TableCell>
                             <TableCell>Ignored by {reason}</TableCell>
+                            <TableCell>
+                              {row.Theme} / {row.Subtheme}
+                            </TableCell>
                           </TableRow>
                         ))}
                       </TableBody>

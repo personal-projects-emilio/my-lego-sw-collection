@@ -26,10 +26,13 @@ const useStyles = makeStyles({ name: 'AgGridTable' })((theme) => ({
   },
 }))
 
-const AgGridTable = forwardRef<AgGridReact, AgGridReactProps>((props, ref) => {
-  const { classes } = useStyles()
+const AgGridTable = forwardRef<
+  AgGridReact,
+  AgGridReactProps & { className?: string }
+>(({ className, ...props }, ref) => {
+  const { classes, cx } = useStyles()
   return (
-    <div className={classes.container}>
+    <div className={cx(classes.container, className)}>
       <AgGridReact ref={ref} theme={theme} {...props} />
     </div>
   )
