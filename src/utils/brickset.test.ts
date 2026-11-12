@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import type { Set } from 'types/sets'
 
-import { buildBricksetReport } from './brickset.ts'
+import { buildBricksetReport, newSetFromBricksetRow } from './brickset.ts'
 
 const set = (id: Set['id'], overrides: Partial<Set> = {}) =>
   ({
@@ -93,4 +93,61 @@ test('sorts rows into updates, unchanged, missing, ignored, not in CSV and confl
   assert.equal(report.setsList.length, setsList.length)
   assert.equal(report.setsList[0].releaseYear, 2017)
   assert.equal(report.setsList[0].EAN, null)
+})
+
+test('builds a new owned set from a Brickset row', () => {
+  const base = set('')
+  const newSet = newSetFromBricksetRow(
+    row({
+      Number: '5006290',
+      SetName: "Yoda's Lightsaber",
+      Subtheme: 'Promotional',
+      YearFrom: '2020',
+      Pieces: '140',
+      QtyOwned: '1',
+      ImageFilename: '5006290-1',
+    }),
+    {
+      ...base,
+      content: {
+        minifigs: [],
+        bags: null,
+        box: null,
+        notice: null,
+        partsQuantity: 0,
+      },
+    }
+  )
+
+  assert.equal(newSet.id, 5006290)
+  assert.equal(newSet.name, "Yoda's Lightsaber")
+  assert.equal(newSet.subtheme, 'Promotional')
+  assert.equal(newSet.releaseYear, 2020)
+  assert.equal(newSet.possessed, true)
+  assert.equal(newSet.ownedQuantity, 1)
+  assert.equal(newSet.content.partsQuantity, 140)
+  assert.equal(
+    newSet.imagePath,
+    'https://images.brickset.com/sets/images/5006290-1.jpg'
+  )
+  assert.equal(
+    newSetFromBricksetRow(row({ Number: 'XWING', Variant: '2' }), base).id,
+    'XWING-2'
+  )
+})
+
+test('matches a set stored under its EU item number', () => {
+  const report = buildBricksetReport({
+    setsList: [set(6346098)],
+    ignoreList: { numbers: [], themes: [], subthemes: [] },
+    rows: [
+      row({ Number: '5006290', EUItemNumber: '6346098', YearFrom: '2021' }),
+    ],
+  })
+
+  assert.deepEqual(report.missing, [])
+  assert.deepEqual(
+    report.updates.map(({ set }) => set.id),
+    [6346098]
+  )
 })

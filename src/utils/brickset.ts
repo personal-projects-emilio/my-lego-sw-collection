@@ -19,12 +19,19 @@ export type BricksetReport = {
   setsList: SetsList
 }
 
-const rowIds = ({ Number, USItemNumber, Variant }: BricksetRow) =>
+const rowIds = ({
+  Number,
+  USItemNumber = '',
+  EUItemNumber = '',
+  Variant,
+}: BricksetRow) =>
   [
     Number,
     USItemNumber,
+    EUItemNumber,
     `${Number}-${Variant}`,
     `${USItemNumber}-${Variant}`,
+    `${EUItemNumber}-${Variant}`,
   ].filter((id) => id && !id.startsWith('-'))
 
 const ignoreReason = (
@@ -151,4 +158,28 @@ export const buildBricksetReport = ({
   })
 
   return report
+}
+
+export const bricksetRowKey = ({ Number, Variant }: BricksetRow) =>
+  `${Number}-${Variant}`
+
+const bricksetRowToSetId = (row: BricksetRow): Set['id'] => {
+  if (row.Variant !== '1') return bricksetRowKey(row)
+  return /^\d+$/.test(row.Number) ? Number(row.Number) : row.Number
+}
+
+export const newSetFromBricksetRow = (row: BricksetRow, base: Set): Set => {
+  const quantity = toNumber(row.QtyOwned, 0)
+  return applyBricksetRow(
+    {
+      ...base,
+      id: bricksetRowToSetId(row),
+      name: row.SetName,
+      subtheme: row.Subtheme || row.Theme,
+      possessed: quantity > 0,
+      ownedQuantity: quantity,
+      content: { ...base.content, partsQuantity: toNumber(row.Pieces, 0) },
+    },
+    row
+  )
 }

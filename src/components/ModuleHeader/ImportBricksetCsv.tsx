@@ -32,11 +32,17 @@ import {
 import { useSetsQuery } from 'api/sets'
 import { AgGridTable } from 'components/AgGrid/table'
 import { Autocomplete } from 'components/inputs'
+import { defaultSetFormValues } from 'pages/Sets/components/SetFormModal/SetFormModal.constant'
 import { useSetsMutations } from 'pages/Sets/hooks'
 import { makeStyles } from 'tss-react/mui'
 import type { BricksetIgnoreList, BricksetRow } from 'types/brickset'
 import { uniqueAndSortedArray } from 'utils/array'
-import { buildBricksetReport, type FieldChange } from 'utils/brickset'
+import {
+  bricksetRowKey,
+  buildBricksetReport,
+  type FieldChange,
+  newSetFromBricksetRow,
+} from 'utils/brickset'
 import { readCsvFile } from 'utils/csv'
 
 const ignoreFields = [
@@ -125,6 +131,7 @@ const ImportBricksetCsv: FC = () => {
   const [fileName, setFileName] = useState<string>()
   const [rows, setRows] = useState<BricksetRow[]>()
   const [editedIgnoreList, setEditedIgnoreList] = useState<BricksetIgnoreList>()
+  const [addedKeys, setAddedKeys] = useState<string[]>([])
   const { data: setsList } = useSetsQuery()
   const { data: savedIgnoreList, isError: isIgnoreListError } =
     useBricksetIgnoreListQuery()
@@ -160,11 +167,29 @@ const ImportBricksetCsv: FC = () => {
     [report]
   )
 
+  const addedSets = useMemo(
+    () =>
+      report?.missing
+        .filter((row) => addedKeys.includes(bricksetRowKey(row)))
+        .map((row) =>
+          newSetFromBricksetRow(row, defaultSetFormValues(undefined))
+        ) ?? [],
+    [report, addedKeys]
+  )
+
+  const toggleAdded = (keys: string[], isAdded: boolean) =>
+    setAddedKeys((previousKeys) =>
+      isAdded
+        ? previousKeys.filter((key) => !keys.includes(key))
+        : uniqueAndSortedArray([...previousKeys, ...keys])
+    )
+
   const onClose = () => {
     setOpen(false)
     setFileName(undefined)
     setRows(undefined)
     setEditedIgnoreList(undefined)
+    setAddedKeys([])
   }
 
   const onFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -181,11 +206,21 @@ const ImportBricksetCsv: FC = () => {
   const onValidate = async () => {
     if (!report) return
     if (editedIgnoreList) await saveIgnoreList(editedIgnoreList)
-    if (report.updates.length > 0) await editSetsList(report.setsList)
+    if (report.updates.length > 0 || addedSets.length > 0) {
+      await editSetsList(
+        [...report.setsList, ...addedSets].sort((a, b) =>
+          String(a.id).localeCompare(String(b.id), undefined, {
+            numeric: true,
+          })
+        )
+      )
+    }
     onClose()
   }
 
-  const hasChanges = Boolean(editedIgnoreList || report?.updates.length)
+  const hasChanges = Boolean(
+    editedIgnoreList || report?.updates.length || addedSets.length
+  )
 
   return (
     <>
@@ -260,7 +295,8 @@ const ImportBricksetCsv: FC = () => {
                 <div>
                   <Alert severity="info" sx={{ mb: 1 }}>
                     {report.updates.length} sets will be updated,{' '}
-                    {report.unchangedCount} are already up to date.
+                    {addedSets.length} added, {report.unchangedCount} are
+                    already up to date.
                   </Alert>
                   <Section
                     title="Will be updated"
@@ -278,33 +314,53 @@ const ImportBricksetCsv: FC = () => {
                     title="In the CSV but not in the collection"
                     count={report.missing.length}
                   >
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={() =>
+                        toggleAdded(report.missing.map(bricksetRowKey), false)
+                      }
+                    >
+                      Add all
+                    </Button>
                     <Table size="small">
                       <TableBody>
-                        {report.missing.map((row, index) => (
-                          <TableRow key={index}>
-                            <TableCell>{rowLabel(row)}</TableCell>
-                            <TableCell>
-                              {row.Theme} / {row.Subtheme}
-                            </TableCell>
-                            <TableCell align="right">
-                              <Button
-                                size="small"
-                                onClick={() =>
-                                  ignoreList &&
-                                  updateIgnoreList(
-                                    'numbers',
-                                    uniqueAndSortedArray([
-                                      ...ignoreList.numbers,
-                                      row.Number,
-                                    ])
-                                  )
-                                }
-                              >
-                                Ignore
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
+                        {report.missing.map((row) => {
+                          const key = bricksetRowKey(row)
+                          const isAdded = addedKeys.includes(key)
+                          return (
+                            <TableRow key={key}>
+                              <TableCell>{rowLabel(row)}</TableCell>
+                              <TableCell>
+                                {row.Theme} / {row.Subtheme}
+                              </TableCell>
+                              <TableCell align="right">
+                                <Button
+                                  size="small"
+                                  variant={isAdded ? 'contained' : 'text'}
+                                  onClick={() => toggleAdded([key], isAdded)}
+                                >
+                                  {isAdded ? 'Added' : 'Add'}
+                                </Button>
+                                <Button
+                                  size="small"
+                                  onClick={() =>
+                                    ignoreList &&
+                                    updateIgnoreList(
+                                      'numbers',
+                                      uniqueAndSortedArray([
+                                        ...ignoreList.numbers,
+                                        row.Number,
+                                      ])
+                                    )
+                                  }
+                                >
+                                  Ignore
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          )
+                        })}
                       </TableBody>
                     </Table>
                   </Section>
