@@ -205,7 +205,7 @@ const ImportBricksetCsv: FC = () => {
                     already up to date.
                   </Alert>
                   <ReportSection
-                    title="Will be updated"
+                    title="Will Be Updated"
                     count={report.updates.length}
                     countLabel={`${appliedChangesCount}/${changesCount} changes in ${appliedUpdatesCount}/${report.updates.length} sets`}
                   >
@@ -216,7 +216,7 @@ const ImportBricksetCsv: FC = () => {
                     />
                   </ReportSection>
                   <ReportSection
-                    title="In the CSV but not in the collection"
+                    title="In the CSV but Not in the Collection"
                     count={report.missing.length}
                   >
                     <MissingSetsGrid
@@ -231,13 +231,13 @@ const ImportBricksetCsv: FC = () => {
                     <IgnoredRowsGrid ignored={report.ignored} />
                   </ReportSection>
                   <ReportSection
-                    title="In the collection but not in the CSV"
+                    title="In the Collection but Not in the CSV"
                     count={report.notInCsv.length}
                   >
                     <SetsGrid sets={report.notInCsv} />
                   </ReportSection>
                   <ReportSection
-                    title="Several CSV rows match, not updated"
+                    title="Several CSV Rows Match, Not Updated"
                     count={report.conflicts.length}
                   >
                     <SetsGrid sets={report.conflicts} />

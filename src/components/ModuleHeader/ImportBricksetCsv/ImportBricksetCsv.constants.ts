@@ -1,23 +1,24 @@
 import type { BricksetIgnoreList } from 'types/brickset'
+import type { IgnoreReason } from 'utils/brickset'
 
 export const ignoreFields = [
   {
     key: 'ids',
-    label: 'Ignored set IDs',
+    label: 'Ignored Set IDs',
     column: 'Number',
-    buttonLabel: 'Ignore id',
+    buttonLabel: 'Ignore ID',
   },
   {
     key: 'themes',
-    label: 'Ignored themes',
+    label: 'Ignored Themes',
     column: 'Theme',
-    buttonLabel: 'Ignore theme',
+    buttonLabel: 'Ignore Theme',
   },
   {
     key: 'subthemes',
-    label: 'Ignored subthemes',
+    label: 'Ignored Subthemes',
     column: 'Subtheme',
-    buttonLabel: 'Ignore subtheme',
+    buttonLabel: 'Ignore Subtheme',
   },
 ] as const satisfies {
   key: keyof BricksetIgnoreList
@@ -25,3 +26,9 @@ export const ignoreFields = [
   column: string
   buttonLabel: string
 }[]
+
+export const ignoreReasonLabels: Record<IgnoreReason, string> = {
+  id: 'Set ID',
+  theme: 'Theme',
+  subtheme: 'Subtheme',
+}
