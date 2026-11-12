@@ -1,4 +1,4 @@
-import { forwardRef, useCallback, useEffect, useState } from 'react'
+import { forwardRef, useCallback, useEffect, useRef, useState } from 'react'
 
 import {
   Autocomplete as MuiAutocomplete,
@@ -34,6 +34,7 @@ const Autocomplete = forwardRef<HTMLInputElement, AutocompleteProps>(
     const [optionValue, setOptionValue] = useState<AutocompleteProps['value']>(
       value ?? (multiple ? [] : null)
     )
+    const highlightedOption = useRef<string | null>(null)
 
     useEffect(() => {
       if (value === optionValue) return
@@ -81,13 +82,25 @@ const Autocomplete = forwardRef<HTMLInputElement, AutocompleteProps>(
           ) {
             filtered.push(trimedInputValue)
           }
+          highlightedOption.current =
+            filtered.find((option) => !getOptiondDisabled(option)) ?? null
           return filtered
         }}
         freeSolo={freeSolo}
         getOptionDisabled={getOptiondDisabled}
         multiple={multiple}
-        onChange={(_e, value) => {
-          onChangeHandler(value)
+        onChange={(_e, value, reason) => {
+          // MUI 9 commits the typed text on Enter in freeSolo, even over the autoHighlight option
+          const option = highlightedOption.current
+          if (reason !== 'createOption' || !option)
+            return onChangeHandler(value)
+          onChangeHandler(
+            Array.isArray(value) ? [...value.slice(0, -1), option] : option
+          )
+        }}
+        onClose={(...args) => {
+          highlightedOption.current = null
+          rest.onClose?.(...args)
         }}
         openOnFocus
         options={options}
