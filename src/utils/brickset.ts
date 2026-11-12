@@ -49,6 +49,9 @@ const toNumber = (value: string | undefined, fallback: number) => {
   return value && !Number.isNaN(number) ? number : fallback
 }
 
+const toDimension = (value: string | undefined, existing?: number | null) =>
+  Number(value) || existing || null
+
 const trackedFields: [string, (set: Set) => FieldChange['from']][] = [
   ['imagePath', (set) => set.imagePath],
   ['EAN', (set) => set.EAN],
@@ -85,14 +88,14 @@ export const applyBricksetRow = (set: Set, row: BricksetRow): Set => ({
   },
   dimensions: {
     model: {
-      width: toNumber(row.ModelDimension1, set.dimensions?.model?.width ?? 0),
-      height: toNumber(row.ModelDimension2, set.dimensions?.model?.height ?? 0),
-      depth: toNumber(row.ModelDimension3, set.dimensions?.model?.depth ?? 0),
+      width: toDimension(row.ModelDimension1, set.dimensions?.model?.width),
+      height: toDimension(row.ModelDimension2, set.dimensions?.model?.height),
+      depth: toDimension(row.ModelDimension3, set.dimensions?.model?.depth),
     },
     box: {
-      width: toNumber(row.Width, set.dimensions?.box?.width ?? 0),
-      height: toNumber(row.Height, set.dimensions?.box?.height ?? 0),
-      depth: toNumber(row.Depth, set.dimensions?.box?.depth ?? 0),
+      width: toDimension(row.Width, set.dimensions?.box?.width),
+      height: toDimension(row.Height, set.dimensions?.box?.height),
+      depth: toDimension(row.Depth, set.dimensions?.box?.depth),
     },
   },
 })

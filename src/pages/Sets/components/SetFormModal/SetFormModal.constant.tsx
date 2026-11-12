@@ -2,6 +2,19 @@ import type { Set } from 'types/sets'
 
 import type { SetFormModalProps } from './SetFormModal.types'
 
+const dimensions = (
+  setData: SetFormModalProps['setData'],
+  part: keyof Set['dimensions']
+) => {
+  const values =
+    setData && 'dimensions' in setData ? setData.dimensions?.[part] : undefined
+  return {
+    depth: values?.depth || null,
+    height: values?.height || null,
+    width: values?.width || null,
+  }
+}
+
 export const defaultSetFormValues = (setData: SetFormModalProps['setData']) =>
   ({
     id: '',
@@ -28,18 +41,8 @@ export const defaultSetFormValues = (setData: SetFormModalProps['setData']) =>
       ...(setData && 'content' in setData && setData.content),
     },
     dimensions: {
-      box: {
-        depth: 0,
-        height: 0,
-        width: 0,
-        ...(setData && 'dimensions' in setData && setData.dimensions?.box),
-      },
-      model: {
-        depth: 0,
-        height: 0,
-        width: 0,
-        ...(setData && 'dimensions' in setData && setData.dimensions?.model),
-      },
+      box: dimensions(setData, 'box'),
+      model: dimensions(setData, 'model'),
     },
     prices: {
       bought: 0,

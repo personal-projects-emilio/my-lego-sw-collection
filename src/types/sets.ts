@@ -18,14 +18,14 @@ export const setValidationSchema = z.object({
   }),
   dimensions: z.object({
     box: z.object({
-      depth: z.number().min(0),
-      height: z.number().min(0),
-      width: z.number().min(0),
+      depth: z.number().positive().nullable(),
+      height: z.number().positive().nullable(),
+      width: z.number().positive().nullable(),
     }),
     model: z.object({
-      depth: z.number().min(0),
-      height: z.number().min(0),
-      width: z.number().min(0),
+      depth: z.number().positive().nullable(),
+      height: z.number().positive().nullable(),
+      width: z.number().positive().nullable(),
     }),
   }),
   EAN: z.string().or(z.null()),

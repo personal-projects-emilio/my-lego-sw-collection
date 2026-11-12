@@ -73,20 +73,22 @@ const defaultUpdateColDef = {
 } as const satisfies ColDef<UpdateRow>
 
 const updateColumnDefs: ColDef<UpdateRow>[] = [
-  { field: 'id', headerName: 'Set', maxWidth: 110 },
-  { field: 'name', headerName: 'Name', flex: 2 },
-  { field: 'field', headerName: 'Field', flex: 1, minWidth: 240 },
+  { field: 'id', headerName: 'Set', flex: 1, minWidth: 80 },
+  { field: 'name', headerName: 'Name', flex: 2, minWidth: 120 },
+  { field: 'field', headerName: 'Field', flex: 2, minWidth: 160 },
   {
     field: 'from',
     headerName: 'Current',
     valueFormatter: ({ value }) => formatValue(value),
-    maxWidth: 130,
+    flex: 1,
+    minWidth: 80,
   },
   {
     field: 'to',
     headerName: 'New',
     valueFormatter: ({ value }) => formatValue(value),
-    maxWidth: 130,
+    flex: 1,
+    minWidth: 80,
   },
   {
     field: 'change',
@@ -96,7 +98,8 @@ const updateColumnDefs: ColDef<UpdateRow>[] = [
       value === null || value === undefined
         ? ''
         : (value > 0 ? '+' : '') + Number(value.toFixed(2)),
-    maxWidth: 130,
+    flex: 1,
+    minWidth: 80,
   },
 ]
 
@@ -307,7 +310,6 @@ const ImportBricksetCsv: FC = () => {
                       rowData={updateRows}
                       columnDefs={updateColumnDefs}
                       defaultColDef={defaultUpdateColDef}
-                      autoSizeStrategy={{ type: 'fitGridWidth' }}
                     />
                   </Section>
                   <Section

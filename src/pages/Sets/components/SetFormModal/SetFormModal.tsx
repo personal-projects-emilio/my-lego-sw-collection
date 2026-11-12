@@ -414,7 +414,7 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
                 className={classes.gridSpan4}
                 disabled
                 label="Model width"
-                value={field.value}
+                value={field.value ?? ''}
               />
             )}
           />
@@ -427,7 +427,7 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
                 className={classes.gridSpan4}
                 disabled
                 label="Model height"
-                value={field.value}
+                value={field.value ?? ''}
               />
             )}
           />
@@ -440,7 +440,7 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
                 className={classes.gridSpan4}
                 disabled
                 label="Model depth"
-                value={field.value}
+                value={field.value ?? ''}
               />
             )}
           />
@@ -453,7 +453,7 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
                 className={classes.gridSpan4}
                 disabled
                 label="Box width"
-                value={field.value}
+                value={field.value ?? ''}
               />
             )}
           />
@@ -466,7 +466,7 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
                 className={classes.gridSpan4}
                 disabled
                 label="Box height"
-                value={field.value}
+                value={field.value ?? ''}
               />
             )}
           />
@@ -479,7 +479,7 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
                 className={classes.gridSpan4}
                 disabled
                 label="Box depth"
-                value={field.value}
+                value={field.value ?? ''}
               />
             )}
           />

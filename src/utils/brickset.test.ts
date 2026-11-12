@@ -21,8 +21,8 @@ const set = (id: Set['id'], overrides: Partial<Set> = {}) =>
       brickLinkSoldPriceUsed: 0,
     },
     dimensions: {
-      model: { width: 0, height: 0, depth: 0 },
-      box: { width: 0, height: 0, depth: 0 },
+      model: { width: null, height: null, depth: null },
+      box: { width: null, height: null, depth: null },
     },
     ...overrides,
   }) as Set
@@ -65,7 +65,7 @@ test('sorts rows into updates, unchanged, missing, ignored, not in CSV and confl
         75192,
         [
           { field: 'releaseYear', from: 2020, to: 2017 },
-          { field: 'dimensions.box.width', from: 0, to: 58.5 },
+          { field: 'dimensions.box.width', from: null, to: 58.5 },
         ],
       ],
     ]
