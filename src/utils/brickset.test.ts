@@ -4,6 +4,7 @@ import { test } from 'node:test'
 import type { Set } from 'types/sets'
 
 import {
+  bricksetRowToSetId,
   buildBricksetReport,
   changeKey,
   newSetFromBricksetRow,
@@ -121,7 +122,8 @@ test('builds a new owned set from a Brickset row', () => {
         notice: null,
         partsQuantity: 0,
       },
-    }
+    },
+    5006290
   )
 
   assert.equal(newSet.id, 5006290)
@@ -135,10 +137,23 @@ test('builds a new owned set from a Brickset row', () => {
     newSet.bricksetImagePath,
     'https://images.brickset.com/sets/images/5006290-1.jpg'
   )
-  assert.equal(
-    newSetFromBricksetRow(row({ Number: 'XWING', Variant: '2' }), base).id,
-    'XWING-2'
-  )
+})
+
+test('only keeps the variant suffix when another variant exists', () => {
+  const rows = [
+    row({ Number: '75466' }),
+    row({ Number: 'XWING', Variant: '1' }),
+    row({ Number: 'XWING', Variant: '2' }),
+    row({ Number: '7140' }),
+  ]
+  const setsList = [set('7140-2')]
+  const idOf = (index: number) =>
+    bricksetRowToSetId(rows[index], { rows, setsList })
+
+  assert.equal(idOf(0), 75466)
+  assert.equal(idOf(1), 'XWING-1')
+  assert.equal(idOf(2), 'XWING-2')
+  assert.equal(idOf(3), '7140-1')
 })
 
 test('matches a set stored under its EU item number', () => {

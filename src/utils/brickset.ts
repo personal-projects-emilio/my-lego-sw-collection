@@ -189,17 +189,29 @@ export const buildBricksetReport = ({
 export const bricksetRowKey = ({ Number, Variant }: BricksetRow) =>
   `${Number}-${Variant}`
 
-const bricksetRowToSetId = (row: BricksetRow): Set['id'] => {
-  if (row.Variant !== '1') return bricksetRowKey(row)
+/** The id a new set gets: the bare number, with a `-variant` suffix only when the CSV or the collection has another variant of it. */
+export const bricksetRowToSetId = (
+  row: BricksetRow,
+  { rows, setsList }: { rows: BricksetRow[]; setsList: SetsList }
+): Set['id'] => {
+  const hasOtherVariant =
+    rows.some(
+      ({ Number, Variant }) => Number === row.Number && Variant !== row.Variant
+    ) || setsList.some(({ id }) => String(id).startsWith(`${row.Number}-`))
+  if (row.Variant !== '1' || hasOtherVariant) return bricksetRowKey(row)
   return /^\d+$/.test(row.Number) ? Number(row.Number) : row.Number
 }
 
-export const newSetFromBricksetRow = (row: BricksetRow, base: Set): Set => {
+export const newSetFromBricksetRow = (
+  row: BricksetRow,
+  base: Set,
+  id: Set['id']
+): Set => {
   const quantity = toNumber(row.QtyOwned, 0)
   return applyBricksetRow(
     {
       ...base,
-      id: bricksetRowToSetId(row),
+      id,
       name: row.SetName,
       subtheme: row.Subtheme || row.Theme,
       possessed: quantity > 0,

@@ -39,6 +39,7 @@ import type { BricksetIgnoreList, BricksetRow } from 'types/brickset'
 import { uniqueAndSortedArray } from 'utils/array'
 import {
   bricksetRowKey,
+  bricksetRowToSetId,
   buildBricksetReport,
   changeKey,
   type FieldChange,
@@ -207,14 +208,32 @@ const ImportBricksetCsv: FC = () => {
     [report]
   )
 
+  const newSetIds = useMemo(
+    () =>
+      new Map(
+        report?.missing.map((row) => [
+          row,
+          bricksetRowToSetId(row, {
+            rows: rows ?? [],
+            setsList: setsList ?? [],
+          }),
+        ])
+      ),
+    [report, rows, setsList]
+  )
+
   const addedSets = useMemo(
     () =>
       report?.missing
         .filter((row) => addedKeys.includes(bricksetRowKey(row)))
         .map((row) =>
-          newSetFromBricksetRow(row, defaultSetFormValues(undefined))
+          newSetFromBricksetRow(
+            row,
+            defaultSetFormValues(undefined),
+            newSetIds.get(row) ?? bricksetRowKey(row)
+          )
         ) ?? [],
-    [report, addedKeys]
+    [report, addedKeys, newSetIds]
   )
 
   const appliedChangesCount = updateRows.filter(
@@ -405,7 +424,9 @@ const ImportBricksetCsv: FC = () => {
                           const isAdded = addedKeys.includes(key)
                           return (
                             <TableRow key={key}>
-                              <TableCell>{rowLabel(row)}</TableCell>
+                              <TableCell>
+                                {newSetIds.get(row)} {row.SetName}
+                              </TableCell>
                               <TableCell>
                                 {row.Theme} / {row.Subtheme}
                               </TableCell>
