@@ -28,7 +28,7 @@ export const defaultSetFormValues = (setData: SetFormModalProps['setData']) =>
     subtheme: '',
     tags: [],
     timelines: [],
-    imagePath: null,
+    bricksetImagePath: null,
     EAN: null,
     UPC: null,
     ...setData,

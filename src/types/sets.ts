@@ -39,7 +39,7 @@ export const setValidationSchema = z.object({
         message: 'Id is required',
       })
     ),
-  imagePath: z.string().or(z.null()),
+  bricksetImagePath: z.string().or(z.null()),
   location: z.string(),
   name: z.string().min(1, {
     message: 'Name is required',

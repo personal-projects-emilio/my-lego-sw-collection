@@ -10,7 +10,7 @@ const set = (id: Set['id'], overrides: Partial<Set> = {}) =>
     id,
     name: `Set ${id}`,
     releaseYear: 2020,
-    imagePath: null,
+    bricksetImagePath: null,
     EAN: null,
     UPC: null,
     prices: {
@@ -127,7 +127,7 @@ test('builds a new owned set from a Brickset row', () => {
   assert.equal(newSet.ownedQuantity, 1)
   assert.equal(newSet.content.partsQuantity, 140)
   assert.equal(
-    newSet.imagePath,
+    newSet.bricksetImagePath,
     'https://images.brickset.com/sets/images/5006290-1.jpg'
   )
   assert.equal(

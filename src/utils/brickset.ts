@@ -53,7 +53,7 @@ const toDimension = (value: string | undefined, existing?: number | null) =>
   Number(value) || existing || null
 
 const trackedFields: [string, (set: Set) => FieldChange['from']][] = [
-  ['imagePath', (set) => set.imagePath],
+  ['bricksetImagePath', (set) => set.bricksetImagePath],
   ['EAN', (set) => set.EAN],
   ['UPC', (set) => set.UPC],
   ['releaseYear', (set) => set.releaseYear],
@@ -69,9 +69,9 @@ const trackedFields: [string, (set: Set) => FieldChange['from']][] = [
 
 export const applyBricksetRow = (set: Set, row: BricksetRow): Set => ({
   ...set,
-  imagePath: row.ImageFilename
+  bricksetImagePath: row.ImageFilename
     ? `https://images.brickset.com/sets/images/${row.ImageFilename}.jpg`
-    : set.imagePath,
+    : set.bricksetImagePath,
   EAN: row.EAN || set.EAN,
   UPC: row.UPC || set.UPC,
   releaseYear: toNumber(row.YearFrom, set.releaseYear),
