@@ -14,100 +14,25 @@ import { useMinifigsQuery } from 'api/minifigs'
 import { useSetsQuery } from 'api/sets'
 import { useMinifigsMutations } from 'pages/Minifigs/hooks'
 import { useSetsMutations } from 'pages/Sets/hooks'
-import type { Minifig } from 'types/minifigs'
+import { syncSetsAndMinifigs } from 'utils/lego'
 
-export const SyncMinifigsButton: FC = () => {
+const SyncMinifigsButton: FC = () => {
   const [open, setOpen] = useState(false)
-  const { data: setsList } = useSetsQuery()
-  const { data: minifigsList } = useMinifigsQuery()
+  const { data: initialSetsList } = useSetsQuery()
+  const { data: initialMinifigsList } = useMinifigsQuery()
   const { editSetsList, isPending: isSetPending } = useSetsMutations()
   const { editMinifigsList, isPending: isMinifigPending } =
     useMinifigsMutations()
 
   const onClose = () => setOpen(false)
-  const syncSetsAndMinifigs = async () => {
-    if (!setsList || !minifigsList) return
-    const cleanedMinifigsList = minifigsList.map((minifig) => ({
-      ...minifig,
-      owned: {
-        total: minifig.owned.loose.quantity ?? 0,
-        loose: minifig.owned.loose,
-        inSet: [] as Minifig['owned']['inSet'],
-      },
-    }))
-    const syncedList = setsList.reduce(
-      ({ sets, minifigs }, currentSet) => {
-        const updatedMinifigsList = [...minifigs]
-        currentSet?.content?.minifigs?.forEach((setMinifig) => {
-          const index = updatedMinifigsList.findIndex(
-            ({ id }) => setMinifig.id === id
-          )
-          if (index === -1) return
-          const currentMinifig = updatedMinifigsList[index]
-          updatedMinifigsList[index] = {
-            ...currentMinifig,
-            possessed: currentSet.possessed ? true : currentMinifig.possessed,
-            ...(!currentSet.tags?.includes('Seasonal') && {
-              timelines: [
-                ...new Set(
-                  (currentSet.timelines ?? []).concat(
-                    currentMinifig.timelines ?? []
-                  )
-                ),
-              ].sort(),
-              appearances: [
-                ...new Set(
-                  (currentSet.appearances ?? []).concat(
-                    currentMinifig.appearances ?? []
-                  )
-                ),
-              ].sort(),
-            }),
-            owned: {
-              loose: currentMinifig.owned.loose,
-              total: currentSet.possessed
-                ? currentMinifig.owned.total + setMinifig.quantity
-                : currentMinifig.owned.total,
-              inSet: [
-                ...currentMinifig.owned.inSet,
-                {
-                  quantity: setMinifig.quantity,
-                  setId: currentSet.id,
-                  isInFrame: setMinifig.isInFrame,
-                },
-              ],
-            },
-          }
-        })
-        return {
-          sets: [
-            ...sets,
-            {
-              ...currentSet,
-              timelines: Array.from(new Set(currentSet.timelines)),
-              tags: Array.from(new Set(currentSet.tags)),
-              appearances: Array.from(new Set(currentSet.appearances)),
-              ...(currentSet.content && {
-                content: {
-                  ...currentSet.content,
-                  minifigs:
-                    currentSet.content.minifigs?.map((minifig) => ({
-                      ...minifig,
-                      characterName:
-                        updatedMinifigsList.find(({ id }) => id === minifig.id)
-                          ?.characterName ?? minifig.characterName,
-                    })) ?? [],
-                },
-              }),
-            },
-          ],
-          minifigs: updatedMinifigsList,
-        }
-      },
-      { sets: [] as typeof setsList, minifigs: cleanedMinifigsList }
-    )
-    await editSetsList(syncedList.sets)
-    await editMinifigsList(syncedList.minifigs)
+  const handleSync = async () => {
+    if (!initialSetsList || !initialMinifigsList) return
+    const { setsList, minifigsList } = syncSetsAndMinifigs({
+      setsList: initialSetsList,
+      minifigsList: initialMinifigsList,
+    })
+    await editSetsList(setsList)
+    await editMinifigsList(minifigsList)
     onClose()
   }
   return (
@@ -140,7 +65,7 @@ export const SyncMinifigsButton: FC = () => {
               Cancel
             </Button>
             <Button
-              onClick={syncSetsAndMinifigs}
+              onClick={handleSync}
               color="primary"
               variant="contained"
               loading={isSetPending || isMinifigPending}

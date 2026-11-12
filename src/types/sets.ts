@@ -16,6 +16,20 @@ export const setValidationSchema = z.object({
     bags: z.nullable(z.boolean()),
     partsQuantity: z.nullable(z.number()),
   }),
+  dimensions: z.object({
+    box: z.object({
+      depth: z.number().positive().nullable(),
+      height: z.number().positive().nullable(),
+      width: z.number().positive().nullable(),
+    }),
+    model: z.object({
+      depth: z.number().positive().nullable(),
+      height: z.number().positive().nullable(),
+      width: z.number().positive().nullable(),
+    }),
+  }),
+  EAN: z.string().or(z.null()),
+  exitDate: z.string().nullable(),
   id: z
     .string()
     .min(1, {
@@ -26,6 +40,7 @@ export const setValidationSchema = z.object({
         message: 'Id is required',
       })
     ),
+  bricksetImagePath: z.string().or(z.null()),
   location: z.string(),
   name: z.string().min(1, {
     message: 'Name is required',
@@ -35,8 +50,10 @@ export const setValidationSchema = z.object({
   possessed: z.boolean(),
   prices: z.object({
     bought: z.number(),
-    storeValue: z.number(),
+    brickLinkSoldPriceNew: z.number(),
+    brickLinkSoldPriceUsed: z.number(),
     marketValue: z.number(),
+    storeValue: z.number(),
   }),
   releaseYear: z.number().min(1, {
     message: 'Release year is required',
@@ -46,9 +63,9 @@ export const setValidationSchema = z.object({
   }),
   tags: z.array(z.string()),
   timelines: z.array(z.string()),
+  UPC: z.string().or(z.null()),
 })
 
 export type Set = z.infer<typeof setValidationSchema>
 export type SetFormInput = z.input<typeof setValidationSchema>
-
 export type SetsList = Set[]

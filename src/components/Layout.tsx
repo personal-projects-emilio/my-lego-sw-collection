@@ -3,7 +3,7 @@ import type { FC } from 'react'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Outlet } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/router-devtools'
-import { AuthProvider } from 'providers'
+import AuthProvider from 'providers/AuthProvider'
 
 import Header from './Header'
 

@@ -3,7 +3,7 @@ import type { FC } from 'react'
 import { Tab, Tabs } from '@mui/material'
 import { Link } from '@tanstack/react-router'
 import { useCurrentRoute } from 'hooks'
-import { useAuth } from 'providers'
+import { useAuth } from 'providers/AuthProvider'
 
 const TabsNavigation: FC = () => {
   const { idToken, logout } = useAuth()

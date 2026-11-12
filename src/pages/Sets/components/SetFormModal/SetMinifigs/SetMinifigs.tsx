@@ -23,13 +23,13 @@ import {
 import { useMinifigsQuery } from 'api/minifigs'
 import { Autocomplete, Checkbox } from 'components/inputs'
 import { useMinifigsAutocompleteOptions } from 'pages/Minifigs/hooks'
-import type { Set } from 'types/sets'
+import type { SetFormInput } from 'types/sets'
 
 import useStyles from './SetMinifigs.styles'
 
 type SetMinifigsProps = {
-  value: Set['content']['minifigs']
-  onChange: (value: Set['content']['minifigs']) => void
+  value: SetFormInput['content']['minifigs']
+  onChange: (value: SetFormInput['content']['minifigs']) => void
   className: HTMLElement['className']
 }
 
@@ -47,7 +47,7 @@ const initialMinifigState = {
 } satisfies SetIndividualMinifigProps
 
 export const SetMinifigs = forwardRef<HTMLDivElement, SetMinifigsProps>(
-  ({ value, onChange, className }, ref) => {
+  ({ value = [], onChange, className }, ref) => {
     const { data: minifigsList, isLoading } = useMinifigsQuery()
     const { classes, cx } = useStyles()
     const [dialogIsOpen, toggleDialogIsOpen] = useState(false)
@@ -55,7 +55,9 @@ export const SetMinifigs = forwardRef<HTMLDivElement, SetMinifigsProps>(
     const { ids } = useMinifigsAutocompleteOptions()
 
     const [values, setValues] = useState<SetIndividualMinifigProps[]>(
-      value.sort((a, b) => a.id.localeCompare(b.id))
+      value
+        .sort((a, b) => a.id.localeCompare(b.id))
+        .map((el) => ({ ...el, isInFrame: el.isInFrame ?? false }))
     )
 
     const totalNumberOfMinifigs = useMemo(() => {
@@ -248,11 +250,7 @@ export const SetMinifigs = forwardRef<HTMLDivElement, SetMinifigsProps>(
               />
             </DialogContent>
             <DialogActions>
-              <Button
-                onClick={handleClose}
-                color="primary"
-                loading={isLoading}
-              >
+              <Button onClick={handleClose} color="primary" loading={isLoading}>
                 Cancel
               </Button>
               <Button

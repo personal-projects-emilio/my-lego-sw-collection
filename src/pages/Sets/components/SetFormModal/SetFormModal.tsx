@@ -37,7 +37,7 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
         .refine(
           ({ id }) => {
             if (!isEdit) return !ids.includes(id)
-            if (isEdit) return setData?.id === id
+            return setData.id === id || !ids.includes(id)
           },
           {
             path: ['id'],
@@ -73,14 +73,13 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
     mode: 'onSubmit',
     reValidateMode: 'onChange',
   })
-
   const onClose = () => {
     navigate({ to: '/sets' })
   }
 
   const onSubmit: SubmitHandler<SetFormInput> = (data) => {
     if (isEdit) {
-      return editSet(data).then(onClose)
+      return editSet({ newSet: data, previousSet: setData }).then(onClose)
     }
     return addSet(data).then(onClose)
   }
@@ -103,7 +102,6 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
                 {...field}
                 autoFocus={!isEdit}
                 className={classes.gridSpan12}
-                disabled={isEdit}
                 error={fieldState.invalid}
                 helperText={fieldState.error?.message}
                 label="Id"
@@ -312,6 +310,30 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
               )}
             />
           )}
+          <Controller
+            name="EAN"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                className={classes.gridSpan6}
+                disabled
+                label="EAN"
+              />
+            )}
+          />
+          <Controller
+            name="UPC"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                className={classes.gridSpan6}
+                disabled
+                label="UPC"
+              />
+            )}
+          />
           <Typography variant="h6" className={classes.gridSpan12}>
             Content
           </Typography>
@@ -375,7 +397,92 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
                 value={field.value}
               />
             )}
-          />{' '}
+          />
+          <Typography variant="h6" className={classes.gridSpan12}>
+            Dimensions
+          </Typography>
+          <Typography variant="subtitle1" className={classes.gridSpan12}>
+            From brickset (in cm) - You can update them by uploading a new CSV
+            from Brickset
+          </Typography>
+          <Controller
+            name="dimensions.model.width"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                className={classes.gridSpan4}
+                disabled
+                label="Model width"
+                value={field.value ?? ''}
+              />
+            )}
+          />
+          <Controller
+            name="dimensions.model.height"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                className={classes.gridSpan4}
+                disabled
+                label="Model height"
+                value={field.value ?? ''}
+              />
+            )}
+          />
+          <Controller
+            name="dimensions.model.depth"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                className={classes.gridSpan4}
+                disabled
+                label="Model depth"
+                value={field.value ?? ''}
+              />
+            )}
+          />
+          <Controller
+            name="dimensions.box.width"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                className={classes.gridSpan4}
+                disabled
+                label="Box width"
+                value={field.value ?? ''}
+              />
+            )}
+          />
+          <Controller
+            name="dimensions.box.height"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                className={classes.gridSpan4}
+                disabled
+                label="Box height"
+                value={field.value ?? ''}
+              />
+            )}
+          />
+          <Controller
+            name="dimensions.box.depth"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                className={classes.gridSpan4}
+                disabled
+                label="Box depth"
+                value={field.value ?? ''}
+              />
+            )}
+          />
           <DisplayIfAuthenticated>
             <Typography variant="h6" className={classes.gridSpan12}>
               Prices
@@ -431,6 +538,36 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
                   }
                   required
                   type="number"
+                />
+              )}
+            />
+            <Controller
+              name="prices.brickLinkSoldPriceNew"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  disabled
+                  className={classes.gridSpan6}
+                  helperText={
+                    'This value is updated when you upload a new CSV from Brickset'
+                  }
+                  label="BrickLink Sold Price New"
+                />
+              )}
+            />
+            <Controller
+              name="prices.brickLinkSoldPriceUsed"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  disabled
+                  className={classes.gridSpan6}
+                  helperText={
+                    'This value is updated when you upload a new CSV from Brickset'
+                  }
+                  label="BrickLink Sold Price Used"
                 />
               )}
             />

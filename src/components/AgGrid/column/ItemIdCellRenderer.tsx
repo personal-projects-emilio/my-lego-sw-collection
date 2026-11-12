@@ -26,9 +26,11 @@ export type ItemIdCellRenderProps = {
 
 const ItemIdCellRenderer = ({
   value: id,
+  data,
   icon,
   variant,
-}: CustomCellRendererProps<unknown, ItemId> & ItemIdCellRenderProps) => {
+}: CustomCellRendererProps<{ bricksetImagePath?: string | null }, ItemId> &
+  ItemIdCellRenderProps) => {
   assert(isNotNullOrUndefined(id))
   const { classes } = useStyles()
   const { alt, src } = mapItemToImageProps[variant](String(id))
@@ -42,7 +44,19 @@ const ItemIdCellRenderer = ({
         enterDelay={300}
         enterNextDelay={300}
         placement="right-start"
-        title={<img alt={alt} className={classes.image} src={src} />}
+        title={
+          <img
+            alt={alt}
+            className={classes.image}
+            src={src}
+            onError={({ currentTarget }) => {
+              const fallbackSrc = data?.bricksetImagePath
+              if (!fallbackSrc || currentTarget.src === fallbackSrc) return
+              currentTarget.src = fallbackSrc
+              currentTarget.alt = `${variant} ${String(id)} brickset picture`
+            }}
+          />
+        }
       >
         <Avatar aria-label={`Show ${alt}`}>{icon}</Avatar>
       </Tooltip>

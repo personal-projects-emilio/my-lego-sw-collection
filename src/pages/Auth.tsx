@@ -10,7 +10,7 @@ import {
   Paper,
   TextField,
 } from '@mui/material'
-import { useAuth } from 'providers'
+import { useAuth } from 'providers/AuthProvider'
 import { makeStyles } from 'tss-react/mui'
 import { authValidationSchema, type LoginInputs } from 'types/auth'
 

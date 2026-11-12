@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 
 import { useMutation } from '@tanstack/react-query'
 import { mutateSets, setSetsQueryData, useSetsQuery } from 'api/sets'
-import { useAuth } from 'providers'
+import { useAuth } from 'providers/AuthProvider'
 import type { Set, SetsList } from 'types/sets'
 import { assert, isNotNullOrUndefined } from 'utils/typescript'
 
@@ -54,13 +54,16 @@ const useSetsMutations = () => {
   )
 
   const editSet = useCallback(
-    async (set: Set) => {
+    async ({ newSet, previousSet }: { newSet: Set; previousSet: Set }) => {
       assert(isNotNullOrUndefined(setsList))
 
       const updatedSetsList = setsList
-        .map((existingSet) => (existingSet.id === set.id ? set : existingSet))
+        .filter(({ id }) => id !== previousSet.id)
+        .concat(newSet)
         .sort((a, b) =>
-          String(a.id).localeCompare(String(b.id), undefined, { numeric: true })
+          String(a.id).localeCompare(String(b.id), undefined, {
+            numeric: true,
+          })
         )
 
       if (!idToken) {

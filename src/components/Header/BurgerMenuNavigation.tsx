@@ -4,7 +4,7 @@ import { MdMenu } from 'react-icons/md'
 import { IconButton, type IconButtonProps, Menu, MenuItem } from '@mui/material'
 import { Link } from '@tanstack/react-router'
 import { useCurrentRoute } from 'hooks'
-import { useAuth } from 'providers'
+import { useAuth } from 'providers/AuthProvider'
 import type { RouterRouteIds } from 'routes'
 import { makeStyles } from 'tss-react/mui'
 

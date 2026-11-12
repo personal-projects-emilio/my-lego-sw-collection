@@ -17,9 +17,9 @@ import {
   OverflowTypographyCellRenderer,
   type SetActionsCellRendererProps,
 } from 'components/AgGrid/column'
-import { useAuth } from 'providers'
+import { useAuth } from 'providers/AuthProvider'
 import type { Set } from 'types/sets'
-import { spreadArrayIf } from 'utils/array'
+import { compareIds, spreadArrayIf } from 'utils/array'
 import { formatFrEuroCurrency } from 'utils/format'
 
 import { SetMinifigsCellRenderer } from '../components'
@@ -35,6 +35,8 @@ const useSetsColDefs = () => {
         {
           field: 'id',
           headerName: 'Id',
+          cellDataType: 'text',
+          comparator: compareIds,
           cellClass: [agGridClasses.flexAlignCenter, agGridClasses.gap1],
           cellRenderer: ItemIdCellRenderer,
           cellRendererParams: {
@@ -86,6 +88,16 @@ const useSetsColDefs = () => {
           field: 'releaseYear',
           headerName: 'Release',
           width: 80,
+        },
+        {
+          field: 'exitDate',
+          headerName: 'Retired',
+          cellDataType: 'dateString',
+          filter: 'agDateColumnFilter',
+          suppressFloatingFilterButton: false,
+          valueFormatter: ({ value }) =>
+            value ? new Date(value).toLocaleDateString('fr-FR') : '',
+          width: 130,
         },
         {
           field: 'content.partsQuantity',
