@@ -93,6 +93,8 @@ const useSetsColDefs = () => {
         {
           field: 'content.minifigs',
           headerName: 'Minifigs',
+          // The renderer shows the cell; AG Grid still wants a formatter for array values
+          valueFormatter: ({ value }) => String(value?.length ?? 0),
           cellClass: [agGridClasses.flexAlignCenter],
           cellRenderer: SetMinifigsCellRenderer,
           filter: false,

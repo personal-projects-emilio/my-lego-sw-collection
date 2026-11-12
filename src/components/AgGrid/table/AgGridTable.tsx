@@ -1,11 +1,22 @@
 import { forwardRef } from 'react'
 
+import {
+  AllCommunityModule,
+  colorSchemeDark,
+  ModuleRegistry,
+  themeMaterial,
+} from 'ag-grid-community'
 import { AgGridReact, type AgGridReactProps } from 'ag-grid-react'
 import { makeStyles } from 'tss-react/mui'
 
+ModuleRegistry.registerModules([AllCommunityModule])
+
+const theme = themeMaterial
+  .withPart(colorSchemeDark)
+  .withParams({ cellHorizontalPadding: { calc: 'spacing * 2' } })
+
 const useStyles = makeStyles({ name: 'AgGridTable' })((theme) => ({
   container: {
-    '--ag-cell-horizontal-padding': 'calc(var(--ag-grid-size) * 2)',
     boxSizing: 'border-box',
     height: 'calc(100vh - 48px - 57px)',
     maxHeight: 'calc(100vh - 48px - 57px)',
@@ -16,10 +27,10 @@ const useStyles = makeStyles({ name: 'AgGridTable' })((theme) => ({
 }))
 
 const AgGridTable = forwardRef<AgGridReact, AgGridReactProps>((props, ref) => {
-  const { classes, cx } = useStyles()
+  const { classes } = useStyles()
   return (
-    <div className={cx('ag-theme-material-dark', classes.container)}>
-      <AgGridReact ref={ref} {...props} />
+    <div className={classes.container}>
+      <AgGridReact ref={ref} theme={theme} {...props} />
     </div>
   )
 })
