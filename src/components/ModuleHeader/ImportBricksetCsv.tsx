@@ -46,7 +46,7 @@ import {
 import { readCsvFile } from 'utils/csv'
 
 const ignoreFields = [
-  { key: 'numbers', label: 'Ignored numbers', column: 'Number' },
+  { key: 'ids', label: 'Ignored set IDs', column: 'Number' },
   { key: 'themes', label: 'Ignored themes', column: 'Theme' },
   { key: 'subthemes', label: 'Ignored subthemes', column: 'Subtheme' },
 ] as const satisfies {
@@ -347,9 +347,9 @@ const ImportBricksetCsv: FC = () => {
                                   onClick={() =>
                                     ignoreList &&
                                     updateIgnoreList(
-                                      'numbers',
+                                      'ids',
                                       uniqueAndSortedArray([
-                                        ...ignoreList.numbers,
+                                        ...ignoreList.ids,
                                         row.Number,
                                       ])
                                     )

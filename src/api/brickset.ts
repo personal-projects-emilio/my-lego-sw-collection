@@ -15,7 +15,7 @@ const fetchBricksetIgnoreList = (idToken: string) =>
       if (!data) return defaultBricksetIgnoreList
       // The Realtime DB drops empty arrays
       return {
-        numbers: data.numbers ?? [],
+        ids: data.ids ?? [],
         subthemes: data.subthemes ?? [],
         themes: data.themes ?? [],
       }

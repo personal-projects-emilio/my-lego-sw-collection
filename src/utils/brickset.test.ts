@@ -46,7 +46,7 @@ test('sorts rows into updates, unchanged, missing, ignored, not in CSV and confl
   ]
   const report = buildBricksetReport({
     setsList,
-    ignoreList: { numbers: ['10331'], themes: ['Ideas'], subthemes: [] },
+    ignoreList: { ids: ['10331'], themes: ['Ideas'], subthemes: [] },
     rows: [
       row({ Number: '75192', YearFrom: '2017', Width: '58.5', EAN: '' }),
       row({ Number: '75300', YearFrom: '2021' }),
@@ -78,7 +78,7 @@ test('sorts rows into updates, unchanged, missing, ignored, not in CSV and confl
   assert.deepEqual(
     report.ignored.map(({ row, reason }) => [row.Number, reason]),
     [
-      ['10331', 'number'],
+      ['10331', 'id'],
       ['21300', 'theme'],
     ]
   )
@@ -139,7 +139,7 @@ test('builds a new owned set from a Brickset row', () => {
 test('matches a set stored under its EU item number', () => {
   const report = buildBricksetReport({
     setsList: [set(6346098)],
-    ignoreList: { numbers: [], themes: [], subthemes: [] },
+    ignoreList: { ids: [], themes: [], subthemes: [] },
     rows: [
       row({ Number: '5006290', EUItemNumber: '6346098', YearFrom: '2021' }),
     ],

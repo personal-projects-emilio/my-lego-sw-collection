@@ -1,7 +1,7 @@
 import type { BricksetIgnoreList, BricksetRow } from 'types/brickset'
 import type { Set, SetsList } from 'types/sets'
 
-export type IgnoreReason = 'number' | 'theme' | 'subtheme'
+export type IgnoreReason = 'id' | 'theme' | 'subtheme'
 
 export type FieldChange = {
   field: string
@@ -38,7 +38,7 @@ const ignoreReason = (
   { Number, Theme, Subtheme }: BricksetRow,
   ignoreList: BricksetIgnoreList
 ): IgnoreReason | null => {
-  if (ignoreList.numbers.includes(Number)) return 'number'
+  if (ignoreList.ids.includes(Number)) return 'id'
   if (ignoreList.themes.includes(Theme)) return 'theme'
   if (ignoreList.subthemes.includes(Subtheme)) return 'subtheme'
   return null
