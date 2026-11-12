@@ -207,8 +207,8 @@ const ImportBricksetCsv: FC = () => {
     ignoreList && setEditedIgnoreList({ ...ignoreList, [key]: values })
 
   const onValidate = async () => {
-    if (!report) return
-    if (editedIgnoreList) await saveIgnoreList(editedIgnoreList)
+    if (!report || !ignoreList) return
+    await saveIgnoreList(ignoreList)
     if (report.updates.length > 0 || addedSets.length > 0) {
       await editSetsList(
         [...report.setsList, ...addedSets].sort((a, b) =>
