@@ -31,7 +31,7 @@ const useStyles = makeStyles<void, NonNullable<AvatarProps['variant']>>({
   },
 }))
 
-export const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
+const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
   ({ children, variant = 'circular', className, ...avatarProps }, ref) => {
     const { classes, cx } = useStyles()
 
