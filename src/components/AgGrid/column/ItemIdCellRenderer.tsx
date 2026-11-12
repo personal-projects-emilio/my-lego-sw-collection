@@ -51,8 +51,9 @@ const ItemIdCellRenderer = ({
             src={src}
             onError={({ currentTarget }) => {
               const fallbackSrc = data?.bricksetImagePath
-              if (fallbackSrc && currentTarget.src !== fallbackSrc)
-                currentTarget.src = fallbackSrc
+              if (!fallbackSrc || currentTarget.src === fallbackSrc) return
+              currentTarget.src = fallbackSrc
+              currentTarget.alt = `${variant} ${String(id)} brickset picture`
             }}
           />
         }
