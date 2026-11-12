@@ -19,7 +19,7 @@ import {
 } from 'components/AgGrid/column'
 import { useAuth } from 'providers/AuthProvider'
 import type { Set } from 'types/sets'
-import { spreadArrayIf } from 'utils/array'
+import { compareIds, spreadArrayIf } from 'utils/array'
 import { formatFrEuroCurrency } from 'utils/format'
 
 import { SetMinifigsCellRenderer } from '../components'
@@ -35,6 +35,8 @@ const useSetsColDefs = () => {
         {
           field: 'id',
           headerName: 'Id',
+          cellDataType: 'text',
+          comparator: compareIds,
           cellClass: [agGridClasses.flexAlignCenter, agGridClasses.gap1],
           cellRenderer: ItemIdCellRenderer,
           cellRendererParams: {

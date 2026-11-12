@@ -19,7 +19,7 @@ import { useSetsQuery } from 'api/sets'
 import { defaultSetFormValues } from 'pages/Sets/components/SetFormModal/SetFormModal.constant'
 import { useSetsMutations } from 'pages/Sets/hooks'
 import type { BricksetIgnoreList, BricksetRow } from 'types/brickset'
-import { uniqueAndSortedArray } from 'utils/array'
+import { compareIds, uniqueAndSortedArray } from 'utils/array'
 import {
   bricksetRowKey,
   bricksetRowToSetId,
@@ -137,9 +137,7 @@ const ImportBricksetCsv: FC = () => {
     if (appliedUpdatesCount > 0 || addedSets.length > 0) {
       await editSetsList(
         [...skipChanges(report, skippedKeys), ...addedSets].sort((a, b) =>
-          String(a.id).localeCompare(String(b.id), undefined, {
-            numeric: true,
-          })
+          compareIds(a.id, b.id)
         )
       )
     }
