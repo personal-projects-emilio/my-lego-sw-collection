@@ -1,8 +1,8 @@
 import { type FC, useState } from 'react'
 import { MdSync } from 'react-icons/md'
 
-import { LoadingButton } from '@mui/lab'
 import {
+  Button,
   Dialog,
   DialogActions,
   DialogContent,
@@ -132,21 +132,21 @@ export const SyncMinifigsButton: FC = () => {
             <code>content.minifigs[number].characterName</code> are up to date
           </DialogContent>
           <DialogActions>
-            <LoadingButton
+            <Button
               onClick={onClose}
               color="primary"
               loading={isSetPending || isMinifigPending}
             >
               Cancel
-            </LoadingButton>
-            <LoadingButton
+            </Button>
+            <Button
               onClick={syncSetsAndMinifigs}
               color="primary"
               variant="contained"
               loading={isSetPending || isMinifigPending}
             >
               Sync sets/minifigs
-            </LoadingButton>
+            </Button>
           </DialogActions>
         </Dialog>
       )}

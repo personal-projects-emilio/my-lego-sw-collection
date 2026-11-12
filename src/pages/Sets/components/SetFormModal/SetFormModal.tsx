@@ -2,8 +2,8 @@ import { type FC, useMemo } from 'react'
 import { Controller, type SubmitHandler, useForm } from 'react-hook-form'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { LoadingButton } from '@mui/lab'
 import {
+  Button,
   Dialog,
   DialogActions,
   DialogContent,
@@ -438,10 +438,10 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
         </form>
       </DialogContent>
       <DialogActions>
-        <LoadingButton onClick={onClose} color="primary" loading={isPending}>
+        <Button onClick={onClose} color="primary" loading={isPending}>
           Cancel
-        </LoadingButton>
-        <LoadingButton
+        </Button>
+        <Button
           color="primary"
           form="set-form"
           loading={isPending}
@@ -449,7 +449,7 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
           variant="contained"
         >
           {isEdit ? `Edit ${setData.id}` : 'Add a set'}
-        </LoadingButton>
+        </Button>
       </DialogActions>
     </Dialog>
   )

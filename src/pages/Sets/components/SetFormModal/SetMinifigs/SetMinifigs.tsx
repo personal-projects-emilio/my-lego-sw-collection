@@ -8,8 +8,8 @@ import {
   MdEdit,
 } from 'react-icons/md'
 
-import { LoadingButton } from '@mui/lab'
 import {
+  Button,
   Chip,
   Dialog,
   DialogActions,
@@ -248,21 +248,21 @@ export const SetMinifigs = forwardRef<HTMLDivElement, SetMinifigsProps>(
               />
             </DialogContent>
             <DialogActions>
-              <LoadingButton
+              <Button
                 onClick={handleClose}
                 color="primary"
                 loading={isLoading}
               >
                 Cancel
-              </LoadingButton>
-              <LoadingButton
+              </Button>
+              <Button
                 type="submit"
                 color="primary"
                 variant="contained"
                 loading={isLoading}
               >
                 {minifigEditId ? 'Edit' : 'Add'}
-              </LoadingButton>
+              </Button>
             </DialogActions>
           </form>
         </Dialog>

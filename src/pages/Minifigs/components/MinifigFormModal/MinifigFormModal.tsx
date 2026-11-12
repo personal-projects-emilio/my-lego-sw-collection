@@ -2,8 +2,8 @@ import { type FC, useMemo } from 'react'
 import { Controller, type SubmitHandler, useForm } from 'react-hook-form'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { LoadingButton } from '@mui/lab'
 import {
+  Button,
   Dialog,
   DialogActions,
   DialogContent,
@@ -202,10 +202,10 @@ const MinifigFormModal: FC<MinifigFormModalProps> = ({
         </form>
       </DialogContent>
       <DialogActions>
-        <LoadingButton onClick={onClose} color="primary" loading={isPending}>
+        <Button onClick={onClose} color="primary" loading={isPending}>
           Cancel
-        </LoadingButton>
-        <LoadingButton
+        </Button>
+        <Button
           color="primary"
           form="minifig-form"
           loading={isPending}
@@ -213,7 +213,7 @@ const MinifigFormModal: FC<MinifigFormModalProps> = ({
           variant="contained"
         >
           {isEdit ? `Edit ${minifigData.id}` : 'Add a minifig'}
-        </LoadingButton>
+        </Button>
       </DialogActions>
     </Dialog>
   )

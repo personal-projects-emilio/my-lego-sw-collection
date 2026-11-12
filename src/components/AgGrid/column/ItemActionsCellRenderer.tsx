@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 import { MdContentCopy, MdDelete, MdEdit } from 'react-icons/md'
 
-import LoadingButton from '@mui/lab/LoadingButton'
 import {
+  Button,
   Dialog,
   DialogActions,
   DialogTitle,
@@ -97,14 +97,14 @@ const ItemActionsCellRenderer = ({
       >
         <DialogTitle>{`Are you sure you want to delete ${itemId}?`}</DialogTitle>
         <DialogActions>
-          <LoadingButton
+          <Button
             color="primary"
             loading={isPending}
             onClick={() => setIsDeleteModalOpen(false)}
           >
             Cancel
-          </LoadingButton>
-          <LoadingButton
+          </Button>
+          <Button
             loading={isPending}
             onClick={() =>
               variant === 'minifig' ? deleteItem(itemId) : deleteItem(itemId)
@@ -112,7 +112,7 @@ const ItemActionsCellRenderer = ({
             variant="contained"
           >
             Delete
-          </LoadingButton>
+          </Button>
         </DialogActions>
       </Dialog>
     </>
