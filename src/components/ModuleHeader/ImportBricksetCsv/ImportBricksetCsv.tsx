@@ -30,10 +30,11 @@ import {
 } from 'utils/brickset'
 import { readCsvFile } from 'utils/csv'
 
-import IgnoredRowsTable from './IgnoredRowsTable'
+import IgnoredRowsGrid from './IgnoredRowsGrid'
 import IgnoreListFields from './IgnoreListFields'
-import MissingSetsTable from './MissingSetsTable'
+import MissingSetsGrid from './MissingSetsGrid'
 import ReportSection from './ReportSection'
+import SetsGrid from './SetsGrid'
 import UpdatesGrid from './UpdatesGrid'
 
 const ImportBricksetCsv: FC = () => {
@@ -220,7 +221,7 @@ const ImportBricksetCsv: FC = () => {
                     title="In the CSV but not in the collection"
                     count={report.missing.length}
                   >
-                    <MissingSetsTable
+                    <MissingSetsGrid
                       rows={report.missing}
                       newSetIds={newSetIds}
                       addedKeys={addedKeys}
@@ -229,23 +230,19 @@ const ImportBricksetCsv: FC = () => {
                     />
                   </ReportSection>
                   <ReportSection title="Ignored" count={report.ignored.length}>
-                    <IgnoredRowsTable ignored={report.ignored} />
+                    <IgnoredRowsGrid ignored={report.ignored} />
                   </ReportSection>
                   <ReportSection
                     title="In the collection but not in the CSV"
                     count={report.notInCsv.length}
                   >
-                    <Typography>
-                      {report.notInCsv.map(({ id }) => id).join(', ')}
-                    </Typography>
+                    <SetsGrid sets={report.notInCsv} />
                   </ReportSection>
                   <ReportSection
                     title="Several CSV rows match, not updated"
                     count={report.conflicts.length}
                   >
-                    <Typography>
-                      {report.conflicts.map(({ id }) => id).join(', ')}
-                    </Typography>
+                    <SetsGrid sets={report.conflicts} />
                   </ReportSection>
                 </div>
               )}

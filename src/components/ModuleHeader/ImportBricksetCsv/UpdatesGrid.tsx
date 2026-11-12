@@ -1,13 +1,13 @@
 import { type FC, useMemo } from 'react'
 
 import type { ColDef, GridApi, RowSelectionOptions } from 'ag-grid-community'
-import { AgGridTable } from 'components/AgGrid/table'
-import { makeStyles } from 'tss-react/mui'
 import {
   type BricksetReport,
   changeKey,
   type FieldChange,
 } from 'utils/brickset'
+
+import ReportGrid from './ReportGrid'
 
 type UpdateRow = {
   key: string
@@ -21,14 +21,6 @@ type UpdateRow = {
 
 const formatValue = (value: unknown) =>
   value === null || value === undefined || value === '' ? '—' : String(value)
-
-const defaultColDef = {
-  filter: true,
-  floatingFilter: true,
-  sortable: true,
-  suppressFloatingFilterButton: true,
-  suppressHeaderFilterButton: true,
-} as const satisfies ColDef<UpdateRow>
 
 const columnDefs: ColDef<UpdateRow>[] = [
   { field: 'id', headerName: 'Set', flex: 1, minWidth: 80 },
@@ -68,10 +60,6 @@ const rowSelection: RowSelectionOptions<UpdateRow> = {
   selectAll: 'filtered',
 }
 
-const useStyles = makeStyles({ name: 'UpdatesGrid' })({
-  grid: { height: 450, maxHeight: 450, padding: 0 },
-})
-
 type UpdatesGridProps = {
   updates: BricksetReport['updates']
   skippedKeys: string[]
@@ -84,8 +72,6 @@ const UpdatesGrid: FC<UpdatesGridProps> = ({
   skippedKeys,
   onSkippedKeysChange,
 }) => {
-  const { classes } = useStyles()
-
   const rowData = useMemo(
     () =>
       updates.flatMap(({ set, changes }) =>
@@ -122,8 +108,7 @@ const UpdatesGrid: FC<UpdatesGridProps> = ({
   }
 
   return (
-    <AgGridTable
-      className={classes.grid}
+    <ReportGrid
       rowData={rowData}
       getRowId={({ data }) => data.key}
       rowSelection={rowSelection}
@@ -131,7 +116,6 @@ const UpdatesGrid: FC<UpdatesGridProps> = ({
       onRowDataUpdated={({ api }) => selectNotSkipped(api)}
       onSelectionChanged={({ api }) => onSelectionChanged(api)}
       columnDefs={columnDefs}
-      defaultColDef={defaultColDef}
     />
   )
 }
