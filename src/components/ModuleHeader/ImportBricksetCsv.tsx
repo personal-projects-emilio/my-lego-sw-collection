@@ -133,16 +133,24 @@ const Section: FC<{ title: string; count: number; children: ReactNode }> = ({
   title,
   count,
   children,
-}) => (
-  <Accordion disabled={count === 0} disableGutters>
-    <AccordionSummary expandIcon={<MdExpandMore />}>
-      <Typography>
-        {title} ({count})
-      </Typography>
-    </AccordionSummary>
-    <AccordionDetails>{children}</AccordionDetails>
-  </Accordion>
-)
+}) => {
+  const [expanded, setExpanded] = useState(false)
+  return (
+    <Accordion
+      disabled={count === 0}
+      expanded={expanded && count > 0}
+      onChange={(_event, isExpanded) => setExpanded(isExpanded)}
+      disableGutters
+    >
+      <AccordionSummary expandIcon={<MdExpandMore />}>
+        <Typography>
+          {title} ({count})
+        </Typography>
+      </AccordionSummary>
+      <AccordionDetails>{children}</AccordionDetails>
+    </Accordion>
+  )
+}
 
 const ImportBricksetCsv: FC = () => {
   const { classes } = useStyles()
