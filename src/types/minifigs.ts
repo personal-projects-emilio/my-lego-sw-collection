@@ -20,18 +20,20 @@ export const minifigValidationSchema = z.object({
   tags: z.array(z.string()),
   timelines: z.array(z.string()),
   owned: z.object({
+    inSet: z
+      .array(
+        z.object({
+          isInFrame: z.boolean().default(false),
+          quantity: z.number().min(1).default(1),
+          setId: z.string().min(1).or(z.number().min(1)),
+        })
+      )
+      .default([]),
     loose: z.object({
-      quantity: z.number(),
-      isInFrame: z.boolean(),
+      isInFrame: z.boolean().default(false),
+      quantity: z.number().min(0).default(0),
     }),
-    total: z.number(),
-    inSet: z.array(
-      z.object({
-        setId: z.string().min(1).or(z.number().min(1)),
-        quantity: z.number().min(1),
-        isInFrame: z.boolean(),
-      })
-    ),
+    total: z.number().min(0).default(0),
   }),
 })
 

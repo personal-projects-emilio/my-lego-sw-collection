@@ -10,11 +10,14 @@ export const defaultSetFormValues = (setData: SetFormModalProps['setData']) =>
     name: '',
     note: '',
     ownedQuantity: 0,
+    possessed: false,
     releaseYear: new Date().getFullYear(),
     subtheme: '',
     tags: [],
     timelines: [],
-    possessed: false,
+    imagePath: null,
+    EAN: null,
+    UPC: null,
     ...setData,
     content: {
       bags: null,
@@ -24,10 +27,26 @@ export const defaultSetFormValues = (setData: SetFormModalProps['setData']) =>
       partsQuantity: 0,
       ...(setData && 'content' in setData && setData.content),
     },
+    dimensions: {
+      box: {
+        depth: 0,
+        height: 0,
+        width: 0,
+        ...(setData && 'dimensions' in setData && setData.dimensions?.box),
+      },
+      model: {
+        depth: 0,
+        height: 0,
+        width: 0,
+        ...(setData && 'dimensions' in setData && setData.dimensions?.model),
+      },
+    },
     prices: {
       bought: 0,
       marketValue: 0,
       storeValue: 0,
+      brickLinkSoldPriceNew: 0,
+      brickLinkSoldPriceUsed: 0,
       ...(setData && 'prices' in setData && setData.prices),
     },
   }) satisfies Set

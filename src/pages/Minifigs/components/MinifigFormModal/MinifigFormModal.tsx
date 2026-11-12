@@ -18,7 +18,11 @@ import {
   useMinifigsAutocompleteOptions,
   useMinifigsMutations,
 } from 'pages/Minifigs/hooks'
-import { type MinifigFormInput, minifigValidationSchema } from 'types/minifigs'
+import {
+  type Minifig,
+  type MinifigFormInput,
+  minifigValidationSchema,
+} from 'types/minifigs'
 
 import { defaultMinifigFormValues } from './MinifigFormModal.constant'
 import useStyles from './MinifigFormModal.styles'
@@ -34,13 +38,20 @@ const MinifigFormModal: FC<MinifigFormModalProps> = ({
   const navigate = useNavigate()
   const { classes } = useStyles()
 
-  const minifigValidationSchemaWithRefinedIdCheck = useMemo(() => {
-    if (isEdit) return minifigValidationSchema
-    return minifigValidationSchema.refine(({ id }) => !ids.includes(id), {
-      path: ['id'],
-      message: 'This minifig already exists',
-    })
-  }, [isEdit, ids])
+  const minifigValidationSchemaWithRefinedIdCheck = useMemo(
+    () =>
+      minifigValidationSchema.refine(
+        ({ id }) => {
+          if (!isEdit) return !ids.includes(id)
+          return minifigData.id === id || !ids.includes(id)
+        },
+        {
+          path: ['id'],
+          message: 'This minifig already exists',
+        }
+      ),
+    [isEdit, ids, minifigData]
+  )
 
   const { control, handleSubmit } = useForm<MinifigFormInput>({
     defaultValues: {
@@ -58,9 +69,12 @@ const MinifigFormModal: FC<MinifigFormModalProps> = ({
 
   const onSubmit: SubmitHandler<MinifigFormInput> = (data) => {
     if (isEdit) {
-      return editMinifig(data).then(onClose)
+      return editMinifig({
+        newMinifig: data as Minifig,
+        previousMinifig: minifigData,
+      }).then(onClose)
     }
-    return addMinifig(data).then(onClose)
+    return addMinifig(data as Minifig).then(onClose)
   }
 
   return (
@@ -83,7 +97,6 @@ const MinifigFormModal: FC<MinifigFormModalProps> = ({
                 {...field}
                 label="Id"
                 placeholder="Minifig id (ex: sw0001a)"
-                disabled={isEdit}
                 error={fieldState.invalid}
                 helperText={fieldState.error?.message}
                 required

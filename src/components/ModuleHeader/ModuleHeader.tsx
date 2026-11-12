@@ -17,6 +17,7 @@ import { useAuth } from 'providers'
 import { makeStyles } from 'tss-react/mui'
 import { isNotNullOrUndefined } from 'utils/typescript'
 
+import ImportBricksetCsv from './ImportBricksetCsv'
 import SyncMinifigsButton from './SyncMinifigsButton'
 
 type ModuleHeaderProps = {
@@ -37,7 +38,7 @@ const useStyles = makeStyles({ name: 'ModuleHeader' })((theme) => ({
     borderColor: theme.palette.divider,
   },
   authenticatedHeader: {
-    gridTemplateColumns: '1fr repeat(3,max-content)',
+    gridTemplateColumns: '1fr repeat(4,max-content)',
   },
 }))
 
@@ -48,6 +49,7 @@ const ModuleHeader: FC<ModuleHeaderProps> = ({
 }) => {
   const { classes, cx } = useStyles()
   const { idToken } = useAuth()
+
   return (
     <header
       className={cx(classes.header, {
@@ -76,6 +78,7 @@ const ModuleHeader: FC<ModuleHeaderProps> = ({
           </Avatar>
         </Tooltip>
         <SyncMinifigsButton />
+        <ImportBricksetCsv />
       </DisplayIfAuthenticated>
       <Button size="small" component={Link} to={addTo} variant="contained">
         Add

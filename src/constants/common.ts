@@ -1,3 +1,4 @@
+import type { BricksetIgnoreList } from 'types/brickset'
 import type { Item, ItemId } from 'types/common'
 
 export const mapItemToImageProps = {
@@ -18,3 +19,9 @@ export const mapItemToImageProps = {
     src: string
   }
 >
+
+export const defaultBricksetIgnoreList: BricksetIgnoreList = {
+  numbers: ['10331', '31216'],
+  subthemes: ['Botanical Collection', 'Botanicals', 'Dorling Kindersley'],
+  themes: ['Ideas'],
+}
