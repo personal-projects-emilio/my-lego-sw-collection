@@ -254,7 +254,7 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
             render={({ field, fieldState }) => (
               <TextField
                 {...field}
-                className={classes.gridSpan4}
+                className={classes.gridSpan3}
                 error={fieldState.invalid}
                 helperText={fieldState.error?.message}
                 label="Release Year"
@@ -272,7 +272,7 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
             render={({ field }) => {
               return (
                 <FormControlLabel
-                  className={classes.gridSpan4}
+                  className={classes.gridSpan3}
                   label="Possessed"
                   control={
                     <Switch
@@ -291,23 +291,6 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
               )
             }}
           />
-          <Controller
-            name="retired"
-            control={control}
-            render={({ field }) => {
-              const exitDate = watch('exitDate')
-              return (
-                <Checkbox
-                  {...field}
-                  className={classes.gridSpan4}
-                  // The Brickset exit date wins; the checkbox only covers sets without one
-                  disabled={Boolean(exitDate)}
-                  label={exitDate ? `Retired (exit ${exitDate})` : 'Retired'}
-                  value={isSetRetired({ exitDate, retired: field.value })}
-                />
-              )
-            }}
-          />
           {watch('possessed') === true && (
             <Controller
               name="ownedQuantity"
@@ -315,7 +298,7 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
               render={({ field, fieldState }) => (
                 <TextField
                   {...field}
-                  className={classes.gridSpan4}
+                  className={classes.gridSpan3}
                   error={fieldState.invalid}
                   helperText={fieldState.error?.message}
                   label="Owned quantity"
@@ -328,6 +311,23 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
               )}
             />
           )}
+          <Controller
+            name="retired"
+            control={control}
+            render={({ field }) => {
+              const exitDate = watch('exitDate')
+              return (
+                <Checkbox
+                  {...field}
+                  className={classes.gridSpan3}
+                  // The Brickset exit date wins; the checkbox only covers sets without one
+                  disabled={Boolean(exitDate)}
+                  label={exitDate ? `Retired (${exitDate})` : 'Retired'}
+                  value={isSetRetired({ exitDate, retired: field.value })}
+                />
+              )
+            }}
+          />
           <Controller
             name="EAN"
             control={control}
