@@ -16,6 +16,7 @@ const withDroppedValues = (set: Set): Set => ({
   EAN: set.EAN ?? null,
   UPC: set.UPC ?? null,
   exitDate: set.exitDate ?? null,
+  retired: set.retired ?? false,
   content: {
     bags: set.content?.bags ?? null,
     box: set.content?.box ?? null,

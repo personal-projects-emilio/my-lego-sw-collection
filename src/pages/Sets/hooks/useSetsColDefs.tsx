@@ -21,6 +21,7 @@ import { useAuth } from 'providers/AuthProvider'
 import type { Set } from 'types/sets'
 import { compareIds, spreadArrayIf } from 'utils/array'
 import { formatFrEuroCurrency } from 'utils/format'
+import { isSetRetired } from 'utils/lego'
 
 import { SetMinifigsCellRenderer } from '../components'
 import useSetsMutations from './useSetsMutations'
@@ -91,13 +92,21 @@ const useSetsColDefs = () => {
         },
         {
           field: 'exitDate',
-          headerName: 'Retired',
+          headerName: 'Exit date',
           cellDataType: 'dateString',
           filter: 'agDateColumnFilter',
           suppressFloatingFilterButton: false,
           valueFormatter: ({ value }) =>
             value ? new Date(value).toLocaleDateString('fr-FR') : '',
           width: 130,
+        },
+        {
+          colId: 'retired',
+          headerName: 'Retired',
+          cellDataType: 'boolean',
+          valueGetter: ({ data }) => (data ? isSetRetired(data) : false),
+          suppressFloatingFilterButton: false,
+          width: 110,
         },
         {
           field: 'content.partsQuantity',

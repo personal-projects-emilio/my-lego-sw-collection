@@ -4,7 +4,13 @@ import type {
   Minifig,
   MinifigsList,
 } from 'types/minifigs'
-import type { SetsList } from 'types/sets'
+import type { Set, SetsList } from 'types/sets'
+
+/** Retired once the Brickset exit date is past; without one, the manual flag decides */
+export const isSetRetired = (
+  { exitDate, retired }: Pick<Set, 'exitDate' | 'retired'>,
+  today = new Date().toISOString().slice(0, 10)
+) => (exitDate ? exitDate < today : retired)
 
 interface SetsAndMinifigs {
   setsList: SetsList

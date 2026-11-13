@@ -24,6 +24,7 @@ export const defaultSetFormValues = (setData: SetFormModalProps['setData']) =>
     note: '',
     ownedQuantity: 0,
     possessed: false,
+    retired: false,
     releaseYear: new Date().getFullYear(),
     subtheme: '',
     tags: [],

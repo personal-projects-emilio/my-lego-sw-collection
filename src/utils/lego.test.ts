@@ -4,7 +4,7 @@ import type { Minifig } from 'types/minifigs'
 import type { Set, SetsList } from 'types/sets'
 import { test } from 'vitest'
 
-import { buildCollection, renameMinifigInSets } from './lego.ts'
+import { buildCollection, isSetRetired, renameMinifigInSets } from './lego.ts'
 
 test('renames a minifig in every set that contains it', () => {
   const minifig = { characterName: 'Han Solo', quantity: 1, isInFrame: false }
@@ -98,4 +98,18 @@ test('buildCollection refreshes the character names on set content', () => {
   })
 
   assert.equal(setsList[0].content.minifigs[0].characterName, 'Name sw0001')
+})
+
+test('a set is retired from its exit date, or from the manual flag without one', () => {
+  const today = '2026-06-15'
+  assert.equal(
+    isSetRetired({ exitDate: '2025-12-31', retired: false }, today),
+    true
+  )
+  assert.equal(
+    isSetRetired({ exitDate: '2028-12-31', retired: true }, today),
+    false
+  )
+  assert.equal(isSetRetired({ exitDate: null, retired: true }, today), true)
+  assert.equal(isSetRetired({ exitDate: null, retired: false }, today), false)
 })

@@ -48,6 +48,8 @@ export const setValidationSchema = z.object({
   note: z.string(),
   ownedQuantity: z.number(),
   possessed: z.boolean(),
+  /** Manual override, only used when there is no exitDate (see isSetRetired) */
+  retired: z.boolean(),
   prices: z.object({
     bought: z.number(),
     brickLinkSoldPriceNew: z.number(),
