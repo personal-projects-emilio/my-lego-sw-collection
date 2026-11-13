@@ -56,6 +56,7 @@ const useResaleSetsColDefs = () => {
       [
         {
           cellClass: [agGridClasses.flexAlignCenter, agGridClasses.gap1],
+          cellDataType: false,
           cellRendererSelector: ({ node }) =>
             node.rowPinned
               ? undefined
@@ -121,6 +122,7 @@ const useResaleSetsColDefs = () => {
         },
         {
           cellClass: [agGridClasses.flexAlignCenter, agGridClasses.gap1],
+          cellDataType: false,
           cellRendererSelector: ({ node }) =>
             node.rowPinned
               ? undefined
@@ -133,12 +135,12 @@ const useResaleSetsColDefs = () => {
                   } satisfies ResaleSetActionsCellRendererProps,
                 },
           colId: 'actions',
-          field: 'id',
           filter: false,
           floatingFilter: false,
           headerName: 'Actions',
           resizable: false,
           sortable: false,
+          valueGetter: ({ data, node }) => (node?.rowPinned ? null : data?.id),
           width: 110,
         },
       ] as const satisfies Array<ColDef<ResaleSetRow>>,
