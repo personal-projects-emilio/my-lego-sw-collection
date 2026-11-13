@@ -8,10 +8,4 @@ export const defaultMinifigFormValues = {
   possessed: false,
   tags: [],
   timelines: [],
-  owned: {
-    loose: {
-      isInFrame: false,
-      quantity: 0,
-    },
-  },
 } satisfies Minifig

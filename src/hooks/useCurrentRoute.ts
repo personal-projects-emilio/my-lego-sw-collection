@@ -3,6 +3,7 @@ import type { RouterRouteIds } from 'routes'
 
 const defaultRoutesToCheck = [
   '/auth',
+  '/loose-minifigs',
   '/minifigs',
   '/sets',
 ] satisfies RouterRouteIds[] as string[]

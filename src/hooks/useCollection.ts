@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 
+import { useLooseMinifigsQuery } from 'api/looseMinifigs'
 import { useMinifigsQuery } from 'api/minifigs'
 import { useSetsQuery } from 'api/sets'
 import { buildCollection } from 'utils/lego'
@@ -9,16 +10,21 @@ const useCollection = () => {
   const { data: setsList, isLoading: isSetsLoading } = useSetsQuery()
   const { data: minifigsList, isLoading: isMinifigsLoading } =
     useMinifigsQuery()
+  const { data: looseMinifigsList, isLoading: isLooseMinifigsLoading } =
+    useLooseMinifigsQuery()
 
   const collection = useMemo(
     () =>
-      setsList && minifigsList
-        ? buildCollection({ setsList, minifigsList })
+      setsList && minifigsList && looseMinifigsList
+        ? buildCollection({ setsList, minifigsList, looseMinifigsList })
         : undefined,
-    [setsList, minifigsList]
+    [setsList, minifigsList, looseMinifigsList]
   )
 
-  return { ...collection, isLoading: isSetsLoading || isMinifigsLoading }
+  return {
+    ...collection,
+    isLoading: isSetsLoading || isMinifigsLoading || isLooseMinifigsLoading,
+  }
 }
 
 export default useCollection
