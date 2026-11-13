@@ -237,12 +237,62 @@ test.for([
 })
 
 test('getResaleTotals sums total sold and total profit, skipping empty values', () => {
+  const { totalSold, totalProfit } = getResaleTotals([
+    resale,
+    { ...resale, unitSellingPrice: 100, quantitySold: 1 },
+    { ...resale, unitSellingPrice: null },
+  ])
+
   assert.deepEqual(
-    getResaleTotals([
-      resale,
-      { ...resale, unitSellingPrice: 100, quantitySold: 1 },
-      { ...resale, unitSellingPrice: null },
-    ]),
+    { totalSold, totalProfit },
     { totalSold: 340, totalProfit: 100 }
   )
+})
+
+test('getResaleTotals averages unit values per unit bought and sums quantities', () => {
+  assert.deepEqual(
+    getResaleTotals([
+      {
+        officialPrice: 100,
+        unitBoughtPrice: 75,
+        unitSellingPrice: 125,
+        quantityBought: 3,
+        quantitySold: 2,
+      },
+      {
+        officialPrice: 50,
+        unitBoughtPrice: 25,
+        unitSellingPrice: null,
+        quantityBought: 1,
+        quantitySold: 0,
+      },
+    ]),
+    {
+      officialPrice: 87.5,
+      quantityBought: 4,
+      unitBoughtPrice: 62.5,
+      discount: 0.3125,
+      unitSellingPrice: 125,
+      quantitySold: 2,
+      unitProfit: 50,
+      profitPercentage: 2 / 3,
+      totalSold: 250,
+      totalProfit: 100,
+    }
+  )
+})
+
+test('getResaleTotals leaves averages and profit % empty without values', () => {
+  assert.deepEqual(getResaleTotals([]), {
+    officialPrice: null,
+    quantityBought: 0,
+    unitBoughtPrice: null,
+    discount: null,
+    unitSellingPrice: null,
+    quantitySold: 0,
+    unitProfit: null,
+    profitPercentage: null,
+    totalSold: 0,
+    totalProfit: 0,
+  })
 })

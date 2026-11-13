@@ -43,14 +43,47 @@ export const getResaleValues = ({
   }
 }
 
-export const getResaleTotals = (resaleSets: ResaleInputs[]) =>
-  resaleSets.map(getResaleValues).reduce(
-    (totals, { totalSold, totalProfit }) => ({
-      totalSold: totals.totalSold + (totalSold ?? 0),
-      totalProfit: totals.totalProfit + (totalProfit ?? 0),
-    }),
-    { totalSold: 0, totalProfit: 0 }
+const sum = (values: number[]) => values.reduce((total, v) => total + v, 0)
+
+export const getResaleTotals = (
+  resaleSets: Array<ResaleInputs & { quantityBought: number }>
+) => {
+  const rows = resaleSets.map((resaleSet) => ({
+    ...resaleSet,
+    ...getResaleValues(resaleSet),
+  }))
+  const averagePerUnitBought = (
+    pick: (row: (typeof rows)[number]) => number | null
+  ) => {
+    const weighted = rows.flatMap((row) => {
+      const value = pick(row)
+      return value === null ? [] : [{ value, quantity: row.quantityBought }]
+    })
+    const quantity = sum(weighted.map((w) => w.quantity))
+    return quantity > 0
+      ? sum(weighted.map((w) => w.value * w.quantity)) / quantity
+      : null
+  }
+  const totalProfit = sum(rows.map((row) => row.totalProfit ?? 0))
+  const soldCost = sum(
+    rows
+      .filter((row) => row.unitProfit !== null)
+      .map((row) => row.quantitySold * row.unitBoughtPrice)
   )
+
+  return {
+    officialPrice: averagePerUnitBought((row) => row.officialPrice),
+    quantityBought: sum(rows.map((row) => row.quantityBought)),
+    unitBoughtPrice: averagePerUnitBought((row) => row.unitBoughtPrice),
+    discount: averagePerUnitBought((row) => row.discount),
+    unitSellingPrice: averagePerUnitBought((row) => row.unitSellingPrice),
+    quantitySold: sum(rows.map((row) => row.quantitySold)),
+    unitProfit: averagePerUnitBought((row) => row.unitProfit),
+    profitPercentage: soldCost > 0 ? totalProfit / soldCost : null,
+    totalSold: sum(rows.map((row) => row.totalSold ?? 0)),
+    totalProfit,
+  }
+}
 
 interface StoredCollection {
   setsList: SetsList

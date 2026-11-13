@@ -6,6 +6,7 @@ import type { ModelUpdatedEvent } from 'ag-grid-community'
 import { useResaleSetsQuery } from 'api/resaleSets'
 import { AgGridTable } from 'components/AgGrid/table'
 import ModuleHeader from 'components/ModuleHeader/ModuleHeader'
+import isEqual from 'lodash/isEqual'
 import { defaultSetsColumnDefs } from 'pages/Sets/Sets.constants'
 import { useAuth } from 'providers/AuthProvider'
 import { getResaleTotals, getResaleValues } from 'utils/lego'
@@ -18,7 +19,7 @@ const ResaleSets: FC = () => {
   const columnDefs = useResaleSetsColDefs()
   const [quickFilter, setQuickFilter] = useState('')
   const [inStockOnly, setInStockOnly] = useState(true)
-  const [totals, setTotals] = useState({ totalSold: 0, totalProfit: 0 })
+  const [totals, setTotals] = useState(() => getResaleTotals([]))
 
   const rows = useMemo(
     () =>
@@ -41,10 +42,7 @@ const ResaleSets: FC = () => {
     api.forEachNodeAfterFilter(({ data }) => data && visibleRows.push(data))
     const visibleTotals = getResaleTotals(visibleRows)
     setTotals((previous) =>
-      previous.totalSold === visibleTotals.totalSold &&
-      previous.totalProfit === visibleTotals.totalProfit
-        ? previous
-        : visibleTotals
+      isEqual(previous, visibleTotals) ? previous : visibleTotals
     )
   }
 
