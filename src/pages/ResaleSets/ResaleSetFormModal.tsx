@@ -70,7 +70,7 @@ const ResaleSetFormModal: FC<ResaleSetFormModalProps> = ({ resaleSet }) => {
     useResaleSetsMutations()
   const navigate = useNavigate()
   const { classes } = useStyles()
-  const isPrefilled = useRef(false)
+  const prefilledId = useRef<ResaleSet['id'] | null>(null)
 
   const schema = useMemo(
     () =>
@@ -86,7 +86,7 @@ const ResaleSetFormModal: FC<ResaleSetFormModalProps> = ({ resaleSet }) => {
     formState: { errors },
     handleSubmit,
     setError,
-    setValue,
+    setValues,
   } = useForm<ResaleSetFormInput, unknown, ResaleSet>({
     defaultValues: resaleSet ?? defaultResaleSetFormValues,
     resolver: zodResolver(schema),
@@ -100,12 +100,15 @@ const ResaleSetFormModal: FC<ResaleSetFormModalProps> = ({ resaleSet }) => {
 
   const prefillFromCollection = (id: ResaleSet['id']) => {
     const set = setsList.find((item) => item.id === id)
-    if (!set && !isPrefilled.current) return
-    isPrefilled.current = Boolean(set)
-    setValue('name', set?.name ?? defaultResaleSetFormValues.name)
-    setValue('officialPrice', set?.prices.storeValue || null)
-    setValue('retired', set?.retired ?? defaultResaleSetFormValues.retired)
-    setValue('exitDate', set?.exitDate ?? null)
+    if (id === prefilledId.current || (!set && prefilledId.current === null))
+      return
+    prefilledId.current = set ? id : null
+    setValues({
+      name: set?.name ?? defaultResaleSetFormValues.name,
+      officialPrice: set?.prices.storeValue || null,
+      retired: set?.retired ?? defaultResaleSetFormValues.retired,
+      exitDate: set?.exitDate ?? null,
+    })
   }
 
   const onSubmit: SubmitHandler<ResaleSet> = (data) =>

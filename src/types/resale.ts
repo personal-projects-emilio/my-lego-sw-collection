@@ -22,7 +22,7 @@ export const resaleSetValidationSchema = z
       .min(1, { message: 'Quantity bought must be at least 1' }),
     unitBoughtPrice: z
       .number({ message: 'Unit bought price is required' })
-      .min(0, { message: 'Unit bought price can not be negative' }),
+      .positive({ message: 'Unit bought price must be greater than 0' }),
     unitSellingPrice: z
       .number()
       .min(0, { message: 'Unit selling price can not be negative' })

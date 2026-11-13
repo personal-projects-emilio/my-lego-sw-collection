@@ -1,6 +1,6 @@
 import { type FC, useMemo, useState } from 'react'
 
-import { FormControlLabel, Skeleton, Switch } from '@mui/material'
+import { Alert, FormControlLabel, Skeleton, Switch } from '@mui/material'
 import { Navigate, Outlet } from '@tanstack/react-router'
 import type { ModelUpdatedEvent } from 'ag-grid-community'
 import { useResaleSetsQuery } from 'api/resaleSets'
@@ -15,7 +15,7 @@ import useResaleSetsColDefs, { type ResaleSetRow } from './useResaleSetsColDefs'
 
 const ResaleSets: FC = () => {
   const { idToken } = useAuth()
-  const { data: resaleSetsList, isLoading } = useResaleSetsQuery()
+  const { data: resaleSetsList, isError, isLoading } = useResaleSetsQuery()
   const columnDefs = useResaleSetsColDefs()
   const [quickFilter, setQuickFilter] = useState('')
   const [inStockOnly, setInStockOnly] = useState(true)
@@ -50,6 +50,9 @@ const ResaleSets: FC = () => {
 
   if (isLoading)
     return <Skeleton variant="rectangular" height="calc(100vh - 48px)" />
+
+  if (isError)
+    return <Alert severity="error">Unable to load your resale sets</Alert>
 
   return (
     <>
