@@ -126,6 +126,7 @@ const useResaleSetsColDefs = () => {
         { ...euroColDef, field: 'officialPrice', headerName: 'Official' },
         { ...euroColDef, field: 'unitBoughtPrice', headerName: 'Unit bought' },
         { ...percentColDef, field: 'discount', headerName: 'Discount' },
+        { ...euroColDef, field: 'totalBought', headerName: 'Total bought' },
         { ...numberColDef, field: 'quantitySold', headerName: 'Qty sold' },
         {
           ...euroColDef,

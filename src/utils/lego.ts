@@ -15,6 +15,7 @@ export const isSetRetired = (
 
 type ResaleInputs = {
   officialPrice: number | null
+  quantityBought: number
   unitBoughtPrice: number
   unitSellingPrice: number | null
   quantitySold: number
@@ -22,6 +23,7 @@ type ResaleInputs = {
 
 export const getResaleValues = ({
   officialPrice,
+  quantityBought,
   unitBoughtPrice,
   unitSellingPrice,
   quantitySold,
@@ -32,6 +34,7 @@ export const getResaleValues = ({
     discount: officialPrice
       ? (officialPrice - unitBoughtPrice) / officialPrice
       : null,
+    totalBought: quantityBought * unitBoughtPrice,
     unitProfit,
     profitPercentage:
       unitProfit !== null && unitBoughtPrice > 0
@@ -45,9 +48,7 @@ export const getResaleValues = ({
 
 const sum = (values: number[]) => values.reduce((total, v) => total + v, 0)
 
-export const getResaleTotals = (
-  resaleSets: Array<ResaleInputs & { quantityBought: number }>
-) => {
+export const getResaleTotals = (resaleSets: ResaleInputs[]) => {
   const rows = resaleSets.map((resaleSet) => ({
     ...resaleSet,
     ...getResaleValues(resaleSet),
@@ -76,6 +77,7 @@ export const getResaleTotals = (
     quantityBought: sum(rows.map((row) => row.quantityBought)),
     unitBoughtPrice: averagePerUnitBought((row) => row.unitBoughtPrice),
     discount: averagePerUnitBought((row) => row.discount),
+    totalBought: sum(rows.map((row) => row.totalBought)),
     unitSellingPrice: averagePerUnitBought((row) => row.unitSellingPrice),
     quantitySold: sum(rows.map((row) => row.quantitySold)),
     unitProfit: averagePerUnitBought((row) => row.unitProfit),

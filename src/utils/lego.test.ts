@@ -193,6 +193,7 @@ test.for([
     changes: {},
     expected: {
       discount: 0.2,
+      totalBought: 240,
       unitProfit: 40,
       profitPercentage: 0.5,
       totalSold: 240,
@@ -204,6 +205,7 @@ test.for([
     changes: { officialPrice: null },
     expected: {
       discount: null,
+      totalBought: 240,
       unitProfit: 40,
       profitPercentage: 0.5,
       totalSold: 240,
@@ -215,6 +217,7 @@ test.for([
     changes: { unitBoughtPrice: 0 },
     expected: {
       discount: 1,
+      totalBought: 0,
       unitProfit: 120,
       profitPercentage: null,
       totalSold: 240,
@@ -226,6 +229,7 @@ test.for([
     changes: { unitSellingPrice: null },
     expected: {
       discount: 0.2,
+      totalBought: 240,
       unitProfit: null,
       profitPercentage: null,
       totalSold: null,
@@ -272,6 +276,7 @@ test('getResaleTotals averages unit values per unit bought and sums quantities',
       quantityBought: 4,
       unitBoughtPrice: 62.5,
       discount: 0.3125,
+      totalBought: 250,
       unitSellingPrice: 125,
       quantitySold: 2,
       unitProfit: 50,
@@ -288,6 +293,7 @@ test('getResaleTotals leaves averages and profit % empty without values', () => 
     quantityBought: 0,
     unitBoughtPrice: null,
     discount: null,
+    totalBought: 0,
     unitSellingPrice: null,
     quantitySold: 0,
     unitProfit: null,
