@@ -14,6 +14,15 @@ const useStyles = makeStyles({ name: 'ItemIdCellRenderer' })({
     padding: 0,
     lineHeight: 0,
   },
+  avatar: {
+    fontSize: 18,
+  },
+  content: {
+    alignItems: 'center',
+    display: 'flex',
+    gap: 8,
+    height: '100%',
+  },
   image: {
     minHeight: 300,
   },
@@ -36,32 +45,34 @@ const ItemIdCellRenderer = ({
   const { alt, src } = mapItemToImageProps[variant](String(id))
 
   return (
-    <>
-      <Tooltip
-        classes={{
-          tooltip: classes.tooltip,
-        }}
-        enterDelay={300}
-        enterNextDelay={300}
-        placement="right-start"
-        title={
-          <img
-            alt={alt}
-            className={classes.image}
-            src={src}
-            onError={({ currentTarget }) => {
-              const fallbackSrc = data?.bricksetImagePath
-              if (!fallbackSrc || currentTarget.src === fallbackSrc) return
-              currentTarget.src = fallbackSrc
-              currentTarget.alt = `${variant} ${String(id)} brickset picture`
-            }}
-          />
-        }
-      >
-        <Avatar aria-label={`Show ${alt}`}>{icon}</Avatar>
-      </Tooltip>
-      {id}
-    </>
+    <Tooltip
+      classes={{
+        tooltip: classes.tooltip,
+      }}
+      enterDelay={300}
+      enterNextDelay={300}
+      placement="right-start"
+      title={
+        <img
+          alt={alt}
+          className={classes.image}
+          src={src}
+          onError={({ currentTarget }) => {
+            const fallbackSrc = data?.bricksetImagePath
+            if (!fallbackSrc || currentTarget.src === fallbackSrc) return
+            currentTarget.src = fallbackSrc
+            currentTarget.alt = `${variant} ${String(id)} brickset picture`
+          }}
+        />
+      }
+    >
+      <span className={classes.content}>
+        <Avatar aria-label={`Show ${alt}`} className={classes.avatar}>
+          {icon}
+        </Avatar>
+        {id}
+      </span>
+    </Tooltip>
   )
 }
 
