@@ -6,7 +6,6 @@ import type {
 } from 'types/minifigs'
 import type { Set, SetsList } from 'types/sets'
 
-/** Retired once the Brickset exit date is past; without one, the manual flag decides */
 export const isSetRetired = (
   { exitDate, retired }: Pick<Set, 'exitDate' | 'retired'>,
   today = new Date().toISOString().slice(0, 10)

@@ -321,7 +321,6 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
                 <Checkbox
                   {...field}
                   className={classes.gridSpan4}
-                  // The Brickset exit date wins; the checkbox only covers sets without one
                   disabled={Boolean(exitDate)}
                   label={
                     exitDate ? `Retired (${formatFrDate(exitDate)})` : 'Retired'
