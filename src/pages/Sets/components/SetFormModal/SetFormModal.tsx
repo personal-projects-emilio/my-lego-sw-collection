@@ -46,7 +46,7 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
         )
         .refine(
           ({ ownedQuantity, location }) =>
-            ownedQuantity === 0 || location.length > 0,
+            !(ownedQuantity > 0) || location.length > 0,
           {
             path: ['location'],
             message: 'Location is mandatory if you possess the set!',

@@ -9,13 +9,16 @@ import {
   DialogContent,
   DialogTitle,
   TextField,
+  Typography,
 } from '@mui/material'
 import { useNavigate } from '@tanstack/react-router'
 import { Autocomplete, Checkbox } from 'components/inputs'
 import { useCollection } from 'hooks'
 import { makeStyles } from 'tss-react/mui'
+import type { StoredLooseMinifig } from 'types/minifigs'
 import { z } from 'zod'
 
+import { defaultLooseMinifigFormValues } from './AddLooseMinifigFormModal.constant'
 import useLooseMinifigsMutations from './useLooseMinifigsMutations'
 
 const useStyles = makeStyles({ name: 'AddLooseMinifigFormModal' })((theme) => ({
@@ -28,14 +31,6 @@ const useStyles = makeStyles({ name: 'AddLooseMinifigFormModal' })((theme) => ({
     gridColumn: '1 / -1',
   },
 }))
-
-type LooseMinifigFormInput = {
-  id: string
-  quantity: number
-  isInFrame: boolean
-  unitBoughtPrice: number
-  unitMarketValue: number
-}
 
 const AddLooseMinifigFormModal: FC = () => {
   const { minifigsList = [] } = useCollection()
@@ -58,27 +53,32 @@ const AddLooseMinifigFormModal: FC = () => {
       z.object({
         id: z
           .string({ message: 'Minifig is required' })
+          .min(1, { message: 'Minifig is required' })
           .refine((id) => availableMinifigs.has(id), {
             message: 'Pick a minifig without loose copies',
           }),
-        quantity: z.number().int().min(1, {
-          message: 'Quantity must be at least 1',
-        }),
+        quantity: z
+          .number({ message: 'Quantity is required' })
+          .int()
+          .min(1, { message: 'Quantity must be at least 1' }),
         isInFrame: z.boolean(),
-        unitBoughtPrice: z.number().min(0),
-        unitMarketValue: z.number().min(0),
+        unitBoughtPrice: z
+          .number({ message: 'Unit bought price is required' })
+          .min(0, { message: 'Unit bought price can not be negative' }),
+        unitMarketValue: z
+          .number({ message: 'Unit market value is required' })
+          .min(0, { message: 'Unit market value can not be negative' }),
       }),
     [availableMinifigs]
   )
 
-  const { control, handleSubmit } = useForm<LooseMinifigFormInput>({
-    defaultValues: {
-      id: '',
-      quantity: 1,
-      isInFrame: false,
-      unitBoughtPrice: 0,
-      unitMarketValue: 0,
-    },
+  const {
+    control,
+    formState: { errors },
+    handleSubmit,
+    setError,
+  } = useForm<StoredLooseMinifig>({
+    defaultValues: defaultLooseMinifigFormValues,
     resolver: zodResolver(schema),
     mode: 'onSubmit',
     reValidateMode: 'onChange',
@@ -88,8 +88,10 @@ const AddLooseMinifigFormModal: FC = () => {
     navigate({ to: '/loose-minifigs' })
   }
 
-  const onSubmit: SubmitHandler<LooseMinifigFormInput> = ({ id, ...loose }) =>
-    editLooseMinifig(id, loose).then(onClose)
+  const onSubmit: SubmitHandler<StoredLooseMinifig> = ({ id, ...loose }) =>
+    editLooseMinifig(id, loose).then(onClose, () =>
+      setError('root', { message: 'Unable to add the loose minifig' })
+    )
 
   const numberField = (
     name: 'quantity' | 'unitBoughtPrice' | 'unitMarketValue',
@@ -154,6 +156,11 @@ const AddLooseMinifigFormModal: FC = () => {
           />
           {numberField('unitBoughtPrice', 'Unit bought price')}
           {numberField('unitMarketValue', 'Unit market value')}
+          {errors.root && (
+            <Typography color="error" className={classes.fullWidth}>
+              {errors.root.message}
+            </Typography>
+          )}
         </form>
       </DialogContent>
       <DialogActions>

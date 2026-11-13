@@ -45,6 +45,7 @@ const LooseMinifigs: FC = () => {
     <>
       <ModuleHeader
         addTo="/loose-minifigs/add"
+        hideBricksetImport
         setQuickFilter={setQuickFilter}
         statisticsTooltipTitle={`You have ${statistics.quantity} loose minifigs across ${looseMinifigs?.length ?? 0} variants. You have spent ${formatFrEuroCurrency(statistics.bought)} on them and their market value is ${formatFrEuroCurrency(statistics.marketValue)}`}
       />

@@ -21,6 +21,7 @@ import ImportBricksetCsv from './ImportBricksetCsv'
 
 type ModuleHeaderProps = {
   addTo: NonNullable<LinkProps['to']>
+  hideBricksetImport?: boolean
   setQuickFilter: (value: string) => void
   statisticsTooltipTitle: NonNullable<TooltipProps['title']>
 }
@@ -44,6 +45,7 @@ const useStyles = makeStyles({ name: 'ModuleHeader' })((theme) => ({
 const ModuleHeader: FC<ModuleHeaderProps> = ({
   setQuickFilter,
   addTo,
+  hideBricksetImport = false,
   statisticsTooltipTitle,
 }) => {
   const { classes, cx } = useStyles()
@@ -76,7 +78,7 @@ const ModuleHeader: FC<ModuleHeaderProps> = ({
             <MdBarChart />
           </Avatar>
         </Tooltip>
-        <ImportBricksetCsv />
+        {!hideBricksetImport && <ImportBricksetCsv />}
       </DisplayIfAuthenticated>
       <Button size="small" component={Link} to={addTo} variant="contained">
         Add
