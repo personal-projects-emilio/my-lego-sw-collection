@@ -18,6 +18,7 @@ import DisplayIfAuthenticated from 'components/DisplayIfAuthenticated'
 import { Autocomplete, Checkbox } from 'components/inputs'
 import { useSetsAutocompleteOptions, useSetsMutations } from 'pages/Sets/hooks'
 import { type SetFormInput, setValidationSchema } from 'types/sets'
+import { formatFrDate } from 'utils/format'
 import { isSetRetired } from 'utils/lego'
 
 import { defaultSetFormValues } from './SetFormModal.constant'
@@ -322,7 +323,9 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
                   className={classes.gridSpan3}
                   // The Brickset exit date wins; the checkbox only covers sets without one
                   disabled={Boolean(exitDate)}
-                  label={exitDate ? `Retired (${exitDate})` : 'Retired'}
+                  label={
+                    exitDate ? `Retired (${formatFrDate(exitDate)})` : 'Retired'
+                  }
                   value={isSetRetired({ exitDate, retired: field.value })}
                 />
               )

@@ -20,7 +20,7 @@ import {
 import { useAuth } from 'providers/AuthProvider'
 import type { Set } from 'types/sets'
 import { compareIds, spreadArrayIf } from 'utils/array'
-import { formatFrEuroCurrency } from 'utils/format'
+import { formatFrDate, formatFrEuroCurrency } from 'utils/format'
 import { isSetRetired } from 'utils/lego'
 
 import { SetMinifigsCellRenderer } from '../components'
@@ -96,8 +96,7 @@ const useSetsColDefs = () => {
           cellDataType: 'dateString',
           filter: 'agDateColumnFilter',
           suppressFloatingFilterButton: false,
-          valueFormatter: ({ value }) =>
-            value ? new Date(value).toLocaleDateString('fr-FR') : '',
+          valueFormatter: ({ value }) => formatFrDate(value),
           width: 130,
         },
         {
