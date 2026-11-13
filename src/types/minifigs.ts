@@ -19,12 +19,6 @@ export const minifigValidationSchema = z.object({
   possessed: z.boolean(),
   tags: z.array(z.string()),
   timelines: z.array(z.string()),
-  owned: z.object({
-    loose: z.object({
-      isInFrame: z.boolean().default(false),
-      quantity: z.number().min(0).default(0),
-    }),
-  }),
 })
 
 /** A minifig as stored in the DB */
@@ -33,9 +27,22 @@ export type MinifigFormInput = z.input<typeof minifigValidationSchema>
 
 export type MinifigsList = Minifig[]
 
-/** A minifig with the values buildCollection calculates from the sets */
+export type LooseMinifig = {
+  isInFrame: boolean
+  quantity: number
+  unitBoughtPrice: number
+  unitMarketValue: number
+}
+
+/** A loose minifig as stored in the DB. Only minifigs with a loose quantity above 0 have one */
+export type StoredLooseMinifig = LooseMinifig & { id: Minifig['id'] }
+
+export type LooseMinifigsList = StoredLooseMinifig[]
+
+/** A minifig with the values buildCollection calculates from the sets and the loose minifigs */
 export type CollectionMinifig = Minifig & {
-  owned: Minifig['owned'] & {
+  owned: {
+    loose: LooseMinifig
     total: number
     inSet: {
       isInFrame: boolean

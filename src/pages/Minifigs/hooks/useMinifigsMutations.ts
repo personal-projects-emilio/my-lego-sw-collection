@@ -7,10 +7,11 @@ import {
   useMinifigsQuery,
 } from 'api/minifigs'
 import { useSetsQuery } from 'api/sets'
+import useLooseMinifigsMutations from 'pages/LooseMinifigs/useLooseMinifigsMutations'
 import { useSetsMutations } from 'pages/Sets/hooks'
 import { useAuth } from 'providers/AuthProvider'
 import type { Minifig, MinifigsList } from 'types/minifigs'
-import { renameMinifigInSets } from 'utils/lego'
+import { renameLooseMinifig, renameMinifigInSets } from 'utils/lego'
 import { assert, isNotNullOrUndefined } from 'utils/typescript'
 
 const useMinifigsMutations = () => {
@@ -18,6 +19,8 @@ const useMinifigsMutations = () => {
   const { idToken } = useAuth()
   const { data: setsList } = useSetsQuery()
   const { editSetsList } = useSetsMutations()
+  const { editLooseMinifig, editLooseMinifigsList, looseMinifigsList } =
+    useLooseMinifigsMutations()
 
   const { mutateAsync, isPending } = useMutation({
     mutationFn: (data: MinifigsList) => mutateMinifigs(data),
@@ -60,8 +63,11 @@ const useMinifigsMutations = () => {
       await mutateAsync(updatedMinifigsList, {
         onError: (err) => console.error('Unable to delete the minifig', err),
       })
+      if (looseMinifigsList?.some(({ id }) => id === minifigId)) {
+        await editLooseMinifig(minifigId, { quantity: 0 })
+      }
     },
-    [idToken, minifigsList, mutateAsync]
+    [idToken, minifigsList, mutateAsync, looseMinifigsList, editLooseMinifig]
   )
 
   const editMinifig = useCallback(
@@ -93,8 +99,26 @@ const useMinifigsMutations = () => {
       if (renamedSetsList && renamedSetsList !== setsList) {
         await editSetsList(renamedSetsList)
       }
+      if (looseMinifigsList && previousMinifig.id !== newMinifig.id) {
+        const renamedLooseMinifigsList = renameLooseMinifig(
+          looseMinifigsList,
+          previousMinifig.id,
+          newMinifig.id
+        )
+        if (renamedLooseMinifigsList !== looseMinifigsList) {
+          await editLooseMinifigsList(renamedLooseMinifigsList)
+        }
+      }
     },
-    [idToken, minifigsList, mutateAsync, setsList, editSetsList]
+    [
+      idToken,
+      minifigsList,
+      mutateAsync,
+      setsList,
+      editSetsList,
+      looseMinifigsList,
+      editLooseMinifigsList,
+    ]
   )
 
   const editMinifigsList = useCallback(

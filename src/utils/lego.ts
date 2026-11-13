@@ -1,14 +1,17 @@
 import type {
   CollectionMinifig,
   CollectionMinifigsList,
+  LooseMinifig,
+  LooseMinifigsList,
   Minifig,
   MinifigsList,
 } from 'types/minifigs'
 import type { SetsList } from 'types/sets'
 
-interface SetsAndMinifigs {
+interface StoredCollection {
   setsList: SetsList
   minifigsList: MinifigsList
+  looseMinifigsList: LooseMinifigsList
 }
 
 interface Collection {
@@ -35,21 +38,61 @@ export const renameMinifigInSets = (
       : set
   )
 
+const defaultLoose: LooseMinifig = {
+  isInFrame: false,
+  quantity: 0,
+  unitBoughtPrice: 0,
+  unitMarketValue: 0,
+}
+
+const byId = (a: { id: string }, b: { id: string }) => a.id.localeCompare(b.id)
+
+/** Applies changes to a minifig's loose entry, dropping the entry when its quantity reaches 0 */
+export const updateLooseMinifig = (
+  looseMinifigsList: LooseMinifigsList,
+  minifigId: Minifig['id'],
+  changes: Partial<LooseMinifig>
+): LooseMinifigsList => {
+  const previous = looseMinifigsList.find(({ id }) => id === minifigId)
+  const others = looseMinifigsList.filter(({ id }) => id !== minifigId)
+  const updated = { ...defaultLoose, ...previous, ...changes, id: minifigId }
+  return updated.quantity > 0 ? [...others, updated].sort(byId) : others
+}
+
+export const renameLooseMinifig = (
+  looseMinifigsList: LooseMinifigsList,
+  previousId: Minifig['id'],
+  newId: Minifig['id']
+): LooseMinifigsList =>
+  looseMinifigsList.some(({ id }) => id === previousId)
+    ? looseMinifigsList
+        .map((loose) =>
+          loose.id === previousId ? { ...loose, id: newId } : loose
+        )
+        .sort(byId)
+    : looseMinifigsList
+
 /** Derives the collection view from stored data */
 export const buildCollection = ({
   setsList,
   minifigsList,
-}: SetsAndMinifigs): Collection => {
-  const cleanedMinifigsList = minifigsList.map(
-    (minifig): CollectionMinifig => ({
+  looseMinifigsList,
+}: StoredCollection): Collection => {
+  const looseById = new Map(looseMinifigsList.map((loose) => [loose.id, loose]))
+  const cleanedMinifigsList = minifigsList.map((minifig): CollectionMinifig => {
+    const stored = looseById.get(minifig.id)
+    // entries saved before a loose field existed lack it
+    const loose: LooseMinifig = {
+      isInFrame: stored?.isInFrame ?? defaultLoose.isInFrame,
+      quantity: stored?.quantity ?? defaultLoose.quantity,
+      unitBoughtPrice: stored?.unitBoughtPrice ?? defaultLoose.unitBoughtPrice,
+      unitMarketValue: stored?.unitMarketValue ?? defaultLoose.unitMarketValue,
+    }
+    return {
       ...minifig,
-      owned: {
-        total: minifig.owned.loose.quantity ?? 0,
-        loose: minifig.owned.loose,
-        inSet: [],
-      },
-    })
-  )
+      owned: { total: loose.quantity, loose, inSet: [] },
+    }
+  })
 
   const syncedList = setsList.reduce(
     ({ sets, minifigs }, currentSet) => {

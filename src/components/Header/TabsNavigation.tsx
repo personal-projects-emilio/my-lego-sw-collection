@@ -11,12 +11,25 @@ const TabsNavigation: FC = () => {
 
   return (
     <Tabs
-      value={currentRoute.id}
+      // logged out, the loose tab is absent for the render before the redirect
+      value={
+        idToken || currentRoute.id !== '/loose-minifigs'
+          ? currentRoute.id
+          : false
+      }
       aria-label="Application tab navigation"
       component="nav"
     >
       <Tab component={Link} label="Minifigs" to="/minifigs" value="/minifigs" />
       <Tab component={Link} label="Sets" to="/sets" value="/sets" />
+      {idToken && (
+        <Tab
+          component={Link}
+          label="Loose minifigs"
+          to="/loose-minifigs"
+          value="/loose-minifigs"
+        />
+      )}
       {idToken ? (
         <Tab label="Logout" onClick={logout} />
       ) : (

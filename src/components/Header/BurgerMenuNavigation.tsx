@@ -86,6 +86,13 @@ const BurgerMenuNavigation: FC = () => {
           onClick={handleCloseMenu}
         />
         <LinkMenuItem to="/sets" label="Sets" onClick={handleCloseMenu} />
+        {idToken && (
+          <LinkMenuItem
+            to="/loose-minifigs"
+            label="Loose minifigs"
+            onClick={handleCloseMenu}
+          />
+        )}
         {idToken ? (
           <MenuItem onClick={handleLogout}>Logout</MenuItem>
         ) : (
