@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { MdLocalSee } from 'react-icons/md'
+import { PiLego } from 'react-icons/pi'
 
 import type { ColDef } from 'ag-grid-community'
 import { useAgGridStyles } from 'components/AgGrid'
@@ -63,7 +63,7 @@ const useResaleSetsColDefs = () => {
               : {
                   component: ItemIdCellRenderer,
                   params: {
-                    icon: <MdLocalSee />,
+                    icon: <PiLego />,
                     variant: 'set',
                   } satisfies ItemIdCellRenderProps,
                 },
