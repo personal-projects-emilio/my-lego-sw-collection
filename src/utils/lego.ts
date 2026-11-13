@@ -4,7 +4,12 @@ import type {
   Minifig,
   MinifigsList,
 } from 'types/minifigs'
-import type { SetsList } from 'types/sets'
+import type { Set, SetsList } from 'types/sets'
+
+export const isSetRetired = (
+  { exitDate, retired }: Pick<Set, 'exitDate' | 'retired'>,
+  today = new Date().toISOString().slice(0, 10)
+) => (exitDate ? exitDate < today : retired)
 
 interface SetsAndMinifigs {
   setsList: SetsList
