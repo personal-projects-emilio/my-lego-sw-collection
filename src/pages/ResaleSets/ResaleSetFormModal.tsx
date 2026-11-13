@@ -20,6 +20,7 @@ import {
 import { useNavigate } from '@tanstack/react-router'
 import { useSetsQuery } from 'api/sets'
 import { Checkbox } from 'components/inputs'
+import capitalize from 'lodash/capitalize'
 import { makeStyles } from 'tss-react/mui'
 import {
   boxConditions,
@@ -149,7 +150,7 @@ const ResaleSetFormModal: FC<ResaleSetFormModalProps> = ({ resaleSet }) => {
         <TextField {...field} label={label} select>
           {options.map((option) => (
             <MenuItem key={option} value={option}>
-              {option}
+              {capitalize(option)}
             </MenuItem>
           ))}
         </TextField>

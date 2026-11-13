@@ -10,6 +10,7 @@ import {
   OverflowTypographyCellRenderer,
   type ResaleSetActionsCellRendererProps,
 } from 'components/AgGrid/column'
+import capitalize from 'lodash/capitalize'
 import type { ResaleSet } from 'types/resale'
 import {
   formatFrDate,
@@ -109,11 +110,17 @@ const useResaleSetsColDefs = () => {
           width: 110,
         },
         {
+          cellDataType: 'boolean',
+          cellRendererSelector: ({ node }) =>
+            node.rowPinned
+              ? { component: OverflowTypographyCellRenderer }
+              : undefined,
           colId: 'retired',
           headerName: 'Retired',
+          suppressFloatingFilterButton: false,
           valueGetter: ({ data, node }) =>
             node?.rowPinned || !data ? null : isSetRetired(data),
-          width: 100,
+          width: 110,
         },
         { ...numberColDef, field: 'quantityBought', headerName: 'Qty bought' },
         { ...euroColDef, field: 'officialPrice', headerName: 'Official' },
@@ -129,8 +136,18 @@ const useResaleSetsColDefs = () => {
         { ...percentColDef, field: 'profitPercentage', headerName: 'Profit %' },
         { ...euroColDef, field: 'totalSold', headerName: 'Total sold' },
         { ...euroColDef, field: 'totalProfit', headerName: 'Total profit' },
-        { field: 'setCondition', headerName: 'Set', width: 110 },
-        { field: 'boxCondition', headerName: 'Box', width: 110 },
+        {
+          field: 'setCondition',
+          headerName: 'Set',
+          valueFormatter: ({ value }) => capitalize(value ?? ''),
+          width: 110,
+        },
+        {
+          field: 'boxCondition',
+          headerName: 'Box',
+          valueFormatter: ({ value }) => capitalize(value ?? ''),
+          width: 110,
+        },
         {
           cellRenderer: OverflowTypographyCellRenderer,
           field: 'location',
