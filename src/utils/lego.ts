@@ -13,6 +13,45 @@ export const isSetRetired = (
   today = new Date().toISOString().slice(0, 10)
 ) => (exitDate ? exitDate < today : retired)
 
+type ResaleInputs = {
+  officialPrice: number | null
+  unitBoughtPrice: number
+  unitSellingPrice: number | null
+  quantitySold: number
+}
+
+export const getResaleValues = ({
+  officialPrice,
+  unitBoughtPrice,
+  unitSellingPrice,
+  quantitySold,
+}: ResaleInputs) => {
+  const unitProfit =
+    unitSellingPrice === null ? null : unitSellingPrice - unitBoughtPrice
+  return {
+    discount: officialPrice
+      ? (officialPrice - unitBoughtPrice) / officialPrice
+      : null,
+    unitProfit,
+    profitPercentage:
+      unitProfit !== null && unitBoughtPrice > 0
+        ? unitProfit / unitBoughtPrice
+        : null,
+    totalSold:
+      unitSellingPrice === null ? null : quantitySold * unitSellingPrice,
+    totalProfit: unitProfit === null ? null : quantitySold * unitProfit,
+  }
+}
+
+export const getResaleTotals = (resaleSets: ResaleInputs[]) =>
+  resaleSets.map(getResaleValues).reduce(
+    (totals, { totalSold, totalProfit }) => ({
+      totalSold: totals.totalSold + (totalSold ?? 0),
+      totalProfit: totals.totalProfit + (totalProfit ?? 0),
+    }),
+    { totalSold: 0, totalProfit: 0 }
+  )
+
 interface StoredCollection {
   setsList: SetsList
   minifigsList: MinifigsList

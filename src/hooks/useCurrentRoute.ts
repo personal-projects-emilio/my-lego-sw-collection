@@ -5,6 +5,7 @@ const defaultRoutesToCheck = [
   '/auth',
   '/loose-minifigs',
   '/minifigs',
+  '/resale-sets',
   '/sets',
 ] satisfies RouterRouteIds[] as string[]
 

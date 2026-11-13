@@ -6,6 +6,7 @@ export {
 export {
   default as ItemActionsCellRenderer,
   type MinifigActionsCellRendererProps,
+  type ResaleSetActionsCellRendererProps,
   type SetActionsCellRendererProps,
 } from './ItemActionsCellRenderer'
 export {

@@ -13,6 +13,7 @@ import { type ToOptions, useNavigate } from '@tanstack/react-router'
 import type { CustomCellRendererProps } from 'ag-grid-react'
 import type { Item } from 'types/common'
 import type { Minifig } from 'types/minifigs'
+import type { ResaleSet } from 'types/resale'
 import type { Set } from 'types/sets'
 import { assert, isNotNullOrUndefined } from 'utils/typescript'
 
@@ -30,9 +31,14 @@ export type SetActionsCellRendererProps = ItemsActionsCellSharedProps & {
   deleteItem: (itemId: Set['id']) => Promise<void>
 }
 
+export type ResaleSetActionsCellRendererProps = ItemsActionsCellSharedProps & {
+  variant: 'resale'
+  deleteItem: (itemId: Set['id']) => Promise<void>
+}
+
 type ActionsCellRendererConstants = {
-  addTo: ToOptions
-  duplicateTooltip: string
+  addTo?: ToOptions
+  duplicateTooltip?: string
   editTo: ToOptions
 }
 
@@ -50,6 +56,11 @@ const getSetActionsCellRendererConstants = (setId: Set['id']) =>
     editTo: { to: '/sets/edit/$setId', params: { setId } },
   }) as const satisfies ActionsCellRendererConstants
 
+const getResaleSetActionsCellRendererConstants = (setId: Set['id']) =>
+  ({
+    editTo: { to: '/resale-sets/edit/$setId', params: { setId } },
+  }) as const satisfies ActionsCellRendererConstants
+
 const ItemActionsCellRenderer = ({
   deleteItem,
   isPending,
@@ -57,18 +68,21 @@ const ItemActionsCellRenderer = ({
   variant,
 }:
   | (CustomCellRendererProps<Set, Set['id']> & SetActionsCellRendererProps)
+  | (CustomCellRendererProps<ResaleSet, Set['id']> &
+      ResaleSetActionsCellRendererProps)
   | (CustomCellRendererProps<Minifig, Minifig['id']> &
       MinifigActionsCellRendererProps)) => {
   assert(isNotNullOrUndefined(itemId))
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const navigate = useNavigate()
-  const { addTo, duplicateTooltip, editTo } = useMemo(
-    () =>
-      variant === 'minifig'
-        ? getMinifigActionsCellRendererConstants(itemId)
-        : getSetActionsCellRendererConstants(itemId),
-    [itemId, variant]
-  )
+  const { addTo, duplicateTooltip, editTo }: ActionsCellRendererConstants =
+    useMemo(() => {
+      if (variant === 'minifig')
+        return getMinifigActionsCellRendererConstants(itemId)
+      if (variant === 'resale')
+        return getResaleSetActionsCellRendererConstants(itemId)
+      return getSetActionsCellRendererConstants(itemId)
+    }, [itemId, variant])
 
   return (
     <>
@@ -77,11 +91,13 @@ const ItemActionsCellRenderer = ({
           <MdEdit fontSize="inherit" />
         </IconButton>
       </Tooltip>
-      <Tooltip enterDelay={300} enterNextDelay={300} title={duplicateTooltip}>
-        <IconButton size="small" onClick={() => navigate(addTo)}>
-          <MdContentCopy fontSize="inherit" />
-        </IconButton>
-      </Tooltip>
+      {addTo && (
+        <Tooltip enterDelay={300} enterNextDelay={300} title={duplicateTooltip}>
+          <IconButton size="small" onClick={() => navigate(addTo)}>
+            <MdContentCopy fontSize="inherit" />
+          </IconButton>
+        </Tooltip>
+      )}
       <Tooltip enterDelay={300} enterNextDelay={300} title={`Delete ${itemId}`}>
         <IconButton size="small" onClick={() => setIsDeleteModalOpen(true)}>
           <MdDelete fontSize="inherit" />

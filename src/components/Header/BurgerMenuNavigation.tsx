@@ -93,6 +93,13 @@ const BurgerMenuNavigation: FC = () => {
             onClick={handleCloseMenu}
           />
         )}
+        {idToken && (
+          <LinkMenuItem
+            to="/resale-sets"
+            label="Resale sets"
+            onClick={handleCloseMenu}
+          />
+        )}
         {idToken ? (
           <MenuItem onClick={handleLogout}>Logout</MenuItem>
         ) : (
