@@ -34,12 +34,11 @@ export type LooseMinifig = {
   unitMarketValue: number
 }
 
-/** A loose minifig as stored in the DB. Only minifigs with a loose quantity above 0 have one */
 export type StoredLooseMinifig = LooseMinifig & { id: Minifig['id'] }
 
 export type LooseMinifigsList = StoredLooseMinifig[]
 
-/** A minifig with the values buildCollection calculates from the sets and the loose minifigs */
+/** A minifig with the values buildCollection calculates from the sets */
 export type CollectionMinifig = Minifig & {
   owned: {
     loose: LooseMinifig

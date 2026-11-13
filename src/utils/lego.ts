@@ -52,7 +52,6 @@ const defaultLoose: LooseMinifig = {
 
 const byId = (a: { id: string }, b: { id: string }) => a.id.localeCompare(b.id)
 
-/** Applies changes to a minifig's loose entry, dropping the entry when its quantity reaches 0 */
 export const updateLooseMinifig = (
   looseMinifigsList: LooseMinifigsList,
   minifigId: Minifig['id'],
@@ -86,7 +85,6 @@ export const buildCollection = ({
   const looseById = new Map(looseMinifigsList.map((loose) => [loose.id, loose]))
   const cleanedMinifigsList = minifigsList.map((minifig): CollectionMinifig => {
     const stored = looseById.get(minifig.id)
-    // entries saved before a loose field existed lack it
     const loose: LooseMinifig = {
       isInFrame: stored?.isInFrame ?? defaultLoose.isInFrame,
       quantity: stored?.quantity ?? defaultLoose.quantity,

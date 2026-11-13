@@ -17,7 +17,6 @@ const useLooseMinifigsMutations = () => {
 
   const { mutateAsync, isPending } = useMutation({
     mutationFn: (data: LooseMinifigsList) => mutateLooseMinifigs(data),
-    // the Realtime DB answers null for an empty list, so keep what was sent
     onSuccess: (_response, data) => setLooseMinifigsQueryData(data),
   })
 
@@ -25,7 +24,6 @@ const useLooseMinifigsMutations = () => {
     async (newLooseMinifigsList: LooseMinifigsList) => {
       assert(isNotNullOrUndefined(looseMinifigsList))
 
-      // optimistic, so the owned totals update everywhere without waiting for the save
       setLooseMinifigsQueryData(newLooseMinifigsList)
       if (!idToken) return
 

@@ -11,7 +11,6 @@ const TabsNavigation: FC = () => {
 
   return (
     <Tabs
-      // logged out, the loose tab is absent for the render before the redirect
       value={
         idToken || currentRoute.id !== '/loose-minifigs'
           ? currentRoute.id

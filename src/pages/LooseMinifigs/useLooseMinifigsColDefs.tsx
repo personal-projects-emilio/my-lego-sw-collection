@@ -30,7 +30,6 @@ const useLooseMinifigsColDefs = () => {
   const { editLooseMinifig } = useLooseMinifigsMutations()
 
   return useMemo(() => {
-    // the grid re-renders from the query data, so the setter never mutates the row
     const looseValueSetter =
       (field: LooseField) =>
       ({ data, newValue }: ValueSetterParams<CollectionMinifig>) => {
