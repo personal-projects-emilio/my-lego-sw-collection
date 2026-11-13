@@ -4,6 +4,8 @@ import { FaPerson } from 'react-icons/fa6'
 import type { ColDef, ValueSetterParams } from 'ag-grid-community'
 import { useAgGridStyles } from 'components/AgGrid'
 import {
+  ExternalLinksCellRenderer,
+  type ExternalLinksCellRenderProps,
   ItemIdCellRenderer,
   type ItemIdCellRenderProps,
   OverflowTypographyCellRenderer,
@@ -103,6 +105,21 @@ const useLooseMinifigsColDefs = () => {
           data
             ? data.owned.loose.quantity * data.owned.loose.unitMarketValue
             : 0,
+      },
+      {
+        cellClass: [agGridClasses.flexAlignCenter, agGridClasses.gap1],
+        cellRenderer: ExternalLinksCellRenderer,
+        cellRendererParams: {
+          variant: 'minifig',
+        } satisfies ExternalLinksCellRenderProps,
+        colId: 'externalLinks',
+        field: 'id',
+        filter: false,
+        floatingFilter: false,
+        headerName: 'Links',
+        resizable: false,
+        sortable: false,
+        width: 100,
       },
     ] as const satisfies Array<ColDef<CollectionMinifig>>
   }, [agGridClasses, editLooseMinifig])
