@@ -6,6 +6,9 @@ export default makeStyles({ name: 'SetFormModal' })((theme) => ({
     gap: theme.spacing(2),
     gridTemplateColumns: 'repeat(12, 1fr)',
   },
+  gridSpan2: {
+    gridColumn: 'span 2',
+  },
   gridSpan3: {
     gridColumn: 'span 3',
   },

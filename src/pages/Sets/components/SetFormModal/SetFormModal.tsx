@@ -299,7 +299,7 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
               render={({ field, fieldState }) => (
                 <TextField
                   {...field}
-                  className={classes.gridSpan3}
+                  className={classes.gridSpan2}
                   error={fieldState.invalid}
                   helperText={fieldState.error?.message}
                   label="Owned quantity"
@@ -320,7 +320,7 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
               return (
                 <Checkbox
                   {...field}
-                  className={classes.gridSpan3}
+                  className={classes.gridSpan4}
                   // The Brickset exit date wins; the checkbox only covers sets without one
                   disabled={Boolean(exitDate)}
                   label={
