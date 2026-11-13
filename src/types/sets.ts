@@ -46,8 +46,7 @@ export const setValidationSchema = z.object({
     message: 'Name is required',
   }),
   note: z.string(),
-  ownedQuantity: z.number(),
-  possessed: z.boolean(),
+  ownedQuantity: z.number().min(0),
   retired: z.boolean(),
   prices: z.object({
     bought: z.number(),

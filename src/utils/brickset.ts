@@ -214,7 +214,6 @@ export const newSetFromBricksetRow = (
       id,
       name: row.SetName,
       subtheme: row.Subtheme || row.Theme,
-      possessed: quantity > 0,
       ownedQuantity: quantity,
     },
     row

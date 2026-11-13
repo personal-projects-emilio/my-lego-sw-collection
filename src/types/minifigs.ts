@@ -16,7 +16,6 @@ export const minifigValidationSchema = z.object({
   name: z.string().min(1, {
     message: 'Name is required',
   }),
-  possessed: z.boolean(),
   tags: z.array(z.string()),
   timelines: z.array(z.string()),
 })
@@ -45,7 +44,7 @@ export type CollectionMinifig = Minifig & {
     total: number
     inSet: {
       isInFrame: boolean
-      possessed: boolean
+      ownedQuantity: number
       quantity: number
       setId: string | number
     }[]

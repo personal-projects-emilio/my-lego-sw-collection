@@ -8,8 +8,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControlLabel,
-  Switch,
   TextField,
   Typography,
 } from '@mui/material'
@@ -47,29 +45,17 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
           }
         )
         .refine(
-          ({ possessed, location }) => {
-            if (!possessed) return true
-            if (possessed) return location.length > 0
-          },
+          ({ ownedQuantity, location }) =>
+            ownedQuantity === 0 || location.length > 0,
           {
             path: ['location'],
             message: 'Location is mandatory if you possess the set!',
-          }
-        )
-        .refine(
-          ({ possessed, ownedQuantity }) => {
-            if (!possessed) return true
-            if (possessed) return ownedQuantity > 0
-          },
-          {
-            path: ['ownedQuantity'],
-            message: 'Owned quantity must be superior to 0!',
           }
         ),
     [ids, isEdit, setData]
   )
 
-  const { control, handleSubmit, setValue, watch } = useForm<SetFormInput>({
+  const { control, handleSubmit, watch } = useForm<SetFormInput>({
     defaultValues: defaultSetFormValues(setData),
     resolver: zodResolver(setValidationSchemaWithRefinedIdCheck),
     mode: 'onSubmit',
@@ -230,7 +216,7 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
                 label="Location"
                 multiline
                 placeholder="Set location (ex: Attic, Office...)"
-                required={watch('possessed') === true}
+                required={watch('ownedQuantity') > 0}
               />
             )}
           />
@@ -255,7 +241,7 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
             render={({ field, fieldState }) => (
               <TextField
                 {...field}
-                className={classes.gridSpan3}
+                className={classes.gridSpan4}
                 error={fieldState.invalid}
                 helperText={fieldState.error?.message}
                 label="Release Year"
@@ -268,50 +254,23 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
             )}
           />
           <Controller
-            name="possessed"
+            name="ownedQuantity"
             control={control}
-            render={({ field }) => {
-              return (
-                <FormControlLabel
-                  className={classes.gridSpan3}
-                  label="Possessed"
-                  control={
-                    <Switch
-                      checked={field.value}
-                      {...field}
-                      onChange={(event) => {
-                        field?.onChange(event)
-                        setValue(
-                          'ownedQuantity',
-                          event.target.value === 'false' ? 1 : 0
-                        )
-                      }}
-                    />
-                  }
-                />
-              )
-            }}
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                className={classes.gridSpan4}
+                error={fieldState.invalid}
+                helperText={fieldState.error?.message}
+                label="Owned quantity"
+                onChange={(event) =>
+                  field?.onChange?.(parseInt(event.target.value, 10))
+                }
+                required
+                type="number"
+              />
+            )}
           />
-          {watch('possessed') === true && (
-            <Controller
-              name="ownedQuantity"
-              control={control}
-              render={({ field, fieldState }) => (
-                <TextField
-                  {...field}
-                  className={classes.gridSpan2}
-                  error={fieldState.invalid}
-                  helperText={fieldState.error?.message}
-                  label="Owned quantity"
-                  onChange={(event) =>
-                    field?.onChange?.(parseInt(event.target.value, 10))
-                  }
-                  required
-                  type="number"
-                />
-              )}
-            />
-          )}
           <Controller
             name="retired"
             control={control}

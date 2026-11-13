@@ -23,7 +23,7 @@ const useSetsStatistics = (): SetsStatistics => {
           totalBought: statistics.totalBought + bought,
           totalMarketValue: statistics.totalMarketValue + marketValue,
           totalStoreValue: statistics.totalStoreValue + storeValue,
-          ...(set.possessed && {
+          ...(set.ownedQuantity > 0 && {
             owned: ++statistics.owned,
           }),
         }

@@ -108,7 +108,6 @@ export const buildCollection = ({
         const currentMinifig = updatedMinifigsList[index]
         updatedMinifigsList[index] = {
           ...currentMinifig,
-          possessed: currentSet.possessed ? true : currentMinifig.possessed,
           ...(!currentSet.tags?.includes('Seasonal') && {
             timelines: [
               ...new Set(
@@ -127,16 +126,16 @@ export const buildCollection = ({
           }),
           owned: {
             loose: currentMinifig.owned.loose,
-            total: currentSet.possessed
-              ? currentMinifig.owned.total + setMinifig.quantity
-              : currentMinifig.owned.total,
+            total:
+              currentMinifig.owned.total +
+              setMinifig.quantity * currentSet.ownedQuantity,
             inSet: [
               ...currentMinifig.owned.inSet,
               {
                 quantity: setMinifig.quantity,
                 setId: currentSet.id,
                 isInFrame: setMinifig.isInFrame ?? false,
-                possessed: currentSet.possessed,
+                ownedQuantity: currentSet.ownedQuantity,
               },
             ],
           },

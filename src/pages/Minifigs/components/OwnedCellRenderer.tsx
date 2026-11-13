@@ -54,12 +54,12 @@ const OwnedCellRenderer = ({
               </TableRow>
             </TableHead>
             <TableBody>
-              {inSet?.map(({ isInFrame, possessed, quantity, setId }) => (
+              {inSet?.map(({ isInFrame, ownedQuantity, quantity, setId }) => (
                 <TableRow key={`${setId}-${quantity}`}>
                   <TableCell>{setId}</TableCell>
                   <TableCell>{quantity}</TableCell>
                   <TableCell align="center">
-                    {possessed && <FaCheck aria-label="Owned" />}
+                    {ownedQuantity > 0 && <FaCheck aria-label="Owned" />}
                   </TableCell>
                   <TableCell align="center">
                     {isInFrame && <FaCheck />}
