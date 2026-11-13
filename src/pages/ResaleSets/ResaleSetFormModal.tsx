@@ -1,4 +1,4 @@
-import { type FC, useMemo } from 'react'
+import { type FC, useMemo, useRef } from 'react'
 import {
   Controller,
   type FieldPath,
@@ -69,6 +69,7 @@ const ResaleSetFormModal: FC<ResaleSetFormModalProps> = ({ resaleSet }) => {
     useResaleSetsMutations()
   const navigate = useNavigate()
   const { classes } = useStyles()
+  const isPrefilled = useRef(false)
 
   const schema = useMemo(
     () =>
@@ -98,11 +99,12 @@ const ResaleSetFormModal: FC<ResaleSetFormModalProps> = ({ resaleSet }) => {
 
   const prefillFromCollection = (id: ResaleSet['id']) => {
     const set = setsList.find((item) => item.id === id)
-    if (!set) return
-    setValue('name', set.name)
-    setValue('officialPrice', set.prices.storeValue || null)
-    setValue('retired', set.retired)
-    setValue('exitDate', set.exitDate)
+    if (!set && !isPrefilled.current) return
+    isPrefilled.current = Boolean(set)
+    setValue('name', set?.name ?? defaultResaleSetFormValues.name)
+    setValue('officialPrice', set?.prices.storeValue || null)
+    setValue('retired', set?.retired ?? defaultResaleSetFormValues.retired)
+    setValue('exitDate', set?.exitDate ?? null)
   }
 
   const onSubmit: SubmitHandler<ResaleSet> = (data) =>
