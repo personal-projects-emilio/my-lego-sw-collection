@@ -10,3 +10,7 @@ export const formatPercentage = new Intl.NumberFormat('fr-Fr', {
   maximumFractionDigits: 2,
   minimumFractionDigits: 0,
 }).format
+
+const frDateFormat = new Intl.DateTimeFormat('fr-FR', { timeZone: 'UTC' })
+export const formatFrDate = (isoDate: string | null) =>
+  isoDate ? frDateFormat.format(new Date(isoDate)) : ''

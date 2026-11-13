@@ -6,6 +6,7 @@ import { test } from 'vitest'
 
 import {
   buildCollection,
+  isSetRetired,
   renameLooseMinifig,
   renameMinifigInSets,
   updateLooseMinifig,
@@ -90,17 +91,32 @@ test('buildCollection gives a minifig without a loose entry an empty loose', () 
   })
 })
 
-test('updateLooseMinifig merges changes, keeps the list sorted and drops the entry at quantity 0', () => {
+test.for([
+  {
+    case: 'merges changes into an entry',
+    id: 'sw0002',
+    quantity: 3,
+    expected: [{ id: 'sw0002', ...loose(3) }],
+  },
+  {
+    case: 'adds a sorted entry with default prices',
+    id: 'sw0001',
+    quantity: 1,
+    expected: [
+      { id: 'sw0001', ...loose(1), unitBoughtPrice: 0, unitMarketValue: 0 },
+      { id: 'sw0002', ...loose(1) },
+    ],
+  },
+  {
+    case: 'drops the entry at quantity 0',
+    id: 'sw0002',
+    quantity: 0,
+    expected: [],
+  },
+])('updateLooseMinifig $case', ({ id, quantity, expected }) => {
   const list = [{ id: 'sw0002', ...loose(1) }]
 
-  assert.deepEqual(updateLooseMinifig(list, 'sw0002', { quantity: 3 }), [
-    { id: 'sw0002', ...loose(3) },
-  ])
-  assert.deepEqual(updateLooseMinifig(list, 'sw0001', { quantity: 1 }), [
-    { id: 'sw0001', ...loose(1), unitBoughtPrice: 0, unitMarketValue: 0 },
-    { id: 'sw0002', ...loose(1) },
-  ])
-  assert.deepEqual(updateLooseMinifig(list, 'sw0002', { quantity: 0 }), [])
+  assert.deepEqual(updateLooseMinifig(list, id, { quantity }), expected)
 })
 
 test('renameLooseMinifig moves the entry to the new id', () => {
@@ -155,3 +171,15 @@ test('buildCollection refreshes the character names on set content', () => {
 
   assert.equal(setsList[0].content.minifigs[0].characterName, 'Name sw0001')
 })
+
+test.for([
+  { exitDate: '2025-12-31', retired: false, expected: true },
+  { exitDate: '2028-12-31', retired: true, expected: false },
+  { exitDate: null, retired: true, expected: true },
+  { exitDate: null, retired: false, expected: false },
+])(
+  'exit date $exitDate with retired flag $retired is retired: $expected',
+  ({ expected, ...set }) => {
+    assert.equal(isSetRetired(set, '2026-06-15'), expected)
+  }
+)

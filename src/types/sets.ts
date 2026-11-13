@@ -48,6 +48,7 @@ export const setValidationSchema = z.object({
   note: z.string(),
   ownedQuantity: z.number(),
   possessed: z.boolean(),
+  retired: z.boolean(),
   prices: z.object({
     bought: z.number(),
     brickLinkSoldPriceNew: z.number(),

@@ -18,6 +18,8 @@ import DisplayIfAuthenticated from 'components/DisplayIfAuthenticated'
 import { Autocomplete, Checkbox } from 'components/inputs'
 import { useSetsAutocompleteOptions, useSetsMutations } from 'pages/Sets/hooks'
 import { type SetFormInput, setValidationSchema } from 'types/sets'
+import { formatFrDate } from 'utils/format'
+import { isSetRetired } from 'utils/lego'
 
 import { defaultSetFormValues } from './SetFormModal.constant'
 import useStyles from './SetFormModal.styles'
@@ -253,7 +255,7 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
             render={({ field, fieldState }) => (
               <TextField
                 {...field}
-                className={classes.gridSpan4}
+                className={classes.gridSpan3}
                 error={fieldState.invalid}
                 helperText={fieldState.error?.message}
                 label="Release Year"
@@ -271,7 +273,7 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
             render={({ field }) => {
               return (
                 <FormControlLabel
-                  className={classes.gridSpan4}
+                  className={classes.gridSpan3}
                   label="Possessed"
                   control={
                     <Switch
@@ -297,7 +299,7 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
               render={({ field, fieldState }) => (
                 <TextField
                   {...field}
-                  className={classes.gridSpan4}
+                  className={classes.gridSpan2}
                   error={fieldState.invalid}
                   helperText={fieldState.error?.message}
                   label="Owned quantity"
@@ -310,6 +312,24 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
               )}
             />
           )}
+          <Controller
+            name="retired"
+            control={control}
+            render={({ field }) => {
+              const exitDate = watch('exitDate')
+              return (
+                <Checkbox
+                  {...field}
+                  className={classes.gridSpan4}
+                  disabled={Boolean(exitDate)}
+                  label={
+                    exitDate ? `Retired (${formatFrDate(exitDate)})` : 'Retired'
+                  }
+                  value={isSetRetired({ exitDate, retired: field.value })}
+                />
+              )
+            }}
+          />
           <Controller
             name="EAN"
             control={control}
