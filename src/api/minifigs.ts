@@ -1,19 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
-import type { Minifig, MinifigsList } from 'types/minifigs'
+import type { MinifigsList } from 'types/minifigs'
 
 import { endPoints, queryKeys } from './api.constants'
 import { api, queryClient } from './index'
 
-// The DB may still hold owned.total and owned.inSet from the old Sync: drop them on read
-const withoutCalculated = ({ owned, ...minifig }: Minifig): Minifig => ({
-  ...minifig,
-  owned: { loose: owned.loose },
-})
-
 const fetchMinifigs = () =>
-  api
-    .get<MinifigsList>(endPoints.minifigs)
-    .then((res) => res.data.map(withoutCalculated))
+  api.get<MinifigsList>(endPoints.minifigs).then((res) => res.data)
 
 export const mutateMinifigs = async (data: MinifigsList) =>
   await api.put<MinifigsList>(endPoints.minifigs, data)
