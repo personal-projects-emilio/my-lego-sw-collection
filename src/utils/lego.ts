@@ -135,7 +135,7 @@ export const buildCollection = ({
                 quantity: setMinifig.quantity,
                 setId: currentSet.id,
                 isInFrame: setMinifig.isInFrame ?? false,
-                ownedQuantity: currentSet.ownedQuantity,
+                setOwnedQuantity: currentSet.ownedQuantity,
               },
             ],
           },

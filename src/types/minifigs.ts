@@ -44,7 +44,7 @@ export type CollectionMinifig = Minifig & {
     total: number
     inSet: {
       isInFrame: boolean
-      ownedQuantity: number
+      setOwnedQuantity: number
       quantity: number
       setId: string | number
     }[]

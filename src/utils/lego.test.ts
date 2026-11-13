@@ -69,8 +69,8 @@ test('buildCollection adds owned set quantities to the loose total and lists eve
   assert.equal(minifigsList[0].owned.total, 3)
   assert.deepEqual(minifigsList[0].owned.loose, loose(1))
   assert.deepEqual(minifigsList[0].owned.inSet, [
-    { setId: 1, quantity: 2, isInFrame: true, ownedQuantity: 1 },
-    { setId: 2, quantity: 2, isInFrame: true, ownedQuantity: 0 },
+    { setId: 1, quantity: 2, isInFrame: true, setOwnedQuantity: 1 },
+    { setId: 2, quantity: 2, isInFrame: true, setOwnedQuantity: 0 },
   ])
 })
 
