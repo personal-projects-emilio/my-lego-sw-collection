@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { FaBoxOpen } from 'react-icons/fa6'
+import { MdLocalSee } from 'react-icons/md'
 
 import type { ColDef } from 'ag-grid-community'
 import { useAgGridStyles } from 'components/AgGrid'
@@ -63,7 +63,7 @@ const useResaleSetsColDefs = () => {
               : {
                   component: ItemIdCellRenderer,
                   params: {
-                    icon: <FaBoxOpen />,
+                    icon: <MdLocalSee />,
                     variant: 'set',
                   } satisfies ItemIdCellRenderProps,
                 },
