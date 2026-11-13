@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image" href="/my-lego-sw-collection/pr-preview/pr-20/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Lego SW Collection</title>
+    <script>
+      ;(function () {
+        var redirect = new URLSearchParams(window.location.search).get(
+          'redirect'
+        )
+        if (redirect) {
+          var newUrl = window.location.pathname + redirect
+          window.history.replaceState(null, '', newUrl)
+        }
+      })()
+    </script>
+    <script type="module" crossorigin src="/my-lego-sw-collection/pr-preview/pr-20/assets/index-CbKgwjkv.js"></script>
+    <link rel="stylesheet" crossorigin href="/my-lego-sw-collection/pr-preview/pr-20/assets/index-CRt1LPPs.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
