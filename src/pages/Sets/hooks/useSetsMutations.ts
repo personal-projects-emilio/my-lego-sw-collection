@@ -94,33 +94,12 @@ const useSetsMutations = () => {
     [idToken, setsList, mutateAsync]
   )
 
-  const toggleSetPossession = useCallback(
-    async (setId: Set['id']) => {
-      assert(isNotNullOrUndefined(setsList))
-
-      const updatedSetsList = setsList.map((set) =>
-        set.id === setId ? { ...set, possessed: !set.possessed } : set
-      )
-
-      if (!idToken) {
-        setSetsQueryData(updatedSetsList)
-        return
-      }
-
-      await mutateAsync(updatedSetsList, {
-        onError: (err) => console.error('Unable to toggle set owned', err),
-      })
-    },
-    [idToken, setsList, mutateAsync]
-  )
-
   return {
     addSet,
     deleteSet,
     editSet,
     editSetsList,
     isPending,
-    toggleSetPossession,
   }
 }
 

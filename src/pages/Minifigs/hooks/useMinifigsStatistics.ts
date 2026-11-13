@@ -18,7 +18,7 @@ const useMinifigsStatistics = (): MinifigsStatistics => {
         return {
           ...statistics,
           totalOwned: statistics.totalOwned + minifig.owned.total,
-          ...(minifig.possessed && {
+          ...(minifig.owned.total > 0 && {
             variantsOwned: ++statistics.variantsOwned,
           }),
         }

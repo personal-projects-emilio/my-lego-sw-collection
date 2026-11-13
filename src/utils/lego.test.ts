@@ -29,7 +29,6 @@ const minifig = (id: string) =>
   ({
     id,
     characterName: `Name ${id}`,
-    possessed: false,
     timelines: [],
     appearances: [],
   }) as unknown as Minifig
@@ -41,10 +40,10 @@ const loose = (quantity: number): LooseMinifig => ({
   unitMarketValue: 5,
 })
 
-const setWith = (id: number, possessed: boolean, tags: string[] = []) =>
+const setWith = (id: number, ownedQuantity: number, tags: string[] = []) =>
   ({
     id,
-    possessed,
+    ownedQuantity,
     tags,
     timelines: ['Original'],
     appearances: ['A New Hope'],
@@ -60,19 +59,29 @@ const setWith = (id: number, possessed: boolean, tags: string[] = []) =>
     },
   }) as unknown as Set
 
-test('buildCollection adds possessed set quantities to the loose total and lists every set', () => {
+test('buildCollection adds owned set quantities to the loose total and lists every set', () => {
   const { minifigsList } = buildCollection({
     minifigsList: [minifig('sw0001')],
     looseMinifigsList: [{ id: 'sw0001', ...loose(1) }],
-    setsList: [setWith(1, true), setWith(2, false)],
+    setsList: [setWith(1, 1), setWith(2, 0)],
   })
 
   assert.equal(minifigsList[0].owned.total, 3)
   assert.deepEqual(minifigsList[0].owned.loose, loose(1))
   assert.deepEqual(minifigsList[0].owned.inSet, [
-    { setId: 1, quantity: 2, isInFrame: true, possessed: true },
-    { setId: 2, quantity: 2, isInFrame: true, possessed: false },
+    { setId: 1, quantity: 2, isInFrame: true, setOwnedQuantity: 1 },
+    { setId: 2, quantity: 2, isInFrame: true, setOwnedQuantity: 0 },
   ])
+})
+
+test('buildCollection counts set minifigs once per owned copy of the set', () => {
+  const { minifigsList } = buildCollection({
+    minifigsList: [minifig('sw0001')],
+    looseMinifigsList: [{ id: 'sw0001', ...loose(1) }],
+    setsList: [setWith(1, 2)],
+  })
+
+  assert.equal(minifigsList[0].owned.total, 5)
 })
 
 test('buildCollection gives a minifig without a loose entry an empty loose', () => {
@@ -128,32 +137,16 @@ test('renameLooseMinifig moves the entry to the new id', () => {
   assert.equal(renameLooseMinifig(list, 'sw0002', 'sw0002a'), list)
 })
 
-test('buildCollection marks a minifig possessed through a possessed set only', () => {
-  const possessed = buildCollection({
-    minifigsList: [minifig('sw0001')],
-    looseMinifigsList: [],
-    setsList: [setWith(1, true)],
-  })
-  const notPossessed = buildCollection({
-    minifigsList: [minifig('sw0001')],
-    looseMinifigsList: [],
-    setsList: [setWith(1, false)],
-  })
-
-  assert.equal(possessed.minifigsList[0].possessed, true)
-  assert.equal(notPossessed.minifigsList[0].possessed, false)
-})
-
 test('buildCollection inherits timelines and appearances except from Seasonal sets', () => {
   const inherited = buildCollection({
     minifigsList: [minifig('sw0001')],
     looseMinifigsList: [],
-    setsList: [setWith(1, false)],
+    setsList: [setWith(1, 0)],
   })
   const seasonal = buildCollection({
     minifigsList: [minifig('sw0001')],
     looseMinifigsList: [],
-    setsList: [setWith(1, false, ['Seasonal'])],
+    setsList: [setWith(1, 0, ['Seasonal'])],
   })
 
   assert.deepEqual(inherited.minifigsList[0].timelines, ['Original'])
@@ -166,7 +159,7 @@ test('buildCollection refreshes the character names on set content', () => {
   const { setsList } = buildCollection({
     minifigsList: [minifig('sw0001')],
     looseMinifigsList: [],
-    setsList: [setWith(1, false)],
+    setsList: [setWith(1, 0)],
   })
 
   assert.equal(setsList[0].content.minifigs[0].characterName, 'Name sw0001')

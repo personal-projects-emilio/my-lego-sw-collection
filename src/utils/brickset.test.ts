@@ -130,7 +130,6 @@ test('builds a new owned set from a Brickset row', () => {
   assert.equal(newSet.name, "Yoda's Lightsaber")
   assert.equal(newSet.subtheme, 'Promotional')
   assert.equal(newSet.releaseYear, 2020)
-  assert.equal(newSet.possessed, true)
   assert.equal(newSet.ownedQuantity, 1)
   assert.equal(newSet.content.partsQuantity, 140)
   assert.equal(

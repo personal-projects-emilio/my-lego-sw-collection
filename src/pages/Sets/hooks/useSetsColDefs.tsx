@@ -207,14 +207,10 @@ const useSetsColDefs = () => {
           cellRenderer: OverflowTypographyCellRenderer,
         },
         {
-          field: 'possessed',
-          headerName: 'Possessed',
-          suppressFloatingFilterButton: false,
-          width: 120,
-        },
-        {
           field: 'ownedQuantity',
           headerName: 'Owned Quantity',
+          filter: 'agNumberColumnFilter',
+          suppressFloatingFilterButton: false,
           width: 100,
         },
         {

@@ -137,35 +137,12 @@ const useMinifigsMutations = () => {
     [idToken, minifigsList, mutateAsync]
   )
 
-  const toggleMinifigPossession = useCallback(
-    async (minifigId: Minifig['id']) => {
-      assert(isNotNullOrUndefined(minifigsList))
-
-      const updatedMinifigsList = minifigsList.map((minifig) =>
-        minifig.id === minifigId
-          ? { ...minifig, possessed: !minifig.possessed }
-          : minifig
-      )
-
-      if (!idToken) {
-        setMinifigsQueryData(updatedMinifigsList)
-        return
-      }
-
-      await mutateAsync(updatedMinifigsList, {
-        onError: (err) => console.error('Unable to toggle minifig owned', err),
-      })
-    },
-    [idToken, minifigsList, mutateAsync]
-  )
-
   return {
     addMinifig,
     deleteMinifig,
     editMinifig,
     editMinifigsList,
     isPending,
-    toggleMinifigPossession,
   }
 }
 

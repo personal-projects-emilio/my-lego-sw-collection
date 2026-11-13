@@ -20,8 +20,7 @@ import useMinifigsMutations from './useMinifigsMutations'
 
 const useMinifigsColDefs = () => {
   const { classes: agGridClasses } = useAgGridStyles()
-  const { deleteMinifig, isPending, toggleMinifigPossession } =
-    useMinifigsMutations()
+  const { deleteMinifig, isPending } = useMinifigsMutations()
 
   return useMemo(
     () =>
@@ -48,22 +47,6 @@ const useMinifigsColDefs = () => {
         {
           field: 'characterName',
           headerName: 'Character Name',
-        },
-        {
-          field: 'possessed',
-          headerName: 'Possessed',
-          editable: true,
-          suppressFloatingFilterButton: false,
-          valueSetter: ({ api, column, data, node }) => {
-            toggleMinifigPossession(data.id).then(() =>
-              api.refreshCells({
-                columns: [column],
-                rowNodes: node ? [node] : undefined,
-              })
-            )
-            return false
-          },
-          width: 120,
         },
         {
           cellRenderer: OverflowTypographyCellRenderer,
@@ -96,7 +79,10 @@ const useMinifigsColDefs = () => {
           headerName: 'Owned',
           resizable: false,
           valueFormatter: ({ value }) => value.total,
-          width: 70,
+          filter: 'agNumberColumnFilter',
+          filterValueGetter: ({ data }) => data?.owned.total,
+          suppressFloatingFilterButton: false,
+          width: 100,
           getQuickFilterText: ({
             data: { owned },
           }: GetQuickFilterTextParams<CollectionMinifig>) =>
@@ -138,7 +124,7 @@ const useMinifigsColDefs = () => {
           width: 140,
         },
       ] as const satisfies Array<ColDef<CollectionMinifig>>,
-    [agGridClasses, deleteMinifig, isPending, toggleMinifigPossession]
+    [agGridClasses, deleteMinifig, isPending]
   )
 }
 

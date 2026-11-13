@@ -8,8 +8,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControlLabel,
-  Switch,
   TextField,
 } from '@mui/material'
 import { useNavigate } from '@tanstack/react-router'
@@ -200,16 +198,6 @@ const MinifigFormModal: FC<MinifigFormModalProps> = ({
                   }}
                 />
               </div>
-            )}
-          />
-          <Controller
-            control={control}
-            name="possessed"
-            render={({ field }) => (
-              <FormControlLabel
-                label="Possessed"
-                control={<Switch checked={field.value} {...field} />}
-              />
             )}
           />
         </form>

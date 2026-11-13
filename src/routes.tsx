@@ -11,6 +11,7 @@ import Layout from 'components/Layout'
 import { addMinifigSearchSchema, addSetSearchSchema } from 'constants/routes'
 import Auth from 'pages/Auth'
 import LooseMinifigs from 'pages/LooseMinifigs'
+import AddLooseMinifigFormModal from 'pages/LooseMinifigs/AddLooseMinifigFormModal'
 import Minifigs from 'pages/Minifigs'
 import {
   AddMinifigFormModal,
@@ -89,6 +90,16 @@ const looseMinifigsRoute = createRoute({
   component: LooseMinifigs,
 })
 
+const looseMinifigAddRoute = createRoute({
+  getParentRoute: () => looseMinifigsRoute,
+  path: '/add',
+  component: () => <AddLooseMinifigFormModal />,
+  validateSearch: looseObject({}),
+  search: {
+    middlewares: [stripSearchParams(true)],
+  },
+})
+
 const authRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/auth',
@@ -98,7 +109,7 @@ const authRoute = createRoute({
 const routeTree = rootRoute.addChildren([
   minifigsRoute.addChildren([minifigAddRoute, minifigEditRoute]),
   setsRoute.addChildren([setAddRoute, setEditRoute]),
-  looseMinifigsRoute,
+  looseMinifigsRoute.addChildren([looseMinifigAddRoute]),
   authRoute,
 ])
 

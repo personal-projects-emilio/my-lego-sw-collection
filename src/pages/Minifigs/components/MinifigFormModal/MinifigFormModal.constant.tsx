@@ -5,7 +5,6 @@ export const defaultMinifigFormValues = {
   characterName: '',
   id: '',
   name: '',
-  possessed: false,
   tags: [],
   timelines: [],
 } satisfies Minifig
