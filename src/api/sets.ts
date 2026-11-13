@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query'
-import omit from 'lodash/omit'
 import type { Set, SetsList } from 'types/sets'
 
 import { endPoints, queryKeys } from './api.constants'
@@ -37,10 +36,7 @@ export const fetchSets = () =>
     .then((res) => res.data.map(withDroppedValues))
 
 export const mutateSets = async (data: SetsList) => {
-  const res = await api.put<SetsList>(
-    endPoints.sets,
-    data.map((set) => omit(set, 'possessed'))
-  )
+  const res = await api.put<SetsList>(endPoints.sets, data)
   return { ...res, data: res.data.map(withDroppedValues) }
 }
 

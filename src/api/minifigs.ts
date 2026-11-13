@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query'
-import omit from 'lodash/omit'
 import type { MinifigsList } from 'types/minifigs'
 
 import { endPoints, queryKeys } from './api.constants'
@@ -9,10 +8,7 @@ const fetchMinifigs = () =>
   api.get<MinifigsList>(endPoints.minifigs).then((res) => res.data)
 
 export const mutateMinifigs = async (data: MinifigsList) =>
-  await api.put<MinifigsList>(
-    endPoints.minifigs,
-    data.map((minifig) => omit(minifig, 'possessed'))
-  )
+  await api.put<MinifigsList>(endPoints.minifigs, data)
 
 /** Used to update local query cache */
 export const setMinifigsQueryData = (data: MinifigsList) =>
