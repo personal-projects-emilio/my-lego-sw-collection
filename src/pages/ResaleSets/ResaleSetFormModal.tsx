@@ -74,7 +74,7 @@ const ResaleSetFormModal: FC<ResaleSetFormModalProps> = ({ resaleSet }) => {
     () =>
       resaleSetValidationSchema.refine(
         ({ id }) => isEdit || !resaleSetsList?.some((item) => item.id === id),
-        { path: ['id'], message: 'This set is already in your resale table' }
+        { path: ['id'], message: 'This set already exists' }
       ),
     [isEdit, resaleSetsList]
   )
@@ -202,11 +202,13 @@ const ResaleSetFormModal: FC<ResaleSetFormModalProps> = ({ resaleSet }) => {
                 }
                 label="Set id"
                 placeholder="Set id (ex: 75000)"
-                onChange={({ target: { value } }) => {
-                  const id = /\D/.test(value) ? value : parseInt(value, 10)
-                  field.onChange(id)
-                  prefillFromCollection(id)
+                onBlur={() => {
+                  field.onBlur()
+                  prefillFromCollection(field.value)
                 }}
+                onChange={({ target: { value } }) =>
+                  field.onChange(/\D/.test(value) ? value : parseInt(value, 10))
+                }
                 required
                 value={Number.isNaN(field.value) ? '' : field.value}
               />

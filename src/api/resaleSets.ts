@@ -5,7 +5,6 @@ import type { ResaleSet, ResaleSetsList } from 'types/resale'
 import { endPoints, queryKeys } from './api.constants'
 import { api, queryClient } from './index'
 
-// The Realtime DB drops null values
 const withDroppedValues = (resaleSet: ResaleSet): ResaleSet => ({
   ...resaleSet,
   officialPrice: resaleSet.officialPrice ?? null,

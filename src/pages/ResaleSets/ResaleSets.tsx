@@ -8,7 +8,6 @@ import { AgGridTable } from 'components/AgGrid/table'
 import ModuleHeader from 'components/ModuleHeader/ModuleHeader'
 import { defaultSetsColumnDefs } from 'pages/Sets/Sets.constants'
 import { useAuth } from 'providers/AuthProvider'
-import { formatFrEuroCurrency } from 'utils/format'
 import { getResaleTotals, getResaleValues } from 'utils/lego'
 
 import useResaleSetsColDefs, { type ResaleSetRow } from './useResaleSetsColDefs'
@@ -32,7 +31,10 @@ const ResaleSets: FC = () => {
     [inStockOnly, resaleSetsList]
   )
 
-  const pinnedBottomRowData = useMemo(() => [totals], [totals])
+  const pinnedBottomRowData = useMemo(
+    () => [{ id: 'Total', ...totals }],
+    [totals]
+  )
 
   const onModelUpdated = ({ api }: ModelUpdatedEvent<ResaleSetRow>) => {
     const visibleRows: ResaleSetRow[] = []
@@ -56,7 +58,7 @@ const ResaleSets: FC = () => {
       <ModuleHeader
         addTo="/resale-sets/add"
         setQuickFilter={setQuickFilter}
-        statisticsTooltipTitle={`You have ${resaleSetsList?.length ?? 0} sets in your resale table. Shown rows sold ${formatFrEuroCurrency(totals.totalSold)} for a profit of ${formatFrEuroCurrency(totals.totalProfit)}`}
+        statisticsTooltipTitle={`You have ${resaleSetsList?.length ?? 0} sets in your resale table`}
       >
         <FormControlLabel
           control={

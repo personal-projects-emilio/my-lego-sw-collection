@@ -11,7 +11,11 @@ import {
   type ResaleSetActionsCellRendererProps,
 } from 'components/AgGrid/column'
 import type { ResaleSet } from 'types/resale'
-import { formatFrEuroCurrency, formatPercentage } from 'utils/format'
+import {
+  formatFrDate,
+  formatFrEuroCurrency,
+  formatPercentage,
+} from 'utils/format'
 import { type getResaleValues, isSetRetired } from 'utils/lego'
 
 import useResaleSetsMutations from './useResaleSetsMutations'
@@ -87,6 +91,12 @@ const useResaleSetsColDefs = () => {
           valueGetter: ({ data, node }) =>
             node?.rowPinned || !data ? null : isSetRetired(data),
           width: 100,
+        },
+        {
+          field: 'exitDate',
+          headerName: 'Exit date',
+          valueFormatter: ({ value }) => formatFrDate(value ?? null),
+          width: 120,
         },
         { ...numberColDef, field: 'quantityBought', headerName: 'Qty bought' },
         { ...euroColDef, field: 'unitBoughtPrice', headerName: 'Unit bought' },
