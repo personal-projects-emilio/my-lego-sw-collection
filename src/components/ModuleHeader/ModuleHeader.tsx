@@ -18,7 +18,6 @@ import { makeStyles } from 'tss-react/mui'
 import { isNotNullOrUndefined } from 'utils/typescript'
 
 import ImportBricksetCsv from './ImportBricksetCsv'
-import SyncMinifigsButton from './SyncMinifigsButton'
 
 type ModuleHeaderProps = {
   addTo: NonNullable<LinkProps['to']>
@@ -38,7 +37,7 @@ const useStyles = makeStyles({ name: 'ModuleHeader' })((theme) => ({
     borderColor: theme.palette.divider,
   },
   authenticatedHeader: {
-    gridTemplateColumns: '1fr repeat(4,max-content)',
+    gridTemplateColumns: '1fr repeat(3,max-content)',
   },
 }))
 
@@ -77,7 +76,6 @@ const ModuleHeader: FC<ModuleHeaderProps> = ({
             <MdBarChart />
           </Avatar>
         </Tooltip>
-        <SyncMinifigsButton />
         <ImportBricksetCsv />
       </DisplayIfAuthenticated>
       <Button size="small" component={Link} to={addTo} variant="contained">

@@ -25,7 +25,8 @@ export const renameMinifigInSets = (
       : set
   )
 
-export const syncSetsAndMinifigs = ({
+/** Derives the collection view from stored data. Stored totals and in-set values are ignored and recomputed. */
+export const buildCollection = ({
   setsList,
   minifigsList,
 }: SetsAndMinifigs): SetsAndMinifigs => {
