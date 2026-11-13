@@ -9,11 +9,9 @@ export const defaultMinifigFormValues = {
   tags: [],
   timelines: [],
   owned: {
-    inSet: [],
     loose: {
       isInFrame: false,
       quantity: 0,
     },
-    total: 0,
   },
 } satisfies Minifig

@@ -12,7 +12,7 @@ import {
 import type { CustomCellRendererProps } from 'ag-grid-react'
 import Avatar from 'components/Avatar'
 import { makeStyles } from 'tss-react/mui'
-import type { Minifig } from 'types/minifigs'
+import type { CollectionMinifig } from 'types/minifigs'
 
 const useStyles = makeStyles({ name: 'OwnedCellRenderer' })({
   tooltip: {
@@ -25,7 +25,7 @@ const useStyles = makeStyles({ name: 'OwnedCellRenderer' })({
 
 const OwnedCellRenderer = ({
   value: owned,
-}: CustomCellRendererProps<Minifig, Minifig['owned']>) => {
+}: CustomCellRendererProps<CollectionMinifig, CollectionMinifig['owned']>) => {
   const { classes } = useStyles()
   if (!owned) return null
   const { inSet, loose, total } = owned

@@ -1,9 +1,19 @@
-import type { Minifig, MinifigsList } from 'types/minifigs'
+import type {
+  CollectionMinifig,
+  CollectionMinifigsList,
+  Minifig,
+  MinifigsList,
+} from 'types/minifigs'
 import type { SetsList } from 'types/sets'
 
 interface SetsAndMinifigs {
   setsList: SetsList
   minifigsList: MinifigsList
+}
+
+interface Collection {
+  setsList: SetsList
+  minifigsList: CollectionMinifigsList
 }
 
 export const renameMinifigInSets = (
@@ -25,19 +35,21 @@ export const renameMinifigInSets = (
       : set
   )
 
-/** Derives the collection view from stored data. Stored totals and in-set values are ignored and recomputed. */
+/** Derives the collection view from stored data */
 export const buildCollection = ({
   setsList,
   minifigsList,
-}: SetsAndMinifigs): SetsAndMinifigs => {
-  const cleanedMinifigsList = minifigsList.map((minifig) => ({
-    ...minifig,
-    owned: {
-      total: minifig.owned.loose.quantity ?? 0,
-      loose: minifig.owned.loose,
-      inSet: [] as Minifig['owned']['inSet'],
-    },
-  }))
+}: SetsAndMinifigs): Collection => {
+  const cleanedMinifigsList = minifigsList.map(
+    (minifig): CollectionMinifig => ({
+      ...minifig,
+      owned: {
+        total: minifig.owned.loose.quantity ?? 0,
+        loose: minifig.owned.loose,
+        inSet: [],
+      },
+    })
+  )
 
   const syncedList = setsList.reduce(
     ({ sets, minifigs }, currentSet) => {

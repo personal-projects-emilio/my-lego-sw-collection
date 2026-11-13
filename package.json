@@ -65,7 +65,7 @@
     "prepare": "husky",
     "preview": "vite preview",
     "test": "vitest run",
-    "tsc": "tsc -p tsconfig.json --noEmit"
+    "tsc": "tsc -b"
   },
   "type": "module",
   "version": "0.0.0",
