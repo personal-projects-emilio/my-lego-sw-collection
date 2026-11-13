@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { MdLocalSee } from 'react-icons/md'
+import { PiLego } from 'react-icons/pi'
 
 import type {
   ColDef,
@@ -41,7 +41,7 @@ const useSetsColDefs = () => {
           cellClass: [agGridClasses.flexAlignCenter, agGridClasses.gap1],
           cellRenderer: ItemIdCellRenderer,
           cellRendererParams: {
-            icon: <MdLocalSee />,
+            icon: <PiLego />,
             variant: 'set',
           } satisfies ItemIdCellRenderProps,
           sort: 'asc',

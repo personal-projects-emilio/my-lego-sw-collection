@@ -13,6 +13,80 @@ export const isSetRetired = (
   today = new Date().toISOString().slice(0, 10)
 ) => (exitDate ? exitDate < today : retired)
 
+type ResaleInputs = {
+  officialPrice: number | null
+  quantityBought: number
+  unitBoughtPrice: number
+  unitSellingPrice: number | null
+  quantitySold: number
+}
+
+export const getResaleValues = ({
+  officialPrice,
+  quantityBought,
+  unitBoughtPrice,
+  unitSellingPrice,
+  quantitySold,
+}: ResaleInputs) => {
+  const unitProfit =
+    unitSellingPrice === null ? null : unitSellingPrice - unitBoughtPrice
+  return {
+    discount: officialPrice
+      ? (officialPrice - unitBoughtPrice) / officialPrice
+      : null,
+    totalBought: quantityBought * unitBoughtPrice,
+    unitProfit,
+    profitPercentage:
+      unitProfit !== null && unitBoughtPrice > 0
+        ? unitProfit / unitBoughtPrice
+        : null,
+    totalSold:
+      unitSellingPrice === null ? null : quantitySold * unitSellingPrice,
+    totalProfit: unitProfit === null ? null : quantitySold * unitProfit,
+  }
+}
+
+const sum = (values: number[]) => values.reduce((total, v) => total + v, 0)
+
+export const getResaleTotals = (resaleSets: ResaleInputs[]) => {
+  const rows = resaleSets.map((resaleSet) => ({
+    ...resaleSet,
+    ...getResaleValues(resaleSet),
+  }))
+  const averagePerUnitBought = (
+    pick: (row: (typeof rows)[number]) => number | null
+  ) => {
+    const weighted = rows.flatMap((row) => {
+      const value = pick(row)
+      return value === null ? [] : [{ value, quantity: row.quantityBought }]
+    })
+    const quantity = sum(weighted.map((w) => w.quantity))
+    return quantity > 0
+      ? sum(weighted.map((w) => w.value * w.quantity)) / quantity
+      : null
+  }
+  const totalProfit = sum(rows.map((row) => row.totalProfit ?? 0))
+  const soldCost = sum(
+    rows
+      .filter((row) => row.unitProfit !== null)
+      .map((row) => row.quantitySold * row.unitBoughtPrice)
+  )
+
+  return {
+    officialPrice: averagePerUnitBought((row) => row.officialPrice),
+    quantityBought: sum(rows.map((row) => row.quantityBought)),
+    unitBoughtPrice: averagePerUnitBought((row) => row.unitBoughtPrice),
+    discount: averagePerUnitBought((row) => row.discount),
+    totalBought: sum(rows.map((row) => row.totalBought)),
+    unitSellingPrice: averagePerUnitBought((row) => row.unitSellingPrice),
+    quantitySold: sum(rows.map((row) => row.quantitySold)),
+    unitProfit: averagePerUnitBought((row) => row.unitProfit),
+    profitPercentage: soldCost > 0 ? totalProfit / soldCost : null,
+    totalSold: sum(rows.map((row) => row.totalSold ?? 0)),
+    totalProfit,
+  }
+}
+
 interface StoredCollection {
   setsList: SetsList
   minifigsList: MinifigsList

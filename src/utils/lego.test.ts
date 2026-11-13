@@ -6,6 +6,8 @@ import { test } from 'vitest'
 
 import {
   buildCollection,
+  getResaleTotals,
+  getResaleValues,
   isSetRetired,
   renameLooseMinifig,
   renameMinifigInSets,
@@ -176,3 +178,127 @@ test.for([
     assert.equal(isSetRetired(set, '2026-06-15'), expected)
   }
 )
+
+const resale = {
+  officialPrice: 100,
+  unitBoughtPrice: 80,
+  unitSellingPrice: 120,
+  quantityBought: 3,
+  quantitySold: 2,
+}
+
+test.for([
+  {
+    case: 'worked example',
+    changes: {},
+    expected: {
+      discount: 0.2,
+      totalBought: 240,
+      unitProfit: 40,
+      profitPercentage: 0.5,
+      totalSold: 240,
+      totalProfit: 80,
+    },
+  },
+  {
+    case: 'missing official price leaves the discount empty',
+    changes: { officialPrice: null },
+    expected: {
+      discount: null,
+      totalBought: 240,
+      unitProfit: 40,
+      profitPercentage: 0.5,
+      totalSold: 240,
+      totalProfit: 80,
+    },
+  },
+  {
+    case: 'bought price of 0 leaves the profit % empty',
+    changes: { unitBoughtPrice: 0 },
+    expected: {
+      discount: 1,
+      totalBought: 0,
+      unitProfit: 120,
+      profitPercentage: null,
+      totalSold: 240,
+      totalProfit: 240,
+    },
+  },
+  {
+    case: 'missing sell price leaves every sale value empty',
+    changes: { unitSellingPrice: null },
+    expected: {
+      discount: 0.2,
+      totalBought: 240,
+      unitProfit: null,
+      profitPercentage: null,
+      totalSold: null,
+      totalProfit: null,
+    },
+  },
+])('getResaleValues $case', ({ changes, expected }) => {
+  assert.deepEqual(getResaleValues({ ...resale, ...changes }), expected)
+})
+
+test('getResaleTotals sums total sold and total profit, skipping empty values', () => {
+  const { totalSold, totalProfit } = getResaleTotals([
+    resale,
+    { ...resale, unitSellingPrice: 100, quantitySold: 1 },
+    { ...resale, unitSellingPrice: null },
+  ])
+
+  assert.deepEqual(
+    { totalSold, totalProfit },
+    { totalSold: 340, totalProfit: 100 }
+  )
+})
+
+test('getResaleTotals averages unit values per unit bought and sums quantities', () => {
+  assert.deepEqual(
+    getResaleTotals([
+      {
+        officialPrice: 100,
+        unitBoughtPrice: 75,
+        unitSellingPrice: 125,
+        quantityBought: 3,
+        quantitySold: 2,
+      },
+      {
+        officialPrice: 50,
+        unitBoughtPrice: 25,
+        unitSellingPrice: null,
+        quantityBought: 1,
+        quantitySold: 0,
+      },
+    ]),
+    {
+      officialPrice: 87.5,
+      quantityBought: 4,
+      unitBoughtPrice: 62.5,
+      discount: 0.3125,
+      totalBought: 250,
+      unitSellingPrice: 125,
+      quantitySold: 2,
+      unitProfit: 50,
+      profitPercentage: 2 / 3,
+      totalSold: 250,
+      totalProfit: 100,
+    }
+  )
+})
+
+test('getResaleTotals leaves averages and profit % empty without values', () => {
+  assert.deepEqual(getResaleTotals([]), {
+    officialPrice: null,
+    quantityBought: 0,
+    unitBoughtPrice: null,
+    discount: null,
+    totalBought: 0,
+    unitSellingPrice: null,
+    quantitySold: 0,
+    unitProfit: null,
+    profitPercentage: null,
+    totalSold: 0,
+    totalProfit: 0,
+  })
+})

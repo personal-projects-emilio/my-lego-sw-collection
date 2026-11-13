@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { FaPerson } from 'react-icons/fa6'
+import { PiLegoSmiley } from 'react-icons/pi'
 
 import type { ColDef, ValueSetterParams } from 'ag-grid-community'
 import { useAgGridStyles } from 'components/AgGrid'
@@ -45,7 +45,7 @@ const useLooseMinifigsColDefs = () => {
         cellClass: [agGridClasses.flexAlignCenter, agGridClasses.gap1],
         cellRenderer: ItemIdCellRenderer,
         cellRendererParams: {
-          icon: <FaPerson />,
+          icon: <PiLegoSmiley />,
           variant: 'minifig',
         } satisfies ItemIdCellRenderProps,
         field: 'id',

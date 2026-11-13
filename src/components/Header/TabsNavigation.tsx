@@ -12,7 +12,8 @@ const TabsNavigation: FC = () => {
   return (
     <Tabs
       value={
-        idToken || currentRoute.id !== '/loose-minifigs'
+        idToken ||
+        !['/loose-minifigs', '/resale-sets'].includes(String(currentRoute.id))
           ? currentRoute.id
           : false
       }
@@ -27,6 +28,14 @@ const TabsNavigation: FC = () => {
           label="Loose minifigs"
           to="/loose-minifigs"
           value="/loose-minifigs"
+        />
+      )}
+      {idToken && (
+        <Tab
+          component={Link}
+          label="Resale sets"
+          to="/resale-sets"
+          value="/resale-sets"
         />
       )}
       {idToken ? (

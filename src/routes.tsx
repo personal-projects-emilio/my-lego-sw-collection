@@ -17,6 +17,9 @@ import {
   AddMinifigFormModal,
   EditMinifigFormModal,
 } from 'pages/Minifigs/components'
+import ResaleSets from 'pages/ResaleSets'
+import EditResaleSetFormModal from 'pages/ResaleSets/EditResaleSetFormModal'
+import ResaleSetFormModal from 'pages/ResaleSets/ResaleSetFormModal'
 import Sets from 'pages/Sets'
 import { AddSetFormModal, EditSetFormModal } from 'pages/Sets/components'
 import { looseObject } from 'zod'
@@ -100,6 +103,37 @@ const looseMinifigAddRoute = createRoute({
   },
 })
 
+const resaleSetsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/resale-sets',
+  component: ResaleSets,
+})
+
+const resaleSetAddRoute = createRoute({
+  getParentRoute: () => resaleSetsRoute,
+  path: '/add',
+  component: () => <ResaleSetFormModal />,
+  validateSearch: looseObject({}),
+  search: {
+    middlewares: [stripSearchParams(true)],
+  },
+})
+
+const resaleSetEditRoute = createRoute({
+  getParentRoute: () => resaleSetsRoute,
+  path: '/edit/$setId',
+  params: {
+    parse: ({ setId }) => ({
+      setId: /\D/.test(setId) ? setId : parseInt(setId, 10),
+    }),
+  },
+  component: () => <EditResaleSetFormModal />,
+  validateSearch: looseObject({}),
+  search: {
+    middlewares: [stripSearchParams(true)],
+  },
+})
+
 const authRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/auth',
@@ -110,6 +144,7 @@ const routeTree = rootRoute.addChildren([
   minifigsRoute.addChildren([minifigAddRoute, minifigEditRoute]),
   setsRoute.addChildren([setAddRoute, setEditRoute]),
   looseMinifigsRoute.addChildren([looseMinifigAddRoute]),
+  resaleSetsRoute.addChildren([resaleSetAddRoute, resaleSetEditRoute]),
   authRoute,
 ])
 
