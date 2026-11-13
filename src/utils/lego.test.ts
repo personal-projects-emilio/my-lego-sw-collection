@@ -100,16 +100,14 @@ test('buildCollection refreshes the character names on set content', () => {
   assert.equal(setsList[0].content.minifigs[0].characterName, 'Name sw0001')
 })
 
-test('a set is retired from its exit date, or from the manual flag without one', () => {
-  const today = '2026-06-15'
-  assert.equal(
-    isSetRetired({ exitDate: '2025-12-31', retired: false }, today),
-    true
-  )
-  assert.equal(
-    isSetRetired({ exitDate: '2028-12-31', retired: true }, today),
-    false
-  )
-  assert.equal(isSetRetired({ exitDate: null, retired: true }, today), true)
-  assert.equal(isSetRetired({ exitDate: null, retired: false }, today), false)
-})
+test.for([
+  { exitDate: '2025-12-31', retired: false, expected: true },
+  { exitDate: '2028-12-31', retired: true, expected: false },
+  { exitDate: null, retired: true, expected: true },
+  { exitDate: null, retired: false, expected: false },
+])(
+  'exit date $exitDate with retired flag $retired is retired: $expected',
+  ({ expected, ...set }) => {
+    assert.equal(isSetRetired(set, '2026-06-15'), expected)
+  }
+)
