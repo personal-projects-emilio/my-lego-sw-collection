@@ -49,14 +49,18 @@ const OwnedCellRenderer = ({
               <TableRow>
                 <TableCell>Set Id</TableCell>
                 <TableCell>Qty</TableCell>
+                <TableCell>Owned</TableCell>
                 <TableCell>In frame</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {inSet?.map(({ isInFrame, quantity, setId }) => (
+              {inSet?.map(({ isInFrame, possessed, quantity, setId }) => (
                 <TableRow key={`${setId}-${quantity}`}>
                   <TableCell>{setId}</TableCell>
                   <TableCell>{quantity}</TableCell>
+                  <TableCell align="center">
+                    {possessed && <FaCheck aria-label="Owned" />}
+                  </TableCell>
                   <TableCell align="center">
                     {isInFrame && <FaCheck />}
                   </TableCell>
@@ -66,6 +70,9 @@ const OwnedCellRenderer = ({
                 <TableRow>
                   <TableCell>Loose</TableCell>
                   <TableCell>{loose.quantity}</TableCell>
+                  <TableCell align="center">
+                    <FaCheck aria-label="Owned" />
+                  </TableCell>
                   <TableCell align="center">
                     {loose.isInFrame && <FaCheck />}
                   </TableCell>

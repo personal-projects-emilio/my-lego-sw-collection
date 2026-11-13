@@ -37,7 +37,12 @@ export type MinifigsList = Minifig[]
 export type CollectionMinifig = Minifig & {
   owned: Minifig['owned'] & {
     total: number
-    inSet: { isInFrame: boolean; quantity: number; setId: string | number }[]
+    inSet: {
+      isInFrame: boolean
+      possessed: boolean
+      quantity: number
+      setId: string | number
+    }[]
   }
 }
 

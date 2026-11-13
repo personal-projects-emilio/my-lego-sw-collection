@@ -56,8 +56,8 @@ test('buildCollection adds possessed set quantities to the loose total and lists
 
   assert.equal(minifigsList[0].owned.total, 3)
   assert.deepEqual(minifigsList[0].owned.inSet, [
-    { setId: 1, quantity: 2, isInFrame: true },
-    { setId: 2, quantity: 2, isInFrame: true },
+    { setId: 1, quantity: 2, isInFrame: true, possessed: true },
+    { setId: 2, quantity: 2, isInFrame: true, possessed: false },
   ])
 })
 

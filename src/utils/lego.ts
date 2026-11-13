@@ -90,6 +90,7 @@ export const buildCollection = ({
                 quantity: setMinifig.quantity,
                 setId: currentSet.id,
                 isInFrame: setMinifig.isInFrame ?? false,
+                possessed: currentSet.possessed,
               },
             ],
           },
