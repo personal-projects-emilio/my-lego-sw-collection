@@ -20,24 +20,30 @@ export const minifigValidationSchema = z.object({
   tags: z.array(z.string()),
   timelines: z.array(z.string()),
   owned: z.object({
-    inSet: z
-      .array(
-        z.object({
-          isInFrame: z.boolean().default(false),
-          quantity: z.number().min(1).default(1),
-          setId: z.string().min(1).or(z.number().min(1)),
-        })
-      )
-      .default([]),
     loose: z.object({
       isInFrame: z.boolean().default(false),
       quantity: z.number().min(0).default(0),
     }),
-    total: z.number().min(0).default(0),
   }),
 })
 
+/** A minifig as stored in the DB */
 export type Minifig = z.infer<typeof minifigValidationSchema>
 export type MinifigFormInput = z.input<typeof minifigValidationSchema>
 
 export type MinifigsList = Minifig[]
+
+/** A minifig with the values buildCollection calculates from the sets */
+export type CollectionMinifig = Minifig & {
+  owned: Minifig['owned'] & {
+    total: number
+    inSet: {
+      isInFrame: boolean
+      possessed: boolean
+      quantity: number
+      setId: string | number
+    }[]
+  }
+}
+
+export type CollectionMinifigsList = CollectionMinifig[]

@@ -46,7 +46,8 @@
     "tsx": "^4.23.15",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.72.2",
-    "vite": "8.3.8"
+    "vite": "8.3.8",
+    "vitest": "5.1.0"
   },
   "homepage": "/my-lego-sw-collection",
   "license": "MIT",
@@ -63,8 +64,8 @@
     "lint": "eslint . --fix",
     "prepare": "husky",
     "preview": "vite preview",
-    "test": "tsx --tsconfig tsconfig.app.json --test \"src/**/*.test.ts\"",
-    "tsc": "tsc -p tsconfig.json --noEmit"
+    "test": "vitest run",
+    "tsc": "tsc -b"
   },
   "type": "module",
   "version": "0.0.0",

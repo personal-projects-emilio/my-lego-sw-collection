@@ -13,7 +13,7 @@ import {
   type MinifigActionsCellRendererProps,
   OverflowTypographyCellRenderer,
 } from 'components/AgGrid/column'
-import type { Minifig } from 'types/minifigs'
+import type { CollectionMinifig } from 'types/minifigs'
 
 import { OwnedCellRenderer } from '../components'
 import useMinifigsMutations from './useMinifigsMutations'
@@ -99,7 +99,7 @@ const useMinifigsColDefs = () => {
           width: 70,
           getQuickFilterText: ({
             data: { owned },
-          }: GetQuickFilterTextParams<Minifig>) =>
+          }: GetQuickFilterTextParams<CollectionMinifig>) =>
             (owned.inSet ?? []).reduce(
               (quickFilterText, { setId }) => `${quickFilterText}, ${setId}`,
               owned.loose?.quantity > 0 ? 'loose' : ''
@@ -137,7 +137,7 @@ const useMinifigsColDefs = () => {
           sortable: false,
           width: 140,
         },
-      ] as const satisfies Array<ColDef<Minifig>>,
+      ] as const satisfies Array<ColDef<CollectionMinifig>>,
     [agGridClasses, deleteMinifig, isPending, toggleMinifigPossession]
   )
 }

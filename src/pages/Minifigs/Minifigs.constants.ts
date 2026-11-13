@@ -1,5 +1,5 @@
 import type { ColDef } from 'ag-grid-community'
-import type { Minifig } from 'types/minifigs'
+import type { CollectionMinifig } from 'types/minifigs'
 
 export const defaultMinifigsColumnDefs = {
   filter: true,
@@ -7,4 +7,4 @@ export const defaultMinifigsColumnDefs = {
   sortable: true,
   suppressFloatingFilterButton: true,
   suppressHeaderFilterButton: true,
-} as const satisfies ColDef<Minifig>
+} as const satisfies ColDef<CollectionMinifig>

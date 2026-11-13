@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import { useMinifigsQuery } from 'api/minifigs'
+import { useCollection } from 'hooks'
 
 type MinifigsStatistics = {
   totalOwned: number
@@ -10,7 +10,7 @@ type MinifigsStatistics = {
 }
 
 const useMinifigsStatistics = (): MinifigsStatistics => {
-  const { data: minifigsList = [] } = useMinifigsQuery()
+  const { minifigsList = [] } = useCollection()
 
   return useMemo<MinifigsStatistics>(() => {
     const computedStatistics = minifigsList.reduce(

@@ -2,9 +2,9 @@ import { type FC, useState } from 'react'
 
 import { Skeleton } from '@mui/material'
 import { Outlet } from '@tanstack/react-router'
-import { useSetsQuery } from 'api/sets'
 import { AgGridTable } from 'components/AgGrid/table'
 import ModuleHeader from 'components/ModuleHeader/ModuleHeader'
+import { useCollection } from 'hooks'
 import { useAuth } from 'providers/AuthProvider'
 import { formatFrEuroCurrency, formatPercentage } from 'utils/format'
 
@@ -12,7 +12,7 @@ import { useSetsColDefs, useSetsStatistics } from './hooks'
 import { defaultSetsColumnDefs } from './Sets.constants'
 
 const Sets: FC = () => {
-  const { data, isLoading } = useSetsQuery()
+  const { setsList, isLoading } = useCollection()
   const setsColumnDefs = useSetsColDefs()
   const [quickFilter, setQuickFilter] = useState('')
   const {
@@ -39,7 +39,7 @@ const Sets: FC = () => {
         columnDefs={setsColumnDefs}
         defaultColDef={defaultSetsColumnDefs}
         quickFilterText={quickFilter}
-        rowData={data}
+        rowData={setsList}
       />
       <Outlet />
     </>

@@ -12,7 +12,7 @@ import {
 import type { CustomCellRendererProps } from 'ag-grid-react'
 import Avatar from 'components/Avatar'
 import { makeStyles } from 'tss-react/mui'
-import type { Minifig } from 'types/minifigs'
+import type { CollectionMinifig } from 'types/minifigs'
 
 const useStyles = makeStyles({ name: 'OwnedCellRenderer' })({
   tooltip: {
@@ -25,7 +25,7 @@ const useStyles = makeStyles({ name: 'OwnedCellRenderer' })({
 
 const OwnedCellRenderer = ({
   value: owned,
-}: CustomCellRendererProps<Minifig, Minifig['owned']>) => {
+}: CustomCellRendererProps<CollectionMinifig, CollectionMinifig['owned']>) => {
   const { classes } = useStyles()
   if (!owned) return null
   const { inSet, loose, total } = owned
@@ -49,14 +49,18 @@ const OwnedCellRenderer = ({
               <TableRow>
                 <TableCell>Set Id</TableCell>
                 <TableCell>Qty</TableCell>
+                <TableCell>Owned</TableCell>
                 <TableCell>In frame</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {inSet?.map(({ isInFrame, quantity, setId }) => (
+              {inSet?.map(({ isInFrame, possessed, quantity, setId }) => (
                 <TableRow key={`${setId}-${quantity}`}>
                   <TableCell>{setId}</TableCell>
                   <TableCell>{quantity}</TableCell>
+                  <TableCell align="center">
+                    {possessed && <FaCheck aria-label="Owned" />}
+                  </TableCell>
                   <TableCell align="center">
                     {isInFrame && <FaCheck />}
                   </TableCell>
@@ -66,6 +70,9 @@ const OwnedCellRenderer = ({
                 <TableRow>
                   <TableCell>Loose</TableCell>
                   <TableCell>{loose.quantity}</TableCell>
+                  <TableCell align="center">
+                    <FaCheck aria-label="Owned" />
+                  </TableCell>
                   <TableCell align="center">
                     {loose.isInFrame && <FaCheck />}
                   </TableCell>

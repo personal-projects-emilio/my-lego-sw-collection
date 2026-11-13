@@ -2,16 +2,16 @@ import { type FC, useState } from 'react'
 
 import { Skeleton } from '@mui/material'
 import { Outlet } from '@tanstack/react-router'
-import { useMinifigsQuery } from 'api/minifigs'
 import { AgGridTable } from 'components/AgGrid/table'
 import ModuleHeader from 'components/ModuleHeader/ModuleHeader'
+import { useCollection } from 'hooks'
 import { formatPercentage } from 'utils/format'
 
 import { useMinifigsColDefs, useMinifigsStatistics } from './hooks'
 import { defaultMinifigsColumnDefs } from './Minifigs.constants'
 
 const Minifigs: FC = () => {
-  const { data: minifigsList, isLoading } = useMinifigsQuery()
+  const { minifigsList, isLoading } = useCollection()
   const minifigsColumnDefs = useMinifigsColDefs()
   const [quickFilter, setQuickFilter] = useState('')
   const { percentageVariantsOwned, totalOwned, totalVariants, variantsOwned } =

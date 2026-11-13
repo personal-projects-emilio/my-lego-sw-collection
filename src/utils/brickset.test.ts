@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import assert from 'node:assert/strict'
-import { test } from 'node:test'
 import type { Set } from 'types/sets'
+import { test } from 'vitest'
 
 import {
   bricksetRowToSetId,
