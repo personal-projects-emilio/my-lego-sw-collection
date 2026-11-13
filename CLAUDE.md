@@ -11,6 +11,10 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `type(scope
 - No AI attribution anywhere: no `Co-Authored-By` trailers and no "Generated with" lines in commits, PRs or issues.
 - WIP commits on feature branches are fine in any format. No local hook enforces the convention, on purpose.
 
+## Tests
+
+- Prefer table-driven tests with Vitest's `test.for([...])(name, fn)`: one row per case, `$field` placeholders in the name. It's the default for simple functions, and should be used elsewhere whenever the cases share a shape.
+
 ## Agent skills
 
 ### Issue tracker
