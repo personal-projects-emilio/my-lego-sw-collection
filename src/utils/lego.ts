@@ -65,6 +65,15 @@ export const getResaleTotals = (resaleSets: ResaleInputs[]) => {
       ? sum(weighted.map((w) => w.value * w.quantity)) / quantity
       : null
   }
+  const withOfficial = rows.filter(
+    (row) => row.officialPrice !== null && row.officialPrice > 0
+  )
+  const officialTotal = sum(
+    withOfficial.map((row) => row.quantityBought * (row.officialPrice ?? 0))
+  )
+  const boughtTotalWithOfficial = sum(
+    withOfficial.map((row) => row.totalBought)
+  )
   const totalProfit = sum(rows.map((row) => row.totalProfit ?? 0))
   const soldCost = sum(
     rows
@@ -76,7 +85,8 @@ export const getResaleTotals = (resaleSets: ResaleInputs[]) => {
     officialPrice: averagePerUnitBought((row) => row.officialPrice),
     quantityBought: sum(rows.map((row) => row.quantityBought)),
     unitBoughtPrice: averagePerUnitBought((row) => row.unitBoughtPrice),
-    discount: averagePerUnitBought((row) => row.discount),
+    discount:
+      officialTotal > 0 ? 1 - boughtTotalWithOfficial / officialTotal : null,
     totalBought: sum(rows.map((row) => row.totalBought)),
     unitSellingPrice: averagePerUnitBought((row) => row.unitSellingPrice),
     quantitySold: sum(rows.map((row) => row.quantitySold)),

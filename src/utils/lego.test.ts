@@ -275,7 +275,7 @@ test('getResaleTotals averages unit values per unit bought and sums quantities',
       officialPrice: 87.5,
       quantityBought: 4,
       unitBoughtPrice: 62.5,
-      discount: 0.3125,
+      discount: 2 / 7,
       totalBought: 250,
       unitSellingPrice: 125,
       quantitySold: 2,
@@ -285,6 +285,15 @@ test('getResaleTotals averages unit values per unit bought and sums quantities',
       totalProfit: 100,
     }
   )
+})
+
+test('getResaleTotals leaves rows without an official price out of the discount', () => {
+  const { discount } = getResaleTotals([
+    { ...resale, officialPrice: 100, unitBoughtPrice: 75 },
+    { ...resale, officialPrice: null, unitBoughtPrice: 40 },
+  ])
+
+  assert.equal(discount, 0.25)
 })
 
 test('getResaleTotals leaves averages and profit % empty without values', () => {
