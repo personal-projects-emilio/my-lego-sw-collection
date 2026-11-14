@@ -65,35 +65,28 @@ export const getResaleTotals = (resaleSets: ResaleInputs[]) => {
       ? sum(weighted.map((w) => w.value * w.quantity)) / quantity
       : null
   }
-  const withOfficial = rows.filter(
-    (row) => row.officialPrice !== null && row.officialPrice > 0
-  )
-  const officialTotal = sum(
-    withOfficial.map((row) => row.quantityBought * (row.officialPrice ?? 0))
-  )
-  const boughtTotalWithOfficial = sum(
-    withOfficial.map((row) => row.totalBought)
-  )
-  const totalProfit = sum(rows.map((row) => row.totalProfit ?? 0))
-  const soldCost = sum(
-    rows
-      .filter((row) => row.unitProfit !== null)
-      .map((row) => row.quantitySold * row.unitBoughtPrice)
-  )
+  const officialPrice = averagePerUnitBought((row) => row.officialPrice)
+  const unitBoughtPrice = averagePerUnitBought((row) => row.unitBoughtPrice)
+  const unitProfit = averagePerUnitBought((row) => row.unitProfit)
 
   return {
-    officialPrice: averagePerUnitBought((row) => row.officialPrice),
+    officialPrice,
     quantityBought: sum(rows.map((row) => row.quantityBought)),
-    unitBoughtPrice: averagePerUnitBought((row) => row.unitBoughtPrice),
+    unitBoughtPrice,
     discount:
-      officialTotal > 0 ? 1 - boughtTotalWithOfficial / officialTotal : null,
+      officialPrice !== null && officialPrice > 0 && unitBoughtPrice !== null
+        ? 1 - unitBoughtPrice / officialPrice
+        : null,
     totalBought: sum(rows.map((row) => row.totalBought)),
     unitSellingPrice: averagePerUnitBought((row) => row.unitSellingPrice),
     quantitySold: sum(rows.map((row) => row.quantitySold)),
-    unitProfit: averagePerUnitBought((row) => row.unitProfit),
-    profitPercentage: soldCost > 0 ? totalProfit / soldCost : null,
+    unitProfit,
+    profitPercentage:
+      unitProfit !== null && unitBoughtPrice !== null && unitBoughtPrice > 0
+        ? unitProfit / unitBoughtPrice
+        : null,
     totalSold: sum(rows.map((row) => row.totalSold ?? 0)),
-    totalProfit,
+    totalProfit: sum(rows.map((row) => row.totalProfit ?? 0)),
   }
 }
 
