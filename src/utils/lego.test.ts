@@ -275,14 +275,36 @@ test('getResaleTotals averages unit values per unit bought and sums quantities',
       officialPrice: 87.5,
       quantityBought: 4,
       unitBoughtPrice: 62.5,
-      discount: 0.3125,
+      discount: 2 / 7,
       totalBought: 250,
       unitSellingPrice: 125,
       quantitySold: 2,
       unitProfit: 50,
-      profitPercentage: 2 / 3,
+      profitPercentage: 0.8,
       totalSold: 250,
       totalProfit: 100,
+    }
+  )
+})
+
+test('getResaleTotals computes discount and profit % from the averages', () => {
+  const totals = getResaleTotals([
+    { ...resale, officialPrice: 100, unitBoughtPrice: 75 },
+    { ...resale, officialPrice: null, unitBoughtPrice: 25 },
+  ])
+
+  assert.deepEqual(
+    {
+      officialPrice: totals.officialPrice,
+      unitBoughtPrice: totals.unitBoughtPrice,
+      discount: totals.discount,
+      profitPercentage: totals.profitPercentage,
+    },
+    {
+      officialPrice: 100,
+      unitBoughtPrice: 50,
+      discount: 0.5,
+      profitPercentage: 1.4,
     }
   )
 })
