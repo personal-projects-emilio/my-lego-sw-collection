@@ -24,7 +24,10 @@ const TagsFilter = ({
   )
   const getModelAsString = useCallback(
     (current: string[] | null) =>
-      (current ?? []).map(vocabulary.label).join(', '),
+      vocabulary
+        .leaves(current ?? [])
+        .map(vocabulary.pathLabel)
+        .join(', '),
     [vocabulary]
   )
   useGridFilter({ doesFilterPass, getModelAsString })
@@ -32,7 +35,6 @@ const TagsFilter = ({
   return (
     <Box sx={{ p: 1, width: 360 }}>
       <TagsAutocomplete
-        hideImplied
         popperClassName="ag-custom-component-popup"
         itemType={itemType}
         onChange={(ids) => onModelChange(ids.length ? ids : null)}

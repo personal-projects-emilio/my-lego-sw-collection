@@ -15,7 +15,6 @@ import type { TagTarget } from 'types/tags'
 
 type TagsAutocompleteProps = {
   className?: string
-  hideImplied?: boolean
   inheritedTags?: Record<string, Array<string | number>>
   itemType: TagTarget
   onChange: (tags: string[]) => void
@@ -30,7 +29,6 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
   (
     {
       className,
-      hideImplied,
       inheritedTags = noInheritedTags,
       itemType,
       onChange,
@@ -46,17 +44,13 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
       [vocabulary, itemType]
     )
     const explicit = [...value, ...Object.keys(inheritedTags)]
-    const chips = hideImplied
-      ? vocabulary.sort(explicit)
-      : vocabulary.leaves(explicit)
+    const chips = vocabulary.leaves(explicit)
     const isInherited = (id: string) => id in inheritedTags
     const isStored = (id: string) => value.includes(id)
     const impliedBy = (id: string) =>
-      hideImplied
-        ? []
-        : chips.filter((chip) =>
-            vocabulary.ancestors(chip).some((tag) => tag.id === id)
-          )
+      chips.filter((chip) =>
+        vocabulary.ancestors(chip).some((tag) => tag.id === id)
+      )
     const isImplied = (id: string) =>
       !chips.includes(id) && impliedBy(id).length > 0
 
@@ -73,12 +67,12 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
         className={className}
         disableCloseOnSelect
         getOptionDisabled={(id) => isInherited(id) || isImplied(id)}
-        getOptionLabel={hideImplied ? vocabulary.label : vocabulary.pathLabel}
+        getOptionLabel={vocabulary.pathLabel}
         groupBy={(id) => vocabulary.rootOf(id)?.label ?? ''}
         multiple
         onChange={(_event, ids) =>
           onChange(
-            vocabulary.sort([
+            vocabulary.leaves([
               ...ids.filter((id) => !isInherited(id) || isStored(id)),
               ...value.filter(isInherited),
             ])
@@ -130,11 +124,7 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
               >
                 <Chip
                   {...itemProps}
-                  label={
-                    hideImplied
-                      ? vocabulary.label(id)
-                      : vocabulary.pathLabel(id)
-                  }
+                  label={vocabulary.pathLabel(id)}
                   onDelete={isInherited(id) ? undefined : onDelete}
                   size="small"
                 />
