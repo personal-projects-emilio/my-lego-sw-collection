@@ -14,18 +14,42 @@ const useTreeViewStyles = makeStyles({ name: 'TreeView' })((theme) => ({
     padding: 0,
   },
   branch: {
+    fontWeight: 400,
     listStyle: 'none',
-    margin: 0,
-    paddingLeft: theme.spacing(1.5),
+    margin: theme.spacing(0, 0, 0, 0.75),
+    padding: 0,
+    textTransform: 'none',
   },
   root: {
     fontWeight: 700,
-    marginTop: theme.spacing(0.5),
     textTransform: 'uppercase',
+    '& + &': {
+      borderTop: `1px solid ${theme.palette.divider}`,
+      marginTop: theme.spacing(0.75),
+      paddingTop: theme.spacing(0.75),
+    },
   },
   child: {
-    fontWeight: 400,
-    textTransform: 'none',
+    paddingLeft: theme.spacing(1.5),
+    position: 'relative',
+    '&::before': {
+      borderBottom: `1px solid ${theme.palette.text.disabled}`,
+      borderLeft: `1px solid ${theme.palette.text.disabled}`,
+      content: '""',
+      height: '0.83em',
+      left: 0,
+      position: 'absolute',
+      top: 0,
+      width: theme.spacing(1),
+    },
+    '&:not(:last-child)::after': {
+      borderLeft: `1px solid ${theme.palette.text.disabled}`,
+      bottom: 0,
+      content: '""',
+      left: 0,
+      position: 'absolute',
+      top: 0,
+    },
   },
   note: {
     fontStyle: 'italic',
@@ -41,7 +65,7 @@ type TreeViewProps = {
 }
 
 const TreeView: FC<TreeViewProps> = ({ ids, notes = {}, tree }) => {
-  const { classes, cx } = useTreeViewStyles()
+  const { classes } = useTreeViewStyles()
   const nodes = tree.outline(ids)
   const leaves = new Set(tree.leaves(ids))
 
@@ -49,9 +73,9 @@ const TreeView: FC<TreeViewProps> = ({ ids, notes = {}, tree }) => {
     const children = nodes.filter((node) => node.parent === parent)
     if (!children.length) return null
     return (
-      <ul className={parent ? cx(classes.branch, classes.child) : classes.tree}>
+      <ul className={parent ? classes.branch : classes.tree}>
         {children.map(({ id, label }) => (
-          <li key={id} className={cx({ [classes.root]: !parent })}>
+          <li key={id} className={parent ? classes.child : classes.root}>
             {label}
             {leaves.has(id) && notes[id] && (
               <span className={classes.note}>{notes[id]}</span>
