@@ -32,6 +32,7 @@ const TagsFilter = ({
   return (
     <Box sx={{ p: 1, width: 360 }}>
       <TagsAutocomplete
+        hideImplied
         popperClassName="ag-custom-component-popup"
         itemType={itemType}
         onChange={(ids) => onModelChange(ids.length ? ids : null)}
