@@ -13,21 +13,27 @@ const useTreeViewStyles = makeStyles({ name: 'TreeView' })((theme) => ({
     margin: 0,
     padding: 0,
   },
+  root: {
+    '& + &': {
+      marginTop: theme.spacing(0.75),
+    },
+  },
+  divider: {
+    alignItems: 'center',
+    display: 'flex',
+    fontWeight: 700,
+    gap: theme.spacing(1),
+    textTransform: 'uppercase',
+    '&::after': {
+      borderTop: `1px solid ${theme.palette.text.disabled}`,
+      content: '""',
+      flex: 1,
+    },
+  },
   branch: {
-    fontWeight: 400,
     listStyle: 'none',
     margin: theme.spacing(0, 0, 0, 0.75),
     padding: 0,
-    textTransform: 'none',
-  },
-  root: {
-    fontWeight: 700,
-    textTransform: 'uppercase',
-    '& + &': {
-      borderTop: `1px solid ${theme.palette.divider}`,
-      marginTop: theme.spacing(0.75),
-      paddingTop: theme.spacing(0.75),
-    },
   },
   child: {
     paddingLeft: theme.spacing(1.5),
@@ -68,14 +74,16 @@ const TreeView: FC<TreeViewProps> = ({ ids, notes = {}, tree }) => {
   const { classes } = useTreeViewStyles()
   const nodes = tree.outline(ids)
   const leaves = new Set(tree.leaves(ids))
+  const childrenOf = (parent: string) =>
+    nodes.filter((node) => node.parent === parent)
 
-  const branch = (parent: string | undefined) => {
-    const children = nodes.filter((node) => node.parent === parent)
+  const branch = (parent: string) => {
+    const children = childrenOf(parent)
     if (!children.length) return null
     return (
-      <ul className={parent ? classes.branch : classes.tree}>
+      <ul className={classes.branch}>
         {children.map(({ id, label }) => (
-          <li key={id} className={parent ? classes.child : classes.root}>
+          <li key={id} className={classes.child}>
             {label}
             {leaves.has(id) && notes[id] && (
               <span className={classes.note}>{notes[id]}</span>
@@ -87,7 +95,18 @@ const TreeView: FC<TreeViewProps> = ({ ids, notes = {}, tree }) => {
     )
   }
 
-  return branch(undefined)
+  return (
+    <ul className={classes.tree}>
+      {nodes
+        .filter((node) => !node.parent)
+        .map(({ id, label }) => (
+          <li key={id} className={classes.root}>
+            <div className={classes.divider}>{label}</div>
+            {branch(id)}
+          </li>
+        ))}
+    </ul>
+  )
 }
 
 export default TreeView
