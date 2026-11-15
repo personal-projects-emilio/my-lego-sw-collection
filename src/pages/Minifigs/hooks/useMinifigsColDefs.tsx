@@ -22,7 +22,7 @@ import useMinifigsMutations from './useMinifigsMutations'
 const useMinifigsColDefs = () => {
   const { classes: agGridClasses } = useAgGridStyles()
   const { deleteMinifig, isPending } = useMinifigsMutations()
-  const vocabulary = useTagsVocabulary()
+  const tagsVocabulary = useTagsVocabulary()
 
   return useMemo(
     () =>
@@ -50,7 +50,7 @@ const useMinifigsColDefs = () => {
           field: 'characterName',
           headerName: 'Character Name',
         },
-        tagsColDef<CollectionMinifig>(vocabulary, 'minifigs'),
+        tagsColDef<CollectionMinifig>(tagsVocabulary, 'minifigs'),
         {
           cellClass: agGridClasses.flexAlignCenter,
           cellRenderer: OwnedCellRenderer,
@@ -103,7 +103,7 @@ const useMinifigsColDefs = () => {
           width: 140,
         },
       ] as const satisfies Array<ColDef<CollectionMinifig>>,
-    [agGridClasses, deleteMinifig, isPending, vocabulary]
+    [agGridClasses, deleteMinifig, isPending, tagsVocabulary]
   )
 }
 

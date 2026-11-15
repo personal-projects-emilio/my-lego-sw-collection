@@ -32,7 +32,7 @@ const useSetsColDefs = () => {
   const { classes: agGridClasses } = useAgGridStyles()
   const { deleteSet, isPending } = useSetsMutations()
   const { idToken } = useAuth()
-  const vocabulary = useTagsVocabulary()
+  const tagsVocabulary = useTagsVocabulary()
   return useMemo(
     () =>
       [
@@ -64,7 +64,7 @@ const useSetsColDefs = () => {
           flex: 1,
           minWidth: 120,
         },
-        tagsColDef<CollectionSet>(vocabulary, 'sets'),
+        tagsColDef<CollectionSet>(tagsVocabulary, 'sets'),
         {
           field: 'releaseYear',
           headerName: 'Release',
@@ -215,7 +215,7 @@ const useSetsColDefs = () => {
           width: 100,
         },
       ] as const satisfies Array<ColDef<CollectionSet>>,
-    [agGridClasses, deleteSet, idToken, isPending, vocabulary]
+    [agGridClasses, deleteSet, idToken, isPending, tagsVocabulary]
   )
 }
 

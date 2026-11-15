@@ -22,7 +22,7 @@ type TaggedItem = {
 
 const TagsTooltip = ({ data }: CustomTooltipProps<TaggedItem>) => {
   const { classes } = useTagsTooltipStyles()
-  const vocabulary = useTagsVocabulary()
+  const tagsVocabulary = useTagsVocabulary()
   if (!data?.effectiveTags.length) return null
 
   const notes = Object.fromEntries(
@@ -34,7 +34,7 @@ const TagsTooltip = ({ data }: CustomTooltipProps<TaggedItem>) => {
 
   return (
     <div className={classes.tooltip}>
-      <TreeView ids={data.effectiveTags} notes={notes} tree={vocabulary} />
+      <TreeView ids={data.effectiveTags} notes={notes} tree={tagsVocabulary} />
     </div>
   )
 }

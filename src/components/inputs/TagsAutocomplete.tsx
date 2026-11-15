@@ -161,19 +161,19 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
     },
     ref
   ) => {
-    const vocabulary = useTagsVocabulary()
+    const tagsVocabulary = useTagsVocabulary()
     const { classes, cx, theme } = useTagsAutocompleteStyles()
     const options = useMemo(
-      () => vocabulary.pickable(itemType),
-      [vocabulary, itemType]
+      () => tagsVocabulary.pickable(itemType),
+      [tagsVocabulary, itemType]
     )
     const explicit = [...value, ...Object.keys(inheritedTags)]
-    const chips = vocabulary.leaves(explicit)
+    const chips = tagsVocabulary.leaves(explicit)
     const isInherited = (id: string) => id in inheritedTags
     const isStored = (id: string) => value.includes(id)
     const impliedBy = (id: string) =>
       chips.filter((chip) =>
-        vocabulary.ancestors(chip).some((tag) => tag.id === id)
+        tagsVocabulary.ancestors(chip).some((tag) => tag.id === id)
       )
     const isImplied = (id: string) =>
       !chips.includes(id) && impliedBy(id).length > 0
@@ -182,7 +182,7 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
       if (isInherited(id))
         return `Inherited from ${inheritedTags[id].join(', ')}`
       if (isImplied(id))
-        return `Implied by ${impliedBy(id).map(vocabulary.label).join(', ')}`
+        return `Implied by ${impliedBy(id).map(tagsVocabulary.label).join(', ')}`
       return undefined
     }
 
@@ -191,12 +191,12 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
         className={className}
         disableCloseOnSelect
         getOptionDisabled={(id) => isInherited(id) || isImplied(id)}
-        getOptionLabel={vocabulary.pathLabel}
-        groupBy={(id) => vocabulary.rootOf(id)?.label ?? ''}
+        getOptionLabel={tagsVocabulary.pathLabel}
+        groupBy={(id) => tagsVocabulary.rootOf(id)?.label ?? ''}
         multiple
         onChange={(_event, ids) =>
           onChange(
-            vocabulary.leaves([
+            tagsVocabulary.leaves([
               ...ids.filter((id) => !isInherited(id) || isStored(id)),
               ...value.filter(isInherited),
             ])
@@ -230,14 +230,14 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
           <li
             key={key}
             {...props}
-            data-depth={vocabulary.depth(id)}
+            data-depth={tagsVocabulary.depth(id)}
             style={{
               height: optionHeight,
-              paddingLeft: vocabulary.depth(id) * 16,
+              paddingLeft: tagsVocabulary.depth(id) * 16,
             }}
           >
             <Checkbox checked={selected || isImplied(id)} size="small" />
-            {vocabulary.label(id)}
+            {tagsVocabulary.label(id)}
             {note(id) && (
               <Typography className={classes.note} variant="caption">
                 {note(id)}
@@ -271,33 +271,35 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
                 return groupNote ? [[id, groupNote]] : []
               })
             )
-          return vocabulary.siblingGroups(ids).map(({ parent, ids: group }) =>
-            parent ? (
-              <Tooltip
-                key={`group-${parent}`}
-                title={
-                  <TreeView
-                    ids={group}
-                    notes={notes(group)}
-                    tree={vocabulary}
-                  />
-                }
-              >
-                <div className={classes.group}>
-                  <Typography variant="caption">
-                    {vocabulary.pathLabel(parent)} ›
-                  </Typography>
-                  {group.map((id) => tagChip(id, vocabulary.label(id)))}
-                </div>
-              </Tooltip>
-            ) : note(group[0]) ? (
-              <Tooltip key={`note-${group[0]}`} title={note(group[0])}>
-                {tagChip(group[0], vocabulary.pathLabel(group[0]))}
-              </Tooltip>
-            ) : (
-              tagChip(group[0], vocabulary.pathLabel(group[0]))
+          return tagsVocabulary
+            .siblingGroups(ids)
+            .map(({ parent, ids: group }) =>
+              parent ? (
+                <Tooltip
+                  key={`group-${parent}`}
+                  title={
+                    <TreeView
+                      ids={group}
+                      notes={notes(group)}
+                      tree={tagsVocabulary}
+                    />
+                  }
+                >
+                  <div className={classes.group}>
+                    <Typography variant="caption">
+                      {tagsVocabulary.pathLabel(parent)} ›
+                    </Typography>
+                    {group.map((id) => tagChip(id, tagsVocabulary.label(id)))}
+                  </div>
+                </Tooltip>
+              ) : note(group[0]) ? (
+                <Tooltip key={`note-${group[0]}`} title={note(group[0])}>
+                  {tagChip(group[0], tagsVocabulary.pathLabel(group[0]))}
+                </Tooltip>
+              ) : (
+                tagChip(group[0], tagsVocabulary.pathLabel(group[0]))
+              )
             )
-          )
         }}
         value={chips}
       />

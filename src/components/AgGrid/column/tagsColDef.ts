@@ -6,7 +6,7 @@ import TagsFilter, { type TagsFilterProps } from './TagsFilter'
 import TagsTooltip from './TagsTooltip'
 
 export const tagsColDef = <TData extends { effectiveTags: string[] }>(
-  vocabulary: TagsVocabulary,
+  tagsVocabulary: TagsVocabulary,
   itemType: TagTarget
 ): ColDef<TData, string[]> => ({
   colId: 'tags',
@@ -16,10 +16,10 @@ export const tagsColDef = <TData extends { effectiveTags: string[] }>(
   filterParams: { itemType } satisfies TagsFilterProps,
   flex: 2,
   getQuickFilterText: ({ value }) =>
-    (value ?? []).map(vocabulary.label).join(', '),
+    (value ?? []).map(tagsVocabulary.label).join(', '),
   minWidth: 160,
   suppressFloatingFilterButton: false,
   tooltip: ({ value }) => (value?.length ? value : undefined),
   tooltipComponent: TagsTooltip,
-  valueFormatter: ({ value }) => vocabulary.groupedLabel(value ?? []),
+  valueFormatter: ({ value }) => tagsVocabulary.groupedLabel(value ?? []),
 })

@@ -23,7 +23,7 @@ const TagsFilter = ({
 }: CustomFilterProps<{ effectiveTags: string[] }, unknown, string[]> &
   TagsFilterProps) => {
   const { classes } = useTagsFilterStyles()
-  const vocabulary = useTagsVocabulary()
+  const tagsVocabulary = useTagsVocabulary()
 
   const doesFilterPass = useCallback(
     ({ data }: IDoesFilterPassParams<{ effectiveTags: string[] }>) =>
@@ -32,11 +32,11 @@ const TagsFilter = ({
   )
   const getModelAsString = useCallback(
     (current: string[] | null) =>
-      vocabulary
+      tagsVocabulary
         .leaves(current ?? [])
-        .map(vocabulary.pathLabel)
+        .map(tagsVocabulary.pathLabel)
         .join(', '),
-    [vocabulary]
+    [tagsVocabulary]
   )
   useGridFilter({ doesFilterPass, getModelAsString })
 

@@ -164,13 +164,13 @@ export const buildCollection = ({
   looseMinifigsList,
   tagsList,
 }: StoredCollection): Collection => {
-  const vocabulary = buildTagsVocabulary(tagsList)
+  const tagsVocabulary = buildTagsVocabulary(tagsList)
   const inheritable = (set: Set) =>
     set.tags?.includes(seasonalTagId)
       ? []
-      : vocabulary
+      : tagsVocabulary
           .withImplied(set.tags ?? [])
-          .filter((id) => vocabulary.rootOf(id)?.inherited)
+          .filter((id) => tagsVocabulary.rootOf(id)?.inherited)
   const looseById = new Map(looseMinifigsList.map((loose) => [loose.id, loose]))
   const cleanedMinifigsList = minifigsList.map((minifig): CollectionMinifig => {
     const stored = looseById.get(minifig.id)
@@ -229,7 +229,7 @@ export const buildCollection = ({
           {
             ...currentSet,
             tags: Array.from(new Set(currentSet.tags)),
-            effectiveTags: vocabulary.withImplied(currentSet.tags ?? []),
+            effectiveTags: tagsVocabulary.withImplied(currentSet.tags ?? []),
             ...(currentSet.content && {
               content: {
                 ...currentSet.content,
@@ -254,8 +254,8 @@ export const buildCollection = ({
     setsList: syncedList.sets,
     minifigsList: syncedList.minifigs.map((minifig) => ({
       ...minifig,
-      effectiveTags: vocabulary.sort([
-        ...vocabulary.withImplied(minifig.tags ?? []),
+      effectiveTags: tagsVocabulary.sort([
+        ...tagsVocabulary.withImplied(minifig.tags ?? []),
         ...Object.keys(minifig.inheritedTags),
       ]),
     })),
