@@ -30,7 +30,7 @@ const IgnoreListFields: FC<IgnoreListFieldsProps> = ({
   }
   if (!ignoreList) {
     return (
-      <Typography color="text.secondary">Loading the ignore list…</Typography>
+      <Typography color="textSecondary">Loading the ignore list…</Typography>
     )
   }
   return ignoreFields.map(({ key, label, column }) => (

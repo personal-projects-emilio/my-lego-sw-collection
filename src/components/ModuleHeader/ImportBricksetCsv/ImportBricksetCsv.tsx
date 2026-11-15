@@ -8,7 +8,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Stack,
   Typography,
 } from '@mui/material'
 import {
@@ -40,8 +39,15 @@ import UpdatesGrid from './UpdatesGrid'
 
 const useImportBricksetCsvStyles = makeStyles({ name: 'ImportBricksetCsv' })(
   (theme) => ({
+    content: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: theme.spacing(2),
+    },
     fileRow: {
       alignItems: 'center',
+      display: 'flex',
+      gap: theme.spacing(2),
     },
     summary: {
       marginBottom: theme.spacing(1),
@@ -183,8 +189,8 @@ const ImportBricksetCsv: FC = () => {
             Import a Brickset CSV
           </DialogTitle>
           <DialogContent dividers>
-            <Stack spacing={2}>
-              <Stack className={classes.fileRow} direction="row" spacing={2}>
+            <div className={classes.content}>
+              <div className={classes.fileRow}>
                 <Button
                   variant="outlined"
                   component="label"
@@ -198,12 +204,12 @@ const ImportBricksetCsv: FC = () => {
                     onChange={onFileChange}
                   />
                 </Button>
-                <Typography color="text.secondary">
+                <Typography color="textSecondary">
                   {fileName
                     ? `${fileName}: ${rows?.length ?? 0} rows`
                     : 'Export your sets from Brickset as CSV'}
                 </Typography>
-              </Stack>
+              </div>
               <IgnoreListFields
                 ignoreList={ignoreList}
                 isError={isIgnoreListError}
@@ -257,7 +263,7 @@ const ImportBricksetCsv: FC = () => {
                   </ReportSection>
                 </div>
               )}
-            </Stack>
+            </div>
           </DialogContent>
           <DialogActions>
             <Button onClick={onClose} color="primary">
