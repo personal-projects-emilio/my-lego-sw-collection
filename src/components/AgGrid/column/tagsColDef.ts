@@ -1,12 +1,12 @@
 import type { ColDef } from 'ag-grid-community'
 import type { TagTarget } from 'types/tags'
-import type { Vocabulary } from 'utils/tags'
+import type { TagsVocabulary } from 'utils/tags'
 
 import TagsFilter, { type TagsFilterProps } from './TagsFilter'
 import TagsTooltip from './TagsTooltip'
 
 export const tagsColDef = <TData extends { effectiveTags: string[] }>(
-  vocabulary: Vocabulary,
+  vocabulary: TagsVocabulary,
   itemType: TagTarget
 ): ColDef<TData, string[]> => ({
   colId: 'tags',

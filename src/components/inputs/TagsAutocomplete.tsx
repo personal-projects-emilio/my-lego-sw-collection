@@ -18,8 +18,8 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
-import TagTree from 'components/TagTree'
-import useVocabulary from 'hooks/useVocabulary'
+import TreeView from 'components/TreeView'
+import useTagsVocabulary from 'hooks/useTagsVocabulary'
 import { makeStyles } from 'tss-react/mui'
 import type { TagTarget } from 'types/tags'
 
@@ -161,7 +161,7 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
     },
     ref
   ) => {
-    const vocabulary = useVocabulary()
+    const vocabulary = useTagsVocabulary()
     const { classes, cx, theme } = useTagsAutocompleteStyles()
     const options = useMemo(
       () => vocabulary.pickable(itemType),
@@ -276,10 +276,10 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
               <Tooltip
                 key={`group-${parent}`}
                 title={
-                  <TagTree
+                  <TreeView
                     ids={group}
                     notes={notes(group)}
-                    vocabulary={vocabulary}
+                    tree={vocabulary}
                   />
                 }
               >

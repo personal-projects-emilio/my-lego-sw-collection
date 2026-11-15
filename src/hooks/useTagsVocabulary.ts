@@ -2,13 +2,13 @@ import { useMemo } from 'react'
 
 import { useTagsQuery } from 'api/tags'
 import type { TagsList } from 'types/tags'
-import { buildVocabulary } from 'utils/tags'
+import { buildTagsVocabulary } from 'utils/tags'
 
 const noTags: TagsList = []
 
-const useVocabulary = () => {
+const useTagsVocabulary = () => {
   const { data: tagsList = noTags } = useTagsQuery()
-  return useMemo(() => buildVocabulary(tagsList), [tagsList])
+  return useMemo(() => buildTagsVocabulary(tagsList), [tagsList])
 }
 
-export default useVocabulary
+export default useTagsVocabulary

@@ -13,7 +13,7 @@ import {
   OverflowTypographyCellRenderer,
   tagsColDef,
 } from 'components/AgGrid/column'
-import useVocabulary from 'hooks/useVocabulary'
+import useTagsVocabulary from 'hooks/useTagsVocabulary'
 import type { CollectionMinifig } from 'types/minifigs'
 
 import { OwnedCellRenderer } from '../components'
@@ -22,7 +22,7 @@ import useMinifigsMutations from './useMinifigsMutations'
 const useMinifigsColDefs = () => {
   const { classes: agGridClasses } = useAgGridStyles()
   const { deleteMinifig, isPending } = useMinifigsMutations()
-  const vocabulary = useVocabulary()
+  const vocabulary = useTagsVocabulary()
 
   return useMemo(
     () =>

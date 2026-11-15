@@ -1,9 +1,9 @@
 import type { FC } from 'react'
 
 import { makeStyles } from 'tss-react/mui'
-import type { Vocabulary } from 'utils/tags'
+import type { TreeModel } from 'utils/tree'
 
-const useTagTreeStyles = makeStyles({ name: 'TagTree' })((theme) => ({
+const useTreeViewStyles = makeStyles({ name: 'TreeView' })((theme) => ({
   tree: {
     fontFamily: theme.typography.caption.fontFamily,
     fontSize: theme.typography.caption.fontSize,
@@ -34,21 +34,19 @@ const useTagTreeStyles = makeStyles({ name: 'TagTree' })((theme) => ({
   },
 }))
 
-type TagTreeProps = {
+type TreeViewProps = {
   ids: string[]
   notes?: Record<string, string>
-  vocabulary: Vocabulary
+  tree: TreeModel
 }
 
-const TagTree: FC<TagTreeProps> = ({ ids, notes = {}, vocabulary }) => {
-  const { classes, cx } = useTagTreeStyles()
-  const nodes = vocabulary.tree(ids)
-  const leaves = new Set(vocabulary.leaves(ids))
+const TreeView: FC<TreeViewProps> = ({ ids, notes = {}, tree }) => {
+  const { classes, cx } = useTreeViewStyles()
+  const nodes = tree.outline(ids)
+  const leaves = new Set(tree.leaves(ids))
 
   const branch = (parent: string | undefined) => {
-    const children = nodes.filter(
-      ({ id }) => vocabulary.byId.get(id)?.parent === parent
-    )
+    const children = nodes.filter((node) => node.parent === parent)
     if (!children.length) return null
     return (
       <ul className={parent ? cx(classes.branch, classes.child) : classes.tree}>
@@ -68,4 +66,4 @@ const TagTree: FC<TagTreeProps> = ({ ids, notes = {}, vocabulary }) => {
   return branch(undefined)
 }
 
-export default TagTree
+export default TreeView

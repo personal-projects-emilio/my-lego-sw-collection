@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import type { IDoesFilterPassParams } from 'ag-grid-community'
 import { type CustomFilterProps, useGridFilter } from 'ag-grid-react'
 import { TagsAutocomplete } from 'components/inputs'
-import useVocabulary from 'hooks/useVocabulary'
+import useTagsVocabulary from 'hooks/useTagsVocabulary'
 import { makeStyles } from 'tss-react/mui'
 import type { TagTarget } from 'types/tags'
 
@@ -23,7 +23,7 @@ const TagsFilter = ({
 }: CustomFilterProps<{ effectiveTags: string[] }, unknown, string[]> &
   TagsFilterProps) => {
   const { classes } = useTagsFilterStyles()
-  const vocabulary = useVocabulary()
+  const vocabulary = useTagsVocabulary()
 
   const doesFilterPass = useCallback(
     ({ data }: IDoesFilterPassParams<{ effectiveTags: string[] }>) =>

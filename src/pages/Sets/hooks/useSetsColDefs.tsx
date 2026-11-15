@@ -18,7 +18,7 @@ import {
   type SetActionsCellRendererProps,
   tagsColDef,
 } from 'components/AgGrid/column'
-import useVocabulary from 'hooks/useVocabulary'
+import useTagsVocabulary from 'hooks/useTagsVocabulary'
 import { useAuth } from 'providers/AuthProvider'
 import type { CollectionSet } from 'types/sets'
 import { compareIds, spreadArrayIf } from 'utils/array'
@@ -32,7 +32,7 @@ const useSetsColDefs = () => {
   const { classes: agGridClasses } = useAgGridStyles()
   const { deleteSet, isPending } = useSetsMutations()
   const { idToken } = useAuth()
-  const vocabulary = useVocabulary()
+  const vocabulary = useTagsVocabulary()
   return useMemo(
     () =>
       [

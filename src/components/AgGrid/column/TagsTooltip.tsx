@@ -1,6 +1,6 @@
 import type { CustomTooltipProps } from 'ag-grid-react'
-import TagTree from 'components/TagTree'
-import useVocabulary from 'hooks/useVocabulary'
+import TreeView from 'components/TreeView'
+import useTagsVocabulary from 'hooks/useTagsVocabulary'
 import { makeStyles } from 'tss-react/mui'
 
 const useTagsTooltipStyles = makeStyles({ name: 'TagsTooltip' })({
@@ -22,7 +22,7 @@ type TaggedItem = {
 
 const TagsTooltip = ({ data }: CustomTooltipProps<TaggedItem>) => {
   const { classes } = useTagsTooltipStyles()
-  const vocabulary = useVocabulary()
+  const vocabulary = useTagsVocabulary()
   if (!data?.effectiveTags.length) return null
 
   const notes = Object.fromEntries(
@@ -34,7 +34,7 @@ const TagsTooltip = ({ data }: CustomTooltipProps<TaggedItem>) => {
 
   return (
     <div className={classes.tooltip}>
-      <TagTree ids={data.effectiveTags} notes={notes} vocabulary={vocabulary} />
+      <TreeView ids={data.effectiveTags} notes={notes} tree={vocabulary} />
     </div>
   )
 }
