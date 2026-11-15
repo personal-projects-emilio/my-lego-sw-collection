@@ -197,51 +197,61 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
             const { key, onDelete, ...itemProps } = getItemProps({
               index: ids.indexOf(id),
             })
-            const chipNote = note(id)
             return (
-              <Tooltip
+              <Chip
                 key={key}
+                {...itemProps}
+                label={chipLabel}
+                onDelete={isInherited(id) ? undefined : onDelete}
+                size="small"
+              />
+            )
+          }
+          const notes = (group: string[]) =>
+            Object.fromEntries(
+              group.flatMap((id) => {
+                const groupNote = note(id)
+                return groupNote ? [[id, groupNote]] : []
+              })
+            )
+          return vocabulary.siblingGroups(ids).map(({ parent, ids: group }) =>
+            parent ? (
+              <Tooltip
+                key={`group-${parent}`}
                 title={
                   <TagTree
-                    ids={[id]}
-                    notes={chipNote ? { [id]: chipNote } : undefined}
+                    ids={group}
+                    notes={notes(group)}
                     vocabulary={vocabulary}
                   />
                 }
               >
-                <Chip
-                  {...itemProps}
-                  label={chipLabel}
-                  onDelete={isInherited(id) ? undefined : onDelete}
-                  size="small"
-                />
+                <Box
+                  sx={{
+                    alignItems: 'center',
+                    bgcolor: 'action.hover',
+                    border: 1,
+                    borderColor: 'text.disabled',
+                    borderRadius: 4,
+                    display: 'inline-flex',
+                    flexWrap: 'wrap',
+                    gap: 0.5,
+                    m: 0.25,
+                    pl: 1,
+                    pr: 0.25,
+                    py: 0.25,
+                  }}
+                >
+                  <Typography variant="caption">
+                    {vocabulary.pathLabel(parent)} ›
+                  </Typography>
+                  {group.map((id) => tagChip(id, vocabulary.label(id)))}
+                </Box>
               </Tooltip>
-            )
-          }
-          return vocabulary.siblingGroups(ids).map(({ parent, ids: group }) =>
-            parent ? (
-              <Box
-                key={`group-${parent}`}
-                sx={{
-                  alignItems: 'center',
-                  bgcolor: 'action.hover',
-                  border: 1,
-                  borderColor: 'text.disabled',
-                  borderRadius: 4,
-                  display: 'inline-flex',
-                  flexWrap: 'wrap',
-                  gap: 0.5,
-                  m: 0.25,
-                  pl: 1,
-                  pr: 0.25,
-                  py: 0.25,
-                }}
-              >
-                <Typography variant="caption">
-                  {vocabulary.pathLabel(parent)} ›
-                </Typography>
-                {group.map((id) => tagChip(id, vocabulary.label(id)))}
-              </Box>
+            ) : note(group[0]) ? (
+              <Tooltip key={`note-${group[0]}`} title={note(group[0])}>
+                {tagChip(group[0], vocabulary.pathLabel(group[0]))}
+              </Tooltip>
             ) : (
               tagChip(group[0], vocabulary.pathLabel(group[0]))
             )
