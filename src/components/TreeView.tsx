@@ -40,12 +40,16 @@ const useTreeViewStyles = makeStyles({ name: 'TreeView' })((theme) => ({
     position: 'relative',
     '&::before': {
       borderBottom: `1px solid ${theme.palette.text.disabled}`,
-      borderLeft: `1px solid ${theme.palette.text.disabled}`,
       content: '""',
       height: '0.83em',
-      left: 0,
+      left: 1,
       position: 'absolute',
       top: 0,
+      width: `calc(${theme.spacing(1)} - 1px)`,
+    },
+    '&:last-child::before': {
+      borderLeft: `1px solid ${theme.palette.text.disabled}`,
+      left: 0,
       width: theme.spacing(1),
     },
     '&:not(:last-child)::after': {
@@ -54,7 +58,7 @@ const useTreeViewStyles = makeStyles({ name: 'TreeView' })((theme) => ({
       content: '""',
       left: 0,
       position: 'absolute',
-      top: 'calc(0.83em + 1px)',
+      top: 0,
     },
   },
   note: {
