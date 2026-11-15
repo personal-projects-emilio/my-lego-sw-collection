@@ -7,13 +7,11 @@ export const queryKeys = {
   tags: 'tags',
 } as const
 
-const dataSuffix = import.meta.env.VITE_DATA_SUFFIX ?? ''
-
 export const endPoints = {
   bricksetIgnoreList: '/bricksetIgnoreList.json',
   looseMinifigs: '/looseMinifigs.json',
-  minifigs: `/minifigs${dataSuffix}.json`,
+  minifigs: '/minifigs.json',
   resaleSets: '/resaleSets.json',
-  sets: `/sets${dataSuffix}.json`,
-  tags: `/tags${dataSuffix}.json`,
+  sets: '/sets.json',
+  tags: '/tags.json',
 } as const
