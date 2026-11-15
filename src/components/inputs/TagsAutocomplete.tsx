@@ -1,13 +1,24 @@
-import { forwardRef, useMemo } from 'react'
+import {
+  Children,
+  cloneElement,
+  type CSSProperties,
+  forwardRef,
+  type ReactElement,
+  type ReactNode,
+  useMemo,
+} from 'react'
 
 import {
   Autocomplete as MuiAutocomplete,
   Checkbox,
   Chip,
+  ListSubheader,
   TextField,
   type TextFieldProps,
+  type Theme,
   Tooltip,
   Typography,
+  useTheme,
 } from '@mui/material'
 import TagTree from 'components/TagTree'
 import useVocabulary from 'hooks/useVocabulary'
@@ -25,6 +36,55 @@ type TagsAutocompleteProps = {
 
 const noInheritedTags: Record<string, Array<string | number>> = {}
 
+const GROUP_HEIGHT = 48
+const OPTION_HEIGHT = 36
+
+type OptionElement = ReactElement<{
+  'aria-disabled'?: boolean
+  'data-depth': number
+  style?: CSSProperties
+}>
+
+const nestOptions = (
+  options: OptionElement[],
+  palette: Theme['palette']
+): ReactNode[] => {
+  const nested: ReactNode[] = []
+  for (let start = 0; start < options.length;) {
+    const option = options[start]
+    const depth = option.props['data-depth']
+    let end = start + 1
+    while (end < options.length && options[end].props['data-depth'] > depth)
+      end++
+    nested.push(
+      end === start + 1 ? (
+        option
+      ) : (
+        <li key={`subtree-${option.key}`}>
+          <ul style={{ padding: 0 }}>
+            {cloneElement(option, {
+              style: {
+                ...option.props.style,
+                background: palette.background.paper,
+                color: option.props['aria-disabled']
+                  ? palette.text.disabled
+                  : undefined,
+                opacity: 1,
+                position: 'sticky',
+                top: GROUP_HEIGHT + (depth - 1) * OPTION_HEIGHT,
+                zIndex: 1,
+              },
+            })}
+            {nestOptions(options.slice(start + 1, end), palette)}
+          </ul>
+        </li>
+      )
+    )
+    start = end
+  }
+  return nested
+}
+
 const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
   (
     {
@@ -39,6 +99,7 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
     ref
   ) => {
     const vocabulary = useVocabulary()
+    const theme = useTheme()
     const options = useMemo(
       () => vocabulary.pickable(itemType),
       [vocabulary, itemType]
@@ -88,11 +149,28 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
             {...textFieldProps}
           />
         )}
+        renderGroup={({ key, group, children }) => (
+          <li key={key}>
+            <ListSubheader sx={{ lineHeight: `${GROUP_HEIGHT}px` }}>
+              {group}
+            </ListSubheader>
+            <ul style={{ padding: 0 }}>
+              {nestOptions(
+                Children.toArray(children) as OptionElement[],
+                theme.palette
+              )}
+            </ul>
+          </li>
+        )}
         renderOption={({ key, ...props }, id, { selected }) => (
           <li
             key={key}
             {...props}
-            style={{ paddingLeft: vocabulary.depth(id) * 16 }}
+            data-depth={vocabulary.depth(id)}
+            style={{
+              height: OPTION_HEIGHT,
+              paddingLeft: vocabulary.depth(id) * 16,
+            }}
           >
             <Checkbox checked={selected || isImplied(id)} size="small" />
             {vocabulary.label(id)}
