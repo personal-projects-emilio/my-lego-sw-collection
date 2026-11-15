@@ -56,12 +56,12 @@ test.for([
     case: 'groups siblings and keeps tree order',
     ids: ['carbonite', 'esb', 'tatooine', 'anh'],
     expected:
-      'Age of Rebellion › Original Trilogy › A New Hope, The Empire Strikes Back; Tatooine; Bespin › Carbonite Chamber',
+      'Age of Rebellion › Original Trilogy › A New Hope, The Empire Strikes Back | Tatooine | Bespin › Carbonite Chamber',
   },
   {
     case: 'collapses implied parents first',
     ids: ['ot', 'anh', 'bespin'],
-    expected: 'Age of Rebellion › Original Trilogy › A New Hope; Bespin',
+    expected: 'Age of Rebellion › Original Trilogy › A New Hope | Bespin',
   },
 ])('groupedLabel $case', ({ ids, expected }) => {
   assert.equal(tree.groupedLabel(ids), expected)

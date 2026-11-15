@@ -104,7 +104,7 @@ export const buildTree = <T extends TreeNode>(nodes: T[]) => {
           ? `${pathLabel(parent)} › ${ids.map(label).join(', ')}`
           : pathLabel(ids[0])
       )
-      .join('; ')
+      .join(' | ')
 
   const outline = (ids: string[]) =>
     sort(ids.flatMap((id) => [id, ...ancestors(id).map(({ id }) => id)])).map(
