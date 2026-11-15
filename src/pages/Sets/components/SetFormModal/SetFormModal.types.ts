@@ -7,5 +7,5 @@ export type SetFormModalProps =
     }
   | {
       isEdit: false
-      setData?: Pick<Set, 'appearances' | 'subtheme' | 'tags' | 'timelines'>
+      setData?: Pick<Set, 'subtheme' | 'tags'>
     }

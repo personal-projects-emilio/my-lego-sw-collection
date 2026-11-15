@@ -24,12 +24,7 @@ const AddMinifigFormModal: FC = () => {
     <MinifigFormModal
       isEdit={false}
       {...(minifigToDuplicate && {
-        minifigData: pick(minifigToDuplicate, [
-          'appearances',
-          'characterName',
-          'tags',
-          'timelines',
-        ]),
+        minifigData: pick(minifigToDuplicate, ['characterName', 'tags']),
       })}
     />
   )

@@ -16,9 +16,11 @@ import {
   listValueFormatter,
   OverflowTypographyCellRenderer,
   type SetActionsCellRendererProps,
+  tagsColDef,
 } from 'components/AgGrid/column'
+import useVocabulary from 'hooks/useVocabulary'
 import { useAuth } from 'providers/AuthProvider'
-import type { Set } from 'types/sets'
+import type { CollectionSet } from 'types/sets'
 import { compareIds, spreadArrayIf } from 'utils/array'
 import { formatFrDate, formatFrEuroCurrency } from 'utils/format'
 import { isSetRetired } from 'utils/lego'
@@ -30,6 +32,7 @@ const useSetsColDefs = () => {
   const { classes: agGridClasses } = useAgGridStyles()
   const { deleteSet, isPending } = useSetsMutations()
   const { idToken } = useAuth()
+  const vocabulary = useVocabulary()
   return useMemo(
     () =>
       [
@@ -61,30 +64,7 @@ const useSetsColDefs = () => {
           flex: 1,
           minWidth: 120,
         },
-        {
-          field: 'tags',
-          headerName: 'Tags',
-          cellRenderer: OverflowTypographyCellRenderer,
-          flex: 1,
-          minWidth: 120,
-          valueFormatter: ({ value }) => listValueFormatter(value),
-        },
-        {
-          field: 'timelines',
-          headerName: 'Timelines',
-          cellRenderer: OverflowTypographyCellRenderer,
-          flex: 1,
-          minWidth: 120,
-          valueFormatter: ({ value }) => listValueFormatter(value),
-        },
-        {
-          field: 'appearances',
-          headerName: 'Appearances',
-          cellRenderer: OverflowTypographyCellRenderer,
-          flex: 1,
-          minWidth: 120,
-          valueFormatter: ({ value }) => listValueFormatter(value),
-        },
+        tagsColDef<CollectionSet>(vocabulary, 'sets'),
         {
           field: 'releaseYear',
           headerName: 'Release',
@@ -119,7 +99,10 @@ const useSetsColDefs = () => {
           headerName: 'Minifigs',
           valueFormatter: ({
             value,
-          }: ValueFormatterParams<Set, Set['content']['minifigs']>) =>
+          }: ValueFormatterParams<
+            CollectionSet,
+            CollectionSet['content']['minifigs']
+          >) =>
             listValueFormatter(
               value?.map(({ id, quantity }) => `${id}: ${quantity}`)
             ),
@@ -130,7 +113,7 @@ const useSetsColDefs = () => {
             data: {
               content: { minifigs },
             },
-          }: GetQuickFilterTextParams<Set>) =>
+          }: GetQuickFilterTextParams<CollectionSet>) =>
             (minifigs ?? []).reduce(
               (quickFilterText, minifig) =>
                 `${quickFilterText}, ${minifig.id}, ${minifig.characterName}`,
@@ -138,7 +121,7 @@ const useSetsColDefs = () => {
             ),
           width: 100,
         },
-        ...spreadArrayIf<ColDef<Set>>(idToken !== undefined, [
+        ...spreadArrayIf<ColDef<CollectionSet>>(idToken !== undefined, [
           {
             field: 'prices.bought',
             headerName: 'Bought',
@@ -231,8 +214,8 @@ const useSetsColDefs = () => {
           cellRenderer: 'agCheckboxCellRenderer',
           width: 100,
         },
-      ] as const satisfies Array<ColDef<Set>>,
-    [agGridClasses, deleteSet, idToken, isPending]
+      ] as const satisfies Array<ColDef<CollectionSet>>,
+    [agGridClasses, deleteSet, idToken, isPending, vocabulary]
   )
 }
 

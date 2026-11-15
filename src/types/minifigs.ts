@@ -1,7 +1,6 @@
 import { z } from 'zod'
 
 export const minifigValidationSchema = z.object({
-  appearances: z.array(z.string()),
   characterName: z.string().min(1, {
     message: 'Character name is required',
   }),
@@ -17,7 +16,6 @@ export const minifigValidationSchema = z.object({
     message: 'Name is required',
   }),
   tags: z.array(z.string()),
-  timelines: z.array(z.string()),
 })
 
 /** A minifig as stored in the DB */
@@ -39,6 +37,8 @@ export type LooseMinifigsList = StoredLooseMinifig[]
 
 /** A minifig with the values buildCollection calculates from the sets */
 export type CollectionMinifig = Minifig & {
+  effectiveTags: string[]
+  inheritedTags: Record<string, Array<string | number>>
   owned: {
     loose: LooseMinifig
     total: number

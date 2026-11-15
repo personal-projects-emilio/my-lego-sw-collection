@@ -9,10 +9,11 @@ import {
   ItemActionsCellRenderer,
   ItemIdCellRenderer,
   type ItemIdCellRenderProps,
-  listValueFormatter,
   type MinifigActionsCellRendererProps,
   OverflowTypographyCellRenderer,
+  tagsColDef,
 } from 'components/AgGrid/column'
+import useVocabulary from 'hooks/useVocabulary'
 import type { CollectionMinifig } from 'types/minifigs'
 
 import { OwnedCellRenderer } from '../components'
@@ -21,6 +22,7 @@ import useMinifigsMutations from './useMinifigsMutations'
 const useMinifigsColDefs = () => {
   const { classes: agGridClasses } = useAgGridStyles()
   const { deleteMinifig, isPending } = useMinifigsMutations()
+  const vocabulary = useVocabulary()
 
   return useMemo(
     () =>
@@ -48,30 +50,7 @@ const useMinifigsColDefs = () => {
           field: 'characterName',
           headerName: 'Character Name',
         },
-        {
-          cellRenderer: OverflowTypographyCellRenderer,
-          field: 'tags',
-          flex: 1,
-          headerName: 'Tags',
-          minWidth: 120,
-          valueFormatter: ({ value }) => listValueFormatter(value),
-        },
-        {
-          cellRenderer: OverflowTypographyCellRenderer,
-          field: 'timelines',
-          flex: 1,
-          headerName: 'Timelines',
-          minWidth: 120,
-          valueFormatter: ({ value }) => listValueFormatter(value),
-        },
-        {
-          cellRenderer: OverflowTypographyCellRenderer,
-          field: 'appearances',
-          flex: 1,
-          headerName: 'Appearances',
-          minWidth: 120,
-          valueFormatter: ({ value }) => listValueFormatter(value),
-        },
+        tagsColDef<CollectionMinifig>(vocabulary, 'minifigs'),
         {
           cellClass: agGridClasses.flexAlignCenter,
           cellRenderer: OwnedCellRenderer,
@@ -124,7 +103,7 @@ const useMinifigsColDefs = () => {
           width: 140,
         },
       ] as const satisfies Array<ColDef<CollectionMinifig>>,
-    [agGridClasses, deleteMinifig, isPending]
+    [agGridClasses, deleteMinifig, isPending, vocabulary]
   )
 }
 
