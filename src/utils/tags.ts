@@ -4,6 +4,8 @@ export const SEASONAL_TAG_ID = 'seasonal'
 
 export type Vocabulary = ReturnType<typeof buildVocabulary>
 
+type SiblingGroup = { parent: string | undefined; ids: string[] }
+
 export const buildVocabulary = (tagsList: TagsList) => {
   const byId = new Map(tagsList.map((tag) => [tag.id, tag]))
   const children = new Map<string | undefined, Tag[]>()
@@ -85,6 +87,29 @@ export const buildVocabulary = (tagsList: TagsList) => {
       label(id),
     ].join(' › ')
 
+  const siblingGroups = (ids: string[]): SiblingGroup[] => {
+    const groups = new Map<string, SiblingGroup>()
+    leaves(ids).forEach((id) => {
+      const parent = byId.get(id)?.parent
+      const shared = parent && byId.get(parent)?.parent ? parent : undefined
+      const key = shared ?? id
+      const group = groups.get(key) ?? { parent: shared, ids: [] }
+      groups.set(key, { ...group, ids: [...group.ids, id] })
+    })
+    return [...groups.values()].flatMap((group) =>
+      group.ids.length > 1 ? [group] : [{ parent: undefined, ids: group.ids }]
+    )
+  }
+
+  const groupedLabel = (ids: string[]) =>
+    siblingGroups(ids)
+      .map(({ parent, ids }) =>
+        parent
+          ? `${pathLabel(parent)} › ${ids.map(label).join(', ')}`
+          : pathLabel(ids[0])
+      )
+      .join('; ')
+
   const tree = (ids: string[]) =>
     sort(ids.flatMap((id) => [id, ...ancestors(id).map(({ id }) => id)])).map(
       (id) => ({ id, label: label(id), depth: depth(id) })
@@ -101,6 +126,8 @@ export const buildVocabulary = (tagsList: TagsList) => {
     label,
     leaves,
     pathLabel,
+    siblingGroups,
+    groupedLabel,
     tree,
   }
 }

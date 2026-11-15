@@ -21,9 +21,5 @@ export const tagsColDef = <TData extends { effectiveTags: string[] }>(
   suppressFloatingFilterButton: false,
   tooltipComponent: TagsTooltip,
   tooltipValueGetter: ({ value }) => (value?.length ? 'tags' : undefined),
-  valueFormatter: ({ value }) =>
-    vocabulary
-      .leaves(value ?? [])
-      .map(vocabulary.pathLabel)
-      .join(', '),
+  valueFormatter: ({ value }) => vocabulary.groupedLabel(value ?? []),
 })

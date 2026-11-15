@@ -10,6 +10,7 @@ import {
 
 import {
   Autocomplete as MuiAutocomplete,
+  Box,
   Checkbox,
   Chip,
   ListSubheader,
@@ -191,9 +192,11 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
           listbox: { style: { padding: 0 } },
           popper: { className: popperClassName },
         }}
-        renderValue={(ids, getItemProps) =>
-          ids.map((id, index) => {
-            const { key, onDelete, ...itemProps } = getItemProps({ index })
+        renderValue={(ids, getItemProps) => {
+          const tagChip = (id: string, chipLabel: string) => {
+            const { key, onDelete, ...itemProps } = getItemProps({
+              index: ids.indexOf(id),
+            })
             const chipNote = note(id)
             return (
               <Tooltip
@@ -208,14 +211,42 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
               >
                 <Chip
                   {...itemProps}
-                  label={vocabulary.pathLabel(id)}
+                  label={chipLabel}
                   onDelete={isInherited(id) ? undefined : onDelete}
                   size="small"
                 />
               </Tooltip>
             )
-          })
-        }
+          }
+          return vocabulary.siblingGroups(ids).map(({ parent, ids: group }) =>
+            parent ? (
+              <Box
+                key={`group-${parent}`}
+                sx={{
+                  alignItems: 'center',
+                  bgcolor: 'action.hover',
+                  border: 1,
+                  borderColor: 'text.disabled',
+                  borderRadius: 4,
+                  display: 'inline-flex',
+                  flexWrap: 'wrap',
+                  gap: 0.5,
+                  m: 0.25,
+                  pl: 1,
+                  pr: 0.25,
+                  py: 0.25,
+                }}
+              >
+                <Typography variant="caption">
+                  {vocabulary.pathLabel(parent)} ›
+                </Typography>
+                {group.map((id) => tagChip(id, vocabulary.label(id)))}
+              </Box>
+            ) : (
+              tagChip(group[0], vocabulary.pathLabel(group[0]))
+            )
+          )
+        }}
         value={chips}
       />
     )
