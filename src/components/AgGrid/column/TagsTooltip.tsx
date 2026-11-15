@@ -33,9 +33,12 @@ const TagsTooltip = ({ data }: CustomTooltipProps<TaggedItem>) => {
   )
 
   return (
-    <div className={classes.tooltip}>
-      <TreeView ids={data.effectiveTags} notes={notes} tree={tagsVocabulary} />
-    </div>
+    <TreeView
+      className={classes.tooltip}
+      ids={data.effectiveTags}
+      notes={notes}
+      tree={tagsVocabulary}
+    />
   )
 }
 
