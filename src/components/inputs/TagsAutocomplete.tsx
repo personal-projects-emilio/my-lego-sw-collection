@@ -52,14 +52,29 @@ const useTagsAutocompleteStyles = makeStyles({ name: 'TagsAutocomplete' })(
       zIndex: GROUP_LAYER,
     },
     pinned: {
-      '&&': {
-        background: theme.palette.background.paper,
-        opacity: 1,
-        position: 'sticky',
+      position: 'sticky',
+      '&.Mui-focused': {
+        backgroundImage: tint(theme.palette.action.hover),
       },
-      '&&&[aria-disabled="true"]': {
+      '&[aria-selected="true"]': {
+        backgroundImage: tint(
+          theme.alpha(
+            theme.palette.primary.main,
+            theme.palette.action.selectedOpacity
+          )
+        ),
+      },
+      '&[aria-selected="true"].Mui-focused': {
+        backgroundImage: tint(
+          theme.alpha(
+            theme.palette.primary.main,
+            theme.palette.action.selectedOpacity +
+              theme.palette.action.hoverOpacity
+          )
+        ),
+      },
+      '&[aria-disabled="true"]': {
         color: theme.palette.text.disabled,
-        opacity: 1,
       },
     },
     note: {
@@ -81,7 +96,13 @@ const useTagsAutocompleteStyles = makeStyles({ name: 'TagsAutocomplete' })(
   })
 )
 
-type NestClasses = Record<'nestedList' | 'pinned', string>
+type NestStyles = {
+  background: string
+  classes: Record<'nestedList' | 'pinned', string>
+  cx: (...names: Array<string | undefined>) => string
+}
+
+const tint = (color: string) => `linear-gradient(${color}, ${color})`
 
 type OptionElement = ReactElement<{
   className?: string
@@ -91,9 +112,9 @@ type OptionElement = ReactElement<{
 
 const nestOptions = (
   options: OptionElement[],
-  classes: NestClasses,
-  cx: (...names: Array<string | undefined>) => string
+  styles: NestStyles
 ): ReactNode[] => {
+  const { background, classes, cx } = styles
   const nested: ReactNode[] = []
   for (let start = 0; start < options.length;) {
     const option = options[start]
@@ -111,11 +132,13 @@ const nestOptions = (
               className: cx(option.props.className, classes.pinned),
               style: {
                 ...option.props.style,
+                backgroundColor: background,
+                opacity: 1,
                 top: GROUP_HEIGHT + (depth - 1) * OPTION_HEIGHT,
                 zIndex: GROUP_LAYER - depth,
               },
             })}
-            {nestOptions(options.slice(start + 1, end), classes, cx)}
+            {nestOptions(options.slice(start + 1, end), styles)}
           </ul>
         </li>
       )
@@ -139,7 +162,7 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
     ref
   ) => {
     const vocabulary = useVocabulary()
-    const { classes, cx } = useTagsAutocompleteStyles()
+    const { classes, cx, theme } = useTagsAutocompleteStyles()
     const options = useMemo(
       () => vocabulary.pickable(itemType),
       [vocabulary, itemType]
@@ -195,11 +218,11 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
               {group}
             </ListSubheader>
             <ul className={classes.nestedList}>
-              {nestOptions(
-                Children.toArray(children) as OptionElement[],
+              {nestOptions(Children.toArray(children) as OptionElement[], {
+                background: theme.palette.background.paper,
                 classes,
-                cx
-              )}
+                cx,
+              })}
             </ul>
           </li>
         )}
