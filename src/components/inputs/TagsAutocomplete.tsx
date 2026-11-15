@@ -37,6 +37,7 @@ type TagsAutocompleteProps = {
 const noInheritedTags: Record<string, Array<string | number>> = {}
 
 const GROUP_HEIGHT = 48
+const GROUP_LAYER = 20
 const OPTION_HEIGHT = 36
 
 type OptionElement = ReactElement<{
@@ -72,7 +73,7 @@ const nestOptions = (
                 opacity: 1,
                 position: 'sticky',
                 top: GROUP_HEIGHT + (depth - 1) * OPTION_HEIGHT,
-                zIndex: 1,
+                zIndex: GROUP_LAYER - depth,
               },
             })}
             {nestOptions(options.slice(start + 1, end), palette)}
@@ -151,7 +152,9 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
         )}
         renderGroup={({ key, group, children }) => (
           <li key={key}>
-            <ListSubheader sx={{ lineHeight: `${GROUP_HEIGHT}px` }}>
+            <ListSubheader
+              sx={{ lineHeight: `${GROUP_HEIGHT}px`, zIndex: GROUP_LAYER }}
+            >
               {group}
             </ListSubheader>
             <ul style={{ padding: 0 }}>
@@ -184,7 +187,10 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
             )}
           </li>
         )}
-        slotProps={{ popper: { className: popperClassName } }}
+        slotProps={{
+          listbox: { style: { padding: 0 } },
+          popper: { className: popperClassName },
+        }}
         renderValue={(ids, getItemProps) =>
           ids.map((id, index) => {
             const { key, onDelete, ...itemProps } = getItemProps({ index })
