@@ -54,7 +54,7 @@ const useTreeViewStyles = makeStyles({ name: 'TreeView' })((theme) => ({
       content: '""',
       left: 0,
       position: 'absolute',
-      top: 0,
+      top: 'calc(0.83em + 1px)',
     },
   },
   note: {
