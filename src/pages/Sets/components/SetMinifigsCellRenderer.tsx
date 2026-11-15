@@ -6,7 +6,9 @@ import { mapItemToImageProps } from 'constants/common'
 import { makeStyles } from 'tss-react/mui'
 import type { Set } from 'types/sets'
 
-const useStyles = makeStyles<{ numberOfColumns: number }>({
+const useSetMinifigsCellRendererStyles = makeStyles<{
+  numberOfColumns: number
+}>({
   name: 'SetMinifigsCellRenderer',
 })((theme, { numberOfColumns }) => ({
   characterName: {
@@ -39,7 +41,7 @@ const SetMinifigsCellRenderer = ({
   value: setMinifigs,
 }: CustomCellRendererProps<Set, Set['content']['minifigs']>) => {
   const numberOfMinifigs = setMinifigs?.length ?? 0
-  const { classes } = useStyles({
+  const { classes } = useSetMinifigsCellRendererStyles({
     numberOfColumns: Math.min(
       numberOfMinifigs,
       numberOfMinifigs < 7 && numberOfMinifigs > 4 ? 3 : 4

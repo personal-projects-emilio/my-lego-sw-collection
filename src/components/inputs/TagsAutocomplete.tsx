@@ -191,7 +191,7 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
         )}
         renderGroup={({ key, group, children }) => (
           <li key={key}>
-            <ListSubheader className={classes.groupHeader}>
+            <ListSubheader className={classes.groupHeader} component="div">
               {group}
             </ListSubheader>
             <ul className={classes.nestedList}>

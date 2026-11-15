@@ -8,7 +8,7 @@ import { makeStyles } from 'tss-react/mui'
 import type { Item, ItemId } from 'types/common'
 import { assert, isNotNullOrUndefined } from 'utils/typescript'
 
-const useStyles = makeStyles({ name: 'ItemIdCellRenderer' })({
+const useItemIdCellRendererStyles = makeStyles({ name: 'ItemIdCellRenderer' })({
   tooltip: {
     maxHeight: '50vh',
     padding: 0,
@@ -41,7 +41,7 @@ const ItemIdCellRenderer = ({
 }: CustomCellRendererProps<{ bricksetImagePath?: string | null }, ItemId> &
   ItemIdCellRenderProps) => {
   assert(isNotNullOrUndefined(id))
-  const { classes } = useStyles()
+  const { classes } = useItemIdCellRendererStyles()
   const { alt, src } = mapItemToImageProps[variant](String(id))
 
   return (

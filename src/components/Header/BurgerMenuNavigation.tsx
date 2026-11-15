@@ -8,7 +8,9 @@ import { useAuth } from 'providers/AuthProvider'
 import type { RouterRouteIds } from 'routes'
 import { makeStyles } from 'tss-react/mui'
 
-const useStyles = makeStyles({ name: 'BurgerMenuNavigation' })((theme) => ({
+const useBurgerMenuNavigationStyles = makeStyles({
+  name: 'BurgerMenuNavigation',
+})((theme) => ({
   menu: {
     '& .Mui-selected': {
       color: theme.palette.primary.main,
@@ -39,7 +41,7 @@ const LinkMenuItem: FC<LinkMenuItemProps> = ({ to, label, onClick }) => {
 }
 
 const BurgerMenuNavigation: FC = () => {
-  const { classes } = useStyles()
+  const { classes } = useBurgerMenuNavigationStyles()
   const { idToken, logout } = useAuth()
   const menuId = useId()
   const iconButtonId = useId()

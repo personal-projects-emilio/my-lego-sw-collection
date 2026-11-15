@@ -13,7 +13,7 @@ const defaultColDef = {
   suppressHeaderFilterButton: true,
 } as const satisfies ColDef
 
-const useStyles = makeStyles({ name: 'ReportGrid' })({
+const useReportGridStyles = makeStyles({ name: 'ReportGrid' })({
   grid: { height: 450, maxHeight: 450, padding: 0 },
   autoHeight: { height: 'auto', maxHeight: 'none', padding: 0 },
 })
@@ -22,7 +22,7 @@ type ReportGridProps<TData> = AgGridReactProps<TData> & { rowData: TData[] }
 
 /** The grid used by every import report section, short lists shrink to their rows. */
 const ReportGrid = <TData,>({ rowData, ...props }: ReportGridProps<TData>) => {
-  const { classes } = useStyles()
+  const { classes } = useReportGridStyles()
   const isShort = rowData.length <= autoHeightMaxRows
   return (
     <AgGridTable

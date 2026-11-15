@@ -23,7 +23,7 @@ type ModuleHeaderProps = {
   statisticsTooltipTitle: NonNullable<TooltipProps['title']>
 }
 
-const useStyles = makeStyles({ name: 'ModuleHeader' })((theme) => ({
+const useModuleHeaderStyles = makeStyles({ name: 'ModuleHeader' })((theme) => ({
   header: {
     alignItems: 'center',
     display: 'grid',
@@ -44,7 +44,7 @@ const ModuleHeader: FC<PropsWithChildren<ModuleHeaderProps>> = ({
   addTo,
   statisticsTooltipTitle,
 }) => {
-  const { classes } = useStyles()
+  const { classes } = useModuleHeaderStyles()
 
   return (
     <header className={classes.header}>

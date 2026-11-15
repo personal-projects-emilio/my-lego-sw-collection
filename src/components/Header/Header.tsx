@@ -13,7 +13,7 @@ import { makeStyles } from 'tss-react/mui'
 import BurgerMenuNavigation from './BurgerMenuNavigation'
 import TabsNavigation from './TabsNavigation'
 
-const useStyles = makeStyles({ name: 'Header' })((theme) => ({
+const useHeaderStyles = makeStyles({ name: 'Header' })((theme) => ({
   toolbar: {
     gap: theme.spacing(1),
   },
@@ -29,7 +29,7 @@ const Header: FC = () => {
   const hasLargeScreen = useMediaQuery<Theme>((theme) =>
     theme.breakpoints.up('md')
   )
-  const { classes } = useStyles()
+  const { classes } = useHeaderStyles()
 
   return (
     <AppBar position="sticky">

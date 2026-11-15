@@ -20,7 +20,7 @@ import { formatFrDate } from 'utils/format'
 import { isSetRetired } from 'utils/lego'
 
 import { defaultSetFormValues } from './SetFormModal.constant'
-import useStyles from './SetFormModal.styles'
+import useSetFormModalStyles from './SetFormModal.styles'
 import type { SetFormModalProps } from './SetFormModal.types'
 import SetMinifigs from './SetMinifigs'
 
@@ -28,7 +28,7 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
   const { subthemes, ids } = useSetsAutocompleteOptions()
   const { addSet, editSet, isPending } = useSetsMutations()
   const navigate = useNavigate()
-  const { classes } = useStyles()
+  const { classes } = useSetFormModalStyles()
 
   const setValidationSchemaWithRefinedIdCheck = useMemo(
     () =>

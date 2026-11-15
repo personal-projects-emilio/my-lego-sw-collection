@@ -32,16 +32,18 @@ import {
 
 import useResaleSetsMutations from './useResaleSetsMutations'
 
-const useStyles = makeStyles({ name: 'ResaleSetFormModal' })((theme) => ({
-  container: {
-    display: 'grid',
-    gap: theme.spacing(2),
-    gridTemplateColumns: 'repeat(2, 1fr)',
-  },
-  fullWidth: {
-    gridColumn: '1 / -1',
-  },
-}))
+const useResaleSetFormModalStyles = makeStyles({ name: 'ResaleSetFormModal' })(
+  (theme) => ({
+    container: {
+      display: 'grid',
+      gap: theme.spacing(2),
+      gridTemplateColumns: 'repeat(2, 1fr)',
+    },
+    fullWidth: {
+      gridColumn: '1 / -1',
+    },
+  })
+)
 
 const defaultResaleSetFormValues: ResaleSetFormInput = {
   id: '',
@@ -69,7 +71,7 @@ const ResaleSetFormModal: FC<ResaleSetFormModalProps> = ({ resaleSet }) => {
   const { addResaleSet, editResaleSet, isPending, resaleSetsList } =
     useResaleSetsMutations()
   const navigate = useNavigate()
-  const { classes } = useStyles()
+  const { classes } = useResaleSetFormModalStyles()
   const prefilledId = useRef<ResaleSet['id'] | null>(null)
 
   const schema = useMemo(

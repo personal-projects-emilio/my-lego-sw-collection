@@ -14,7 +14,7 @@ import Avatar from 'components/Avatar'
 import { makeStyles } from 'tss-react/mui'
 import type { CollectionMinifig } from 'types/minifigs'
 
-const useStyles = makeStyles({ name: 'OwnedCellRenderer' })({
+const useOwnedCellRendererStyles = makeStyles({ name: 'OwnedCellRenderer' })({
   tooltip: {
     maxHeight: '40vh',
     overflowX: 'auto',
@@ -26,7 +26,7 @@ const useStyles = makeStyles({ name: 'OwnedCellRenderer' })({
 const OwnedCellRenderer = ({
   value: owned,
 }: CustomCellRendererProps<CollectionMinifig, CollectionMinifig['owned']>) => {
-  const { classes } = useStyles()
+  const { classes } = useOwnedCellRendererStyles()
   if (!owned) return null
   const { inSet, loose, total } = owned
 

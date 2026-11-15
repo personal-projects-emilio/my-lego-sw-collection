@@ -14,7 +14,7 @@ import { useAuth } from 'providers/AuthProvider'
 import { makeStyles } from 'tss-react/mui'
 import { authValidationSchema, type LoginInputs } from 'types/auth'
 
-const useStyles = makeStyles({ name: 'Auth' })((theme) => ({
+const useAuthStyles = makeStyles({ name: 'Auth' })((theme) => ({
   container: {
     padding: theme.spacing(2),
     margin: theme.spacing(2),
@@ -28,7 +28,7 @@ const useStyles = makeStyles({ name: 'Auth' })((theme) => ({
 }))
 
 const Auth: FC = () => {
-  const { classes } = useStyles()
+  const { classes } = useAuthStyles()
   const [showPassword, setShowPassword] = useState(false)
   const { login, isLoading } = useAuth()
   const { control, handleSubmit } = useForm<LoginInputs>({

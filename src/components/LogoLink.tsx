@@ -40,7 +40,7 @@ const mapLogoLinkTargetToProps = {
   }
 >
 
-const useStyles = makeStyles<void, NonNullable<ButtonProps['size']>>()({
+const useLogoLinkStyles = makeStyles<void, NonNullable<ButtonProps['size']>>()({
   large: {
     '& img': {
       height: '28px',
@@ -67,7 +67,7 @@ const LogoLink: FC<LogoLinkProps> = ({
   id,
   size = 'medium',
 }) => {
-  const { classes } = useStyles()
+  const { classes } = useLogoLinkStyles()
   const { url, tooltip, alt, src } = mapLogoLinkTargetToProps[target](
     String(id),
     variant === 'minifig'

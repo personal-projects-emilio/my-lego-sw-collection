@@ -24,7 +24,7 @@ import {
 } from 'types/minifigs'
 
 import { defaultMinifigFormValues } from './MinifigFormModal.constant'
-import useStyles from './MinifigFormModal.styles'
+import useMinifigFormModalStyles from './MinifigFormModal.styles'
 import type { MinifigFormModalProps } from './MinifigFormModal.types'
 
 const MinifigFormModal: FC<MinifigFormModalProps> = ({
@@ -38,7 +38,7 @@ const MinifigFormModal: FC<MinifigFormModalProps> = ({
     : undefined
   const { addMinifig, editMinifig, isPending } = useMinifigsMutations()
   const navigate = useNavigate()
-  const { classes } = useStyles()
+  const { classes } = useMinifigFormModalStyles()
 
   const minifigValidationSchemaWithRefinedIdCheck = useMemo(
     () =>

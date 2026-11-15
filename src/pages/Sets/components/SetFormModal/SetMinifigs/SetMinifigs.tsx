@@ -25,7 +25,7 @@ import { Autocomplete, Checkbox } from 'components/inputs'
 import { useMinifigsAutocompleteOptions } from 'pages/Minifigs/hooks'
 import type { SetFormInput } from 'types/sets'
 
-import useStyles from './SetMinifigs.styles'
+import useSetMinifigsStyles from './SetMinifigs.styles'
 
 type SetMinifigsProps = {
   value: SetFormInput['content']['minifigs']
@@ -49,7 +49,7 @@ const initialMinifigState = {
 export const SetMinifigs = forwardRef<HTMLDivElement, SetMinifigsProps>(
   ({ value = [], onChange, className }, ref) => {
     const { data: minifigsList, isLoading } = useMinifigsQuery()
-    const { classes, cx } = useStyles()
+    const { classes, cx } = useSetMinifigsStyles()
     const [dialogIsOpen, toggleDialogIsOpen] = useState(false)
     const [minifigEditId, setMinifigEditId] = useState<null | string>(null)
     const { ids } = useMinifigsAutocompleteOptions()
