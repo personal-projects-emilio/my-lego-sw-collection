@@ -7,7 +7,7 @@ import type {
   MinifigsList,
 } from 'types/minifigs'
 import type { CollectionSetsList, Set, SetsList } from 'types/sets'
-import type { TagsList } from 'types/tags'
+import type { TagsList, TagTarget } from 'types/tags'
 
 import { buildTagsVocabulary, seasonalTagId } from './tags'
 
@@ -165,12 +165,18 @@ export const buildCollection = ({
   tagsList,
 }: StoredCollection): Collection => {
   const tagsVocabulary = buildTagsVocabulary(tagsList)
+  const ownTags = (tags: string[] | undefined, target: TagTarget) =>
+    tagsVocabulary.withImplied(
+      (tags ?? []).filter((id) => tagsVocabulary.appliesTo(id, target))
+    )
   const inheritable = (set: Set) =>
     set.tags?.includes(seasonalTagId)
       ? []
-      : tagsVocabulary
-          .withImplied(set.tags ?? [])
-          .filter((id) => tagsVocabulary.rootOf(id)?.inherited)
+      : ownTags(set.tags, 'sets').filter(
+          (id) =>
+            tagsVocabulary.rootOf(id)?.inherited &&
+            tagsVocabulary.appliesTo(id, 'minifigs')
+        )
   const looseById = new Map(looseMinifigsList.map((loose) => [loose.id, loose]))
   const cleanedMinifigsList = minifigsList.map((minifig): CollectionMinifig => {
     const stored = looseById.get(minifig.id)
@@ -200,10 +206,13 @@ export const buildCollection = ({
         updatedMinifigsList[index] = {
           ...currentMinifig,
           inheritedTags: inheritable(currentSet).reduce(
-            (inheritedTags, id) => ({
-              ...inheritedTags,
-              [id]: [...(inheritedTags[id] ?? []), currentSet.id],
-            }),
+            (inheritedTags, id) =>
+              inheritedTags[id]?.includes(currentSet.id)
+                ? inheritedTags
+                : {
+                    ...inheritedTags,
+                    [id]: [...(inheritedTags[id] ?? []), currentSet.id],
+                  },
             currentMinifig.inheritedTags
           ),
           owned: {
@@ -229,7 +238,7 @@ export const buildCollection = ({
           {
             ...currentSet,
             tags: Array.from(new Set(currentSet.tags)),
-            effectiveTags: tagsVocabulary.withImplied(currentSet.tags ?? []),
+            effectiveTags: ownTags(currentSet.tags, 'sets'),
             ...(currentSet.content && {
               content: {
                 ...currentSet.content,
@@ -255,7 +264,7 @@ export const buildCollection = ({
     minifigsList: syncedList.minifigs.map((minifig) => ({
       ...minifig,
       effectiveTags: tagsVocabulary.sort([
-        ...tagsVocabulary.withImplied(minifig.tags ?? []),
+        ...ownTags(minifig.tags, 'minifigs'),
         ...Object.keys(minifig.inheritedTags),
       ]),
     })),

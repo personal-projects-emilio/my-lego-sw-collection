@@ -176,6 +176,8 @@ const tagsList: TagsList = [
   },
   { id: 'product-type', label: 'Product Type', order: 2, appliesTo: 'both' },
   { id: 'seasonal', label: 'Seasonal', parent: 'product-type', order: 0 },
+  { id: 'vehicle', label: 'Vehicle', order: 3, appliesTo: 'sets' },
+  { id: 'x-wing', label: 'X-wing', parent: 'vehicle', order: 0 },
 ]
 
 const eraOf = ['age-of-rebellion', 'original-trilogy', 'a-new-hope']
@@ -241,7 +243,7 @@ test.for([
     },
   },
   {
-    case: 'a hand-picked tag stays stored when a set also provides it',
+    case: 'a hand-picked tag a set also provides counts once and lists the set',
     sets: [{ id: 1, owned: 1, tags: ['a-new-hope'] }],
     minifigTags: ['a-new-hope', 'rebel-alliance'],
     expected: {
@@ -255,11 +257,61 @@ test.for([
       tags: ['a-new-hope', 'rebel-alliance'],
     },
   },
+  {
+    case: 'a hand-picked minifig tag implies its parents',
+    sets: [{ id: 1, owned: 1, tags: [] }],
+    minifigTags: ['a-new-hope'],
+    expected: {
+      setEffectiveTags: [],
+      effectiveTags: eraOf,
+      inheritedTags: {},
+      tags: ['a-new-hope'],
+    },
+  },
+  {
+    case: 'a set listing the minifig twice is listed once as a source',
+    sets: [{ id: 1, owned: 1, tags: ['a-new-hope'], copies: 2 }],
+    minifigTags: [],
+    expected: {
+      setEffectiveTags: eraOf,
+      effectiveTags: eraOf,
+      inheritedTags: {
+        'age-of-rebellion': [1],
+        'original-trilogy': [1],
+        'a-new-hope': [1],
+      },
+      tags: [],
+    },
+  },
+  {
+    case: 'a stored tag under a root for the other item type is ignored',
+    sets: [{ id: 1, owned: 1, tags: ['x-wing'] }],
+    minifigTags: ['x-wing'],
+    expected: {
+      setEffectiveTags: ['x-wing'],
+      effectiveTags: [],
+      inheritedTags: {},
+      tags: ['x-wing'],
+    },
+  },
 ])('buildCollection: $case', ({ sets, minifigTags, expected }) => {
   const { setsList, minifigsList } = buildCollection({
     minifigsList: [minifig('sw0001', minifigTags)],
     looseMinifigsList: [],
-    setsList: sets.map(({ id, owned, tags }) => setWith(id, owned, tags)),
+    setsList: sets.map((row) => {
+      const set = setWith(row.id, row.owned, row.tags)
+      const copies = 'copies' in row ? row.copies : 1
+      return {
+        ...set,
+        content: {
+          ...set.content,
+          minifigs: Array.from(
+            { length: copies },
+            () => set.content.minifigs[0]
+          ),
+        },
+      }
+    }),
     tagsList,
   })
 

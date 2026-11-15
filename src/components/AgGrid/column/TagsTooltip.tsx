@@ -1,7 +1,9 @@
 import type { CustomTooltipProps } from 'ag-grid-react'
 import TreeView from 'components/TreeView'
-import useTagsVocabulary from 'hooks/useTagsVocabulary'
+import { useTagsVocabulary } from 'hooks'
 import { makeStyles } from 'tss-react/mui'
+import type { TaggedItem } from 'types/tags'
+import { inheritedFrom } from 'utils/tags'
 
 const useTagsTooltipStyles = makeStyles({ name: 'TagsTooltip' })({
   tooltip: {
@@ -15,11 +17,6 @@ const useTagsTooltipStyles = makeStyles({ name: 'TagsTooltip' })({
   },
 })
 
-type TaggedItem = {
-  effectiveTags: string[]
-  inheritedTags?: Record<string, Array<string | number>>
-}
-
 const TagsTooltip = ({ data }: CustomTooltipProps<TaggedItem>) => {
   const { classes } = useTagsTooltipStyles()
   const tagsVocabulary = useTagsVocabulary()
@@ -28,7 +25,7 @@ const TagsTooltip = ({ data }: CustomTooltipProps<TaggedItem>) => {
   const notes = Object.fromEntries(
     Object.entries(data.inheritedTags ?? {}).map(([id, sources]) => [
       id,
-      `from ${sources.join(', ')}`,
+      inheritedFrom(sources),
     ])
   )
 

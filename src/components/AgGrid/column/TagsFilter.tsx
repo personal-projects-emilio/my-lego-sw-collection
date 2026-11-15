@@ -3,9 +3,9 @@ import { useCallback } from 'react'
 import type { IDoesFilterPassParams } from 'ag-grid-community'
 import { type CustomFilterProps, useGridFilter } from 'ag-grid-react'
 import { TagsAutocomplete } from 'components/inputs'
-import useTagsVocabulary from 'hooks/useTagsVocabulary'
+import { useTagsVocabulary } from 'hooks'
 import { makeStyles } from 'tss-react/mui'
-import type { TagTarget } from 'types/tags'
+import type { TaggedItem, TagId, TagTarget } from 'types/tags'
 
 const useTagsFilterStyles = makeStyles({ name: 'TagsFilter' })((theme) => ({
   autocomplete: {
@@ -20,20 +20,19 @@ const TagsFilter = ({
   itemType,
   model,
   onModelChange,
-}: CustomFilterProps<{ effectiveTags: string[] }, unknown, string[]> &
-  TagsFilterProps) => {
+}: CustomFilterProps<TaggedItem, unknown, TagId[]> & TagsFilterProps) => {
   const { classes } = useTagsFilterStyles()
   const tagsVocabulary = useTagsVocabulary()
 
   const doesFilterPass = useCallback(
-    ({ data }: IDoesFilterPassParams<{ effectiveTags: string[] }>) =>
+    ({ data }: IDoesFilterPassParams<TaggedItem>) =>
       !model || model.some((id) => data.effectiveTags.includes(id)),
     [model]
   )
   const getModelAsString = useCallback(
-    (current: string[] | null) =>
+    (current: TagId[] | null) =>
       tagsVocabulary
-        .leaves(current ?? [])
+        .tops(current ?? [])
         .map(tagsVocabulary.pathLabel)
         .join(', '),
     [tagsVocabulary]
@@ -45,6 +44,7 @@ const TagsFilter = ({
       className={classes.autocomplete}
       popperClassName="ag-custom-component-popup"
       itemType={itemType}
+      mode="filter"
       onChange={(ids) => onModelChange(ids.length ? ids : null)}
       textFieldProps={{ label: 'Filter tags', size: 'small' }}
       value={model ?? []}

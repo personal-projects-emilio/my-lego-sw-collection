@@ -18,7 +18,7 @@ import {
   type SetActionsCellRendererProps,
   tagsColDef,
 } from 'components/AgGrid/column'
-import useTagsVocabulary from 'hooks/useTagsVocabulary'
+import { useTagsVocabulary } from 'hooks'
 import { useAuth } from 'providers/AuthProvider'
 import type { CollectionSet } from 'types/sets'
 import { compareIds, spreadArrayIf } from 'utils/array'

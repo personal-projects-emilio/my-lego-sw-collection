@@ -1,3 +1,4 @@
+import type { InheritedTags, TagId } from 'types/tags'
 import { z } from 'zod'
 
 export const minifigValidationSchema = z.object({
@@ -37,8 +38,8 @@ export type LooseMinifigsList = StoredLooseMinifig[]
 
 /** A minifig with the values buildCollection calculates from the sets */
 export type CollectionMinifig = Minifig & {
-  effectiveTags: string[]
-  inheritedTags: Record<string, Array<string | number>>
+  effectiveTags: TagId[]
+  inheritedTags: InheritedTags
   owned: {
     loose: LooseMinifig
     total: number

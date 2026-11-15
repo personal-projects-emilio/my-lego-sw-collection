@@ -1,3 +1,4 @@
+import type { TagId } from 'types/tags'
 import { z } from 'zod'
 
 export const setValidationSchema = z.object({
@@ -70,6 +71,6 @@ export type Set = z.infer<typeof setValidationSchema>
 export type SetFormInput = z.input<typeof setValidationSchema>
 export type SetsList = Set[]
 
-export type CollectionSet = Set & { effectiveTags: string[] }
+export type CollectionSet = Set & { effectiveTags: TagId[] }
 
 export type CollectionSetsList = CollectionSet[]

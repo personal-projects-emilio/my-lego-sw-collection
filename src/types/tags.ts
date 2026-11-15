@@ -1,9 +1,11 @@
 export type TagTarget = 'sets' | 'minifigs'
 
+export type TagId = string
+
 export type Tag = {
-  id: string
+  id: TagId
   label: string
-  parent?: string
+  parent?: TagId
   order: number
   kind?: 'movie' | 'show' | 'game' | 'other'
   appliesTo?: TagTarget | 'both'
@@ -11,3 +13,10 @@ export type Tag = {
 }
 
 export type TagsList = Tag[]
+
+export type InheritedTags = Record<TagId, Array<string | number>>
+
+export type TaggedItem = {
+  effectiveTags: TagId[]
+  inheritedTags?: InheritedTags
+}

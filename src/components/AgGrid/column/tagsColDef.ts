@@ -1,16 +1,20 @@
 import type { ColDef } from 'ag-grid-community'
-import type { TagTarget } from 'types/tags'
+import type { TaggedItem, TagId, TagTarget } from 'types/tags'
 import type { TagsVocabulary } from 'utils/tags'
 
 import TagsFilter, { type TagsFilterProps } from './TagsFilter'
 import TagsTooltip from './TagsTooltip'
 
-export const tagsColDef = <TData extends { effectiveTags: string[] }>(
+export const tagsColDef = <TData extends TaggedItem>(
   tagsVocabulary: TagsVocabulary,
   itemType: TagTarget
-): ColDef<TData, string[]> => ({
+): ColDef<TData, TagId[]> => ({
   colId: 'tags',
-  field: 'effectiveTags' as ColDef<TData, string[]>['field'],
+  comparator: (a, b) =>
+    tagsVocabulary
+      .groupedLabel(a ?? [])
+      .localeCompare(tagsVocabulary.groupedLabel(b ?? [])),
+  field: 'effectiveTags' as ColDef<TData, TagId[]>['field'],
   headerName: 'Tags',
   filter: TagsFilter,
   filterParams: { itemType } satisfies TagsFilterProps,

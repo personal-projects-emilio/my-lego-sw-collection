@@ -13,7 +13,7 @@ import {
   OverflowTypographyCellRenderer,
   tagsColDef,
 } from 'components/AgGrid/column'
-import useTagsVocabulary from 'hooks/useTagsVocabulary'
+import { useTagsVocabulary } from 'hooks'
 import type { CollectionMinifig } from 'types/minifigs'
 
 import { OwnedCellRenderer } from '../components'

@@ -20,25 +20,36 @@ import {
   Typography,
 } from '@mui/material'
 import TreeView from 'components/TreeView'
-import useTagsVocabulary from 'hooks/useTagsVocabulary'
+import { useTagsVocabulary } from 'hooks'
 import { makeStyles } from 'tss-react/mui'
-import type { TagTarget } from 'types/tags'
+import type { InheritedTags, TagId, TagTarget } from 'types/tags'
+import {
+  filterTagsAfterPick,
+  inheritedFrom,
+  storedTagsAfterPick,
+} from 'utils/tags'
 
 type TagsAutocompleteProps = {
   className?: string
-  inheritedTags?: Record<string, Array<string | number>>
+  disabled?: boolean
+  inheritedTags?: InheritedTags
   itemType: TagTarget
-  onChange: (tags: string[]) => void
+  mode?: 'store' | 'filter'
+  name?: string
+  onBlur?: () => void
+  onChange: (tags: TagId[]) => void
   popperClassName?: string
   textFieldProps?: Partial<TextFieldProps>
-  value: string[]
+  value: TagId[]
 }
 
-const noInheritedTags: Record<string, Array<string | number>> = {}
+const noInheritedTags: InheritedTags = {}
 
 const groupHeight = 48
 const groupLayer = 20
 const optionHeight = 36
+
+const tint = (color: string) => `linear-gradient(${color}, ${color})`
 
 const useTagsAutocompleteStyles = makeStyles({ name: 'TagsAutocomplete' })(
   (theme) => ({
@@ -52,8 +63,20 @@ const useTagsAutocompleteStyles = makeStyles({ name: 'TagsAutocomplete' })(
       lineHeight: `${groupHeight}px`,
       zIndex: groupLayer,
     },
+    option: {
+      '&&&': {
+        height: optionHeight,
+        paddingLeft: `calc(var(--depth) * ${theme.spacing(2)})`,
+      },
+    },
     pinned: {
-      position: 'sticky',
+      '&&&&&': {
+        backgroundColor: theme.palette.background.paper,
+        opacity: 1,
+        position: 'sticky',
+        top: `calc(${groupHeight}px + (var(--depth) - 1) * ${optionHeight}px)`,
+        zIndex: `calc(${groupLayer} - var(--depth))`,
+      },
       '&.Mui-focused': {
         backgroundImage: tint(theme.palette.action.hover),
       },
@@ -74,7 +97,7 @@ const useTagsAutocompleteStyles = makeStyles({ name: 'TagsAutocomplete' })(
           )
         ),
       },
-      '&[aria-disabled="true"]': {
+      '&&&&&[aria-disabled="true"]': {
         color: theme.palette.text.disabled,
       },
     },
@@ -97,25 +120,18 @@ const useTagsAutocompleteStyles = makeStyles({ name: 'TagsAutocomplete' })(
   })
 )
 
-type NestStyles = {
-  background: string
-  classes: Record<'nestedList' | 'pinned', string>
-  cx: (...names: Array<string | undefined>) => string
-}
-
-const tint = (color: string) => `linear-gradient(${color}, ${color})`
+type NestClasses = Record<'nestedList' | 'pinned', string>
 
 type OptionElement = ReactElement<{
   className?: string
   'data-depth': number
-  style?: CSSProperties
 }>
 
 const nestOptions = (
   options: OptionElement[],
-  styles: NestStyles
+  classes: NestClasses,
+  cx: (...names: Array<string | undefined>) => string
 ): ReactNode[] => {
-  const { background, classes, cx } = styles
   const nested: ReactNode[] = []
   for (let start = 0; start < options.length;) {
     const option = options[start]
@@ -131,15 +147,8 @@ const nestOptions = (
           <ul className={classes.nestedList} role="presentation">
             {cloneElement(option, {
               className: cx(option.props.className, classes.pinned),
-              style: {
-                ...option.props.style,
-                backgroundColor: background,
-                opacity: 1,
-                top: groupHeight + (depth - 1) * optionHeight,
-                zIndex: groupLayer - depth,
-              },
             })}
-            {nestOptions(options.slice(start + 1, end), styles)}
+            {nestOptions(options.slice(start + 1, end), classes, cx)}
           </ul>
         </li>
       )
@@ -153,8 +162,12 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
   (
     {
       className,
+      disabled,
       inheritedTags = noInheritedTags,
       itemType,
+      mode = 'store',
+      name,
+      onBlur,
       onChange,
       popperClassName,
       textFieldProps,
@@ -163,45 +176,69 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
     ref
   ) => {
     const tagsVocabulary = useTagsVocabulary()
-    const { classes, cx, theme } = useTagsAutocompleteStyles()
+    const { classes, cx } = useTagsAutocompleteStyles()
     const groupId = useId()
     const options = useMemo(
       () => tagsVocabulary.pickable(itemType),
       [tagsVocabulary, itemType]
     )
-    const explicit = [...value, ...Object.keys(inheritedTags)]
-    const chips = tagsVocabulary.leaves(explicit)
-    const isInherited = (id: string) => id in inheritedTags
-    const isStored = (id: string) => value.includes(id)
-    const impliedBy = (id: string) =>
-      chips.filter((chip) =>
-        tagsVocabulary.ancestors(chip).some((tag) => tag.id === id)
-      )
-    const isImplied = (id: string) =>
-      !chips.includes(id) && impliedBy(id).length > 0
+    const isFilter = mode === 'filter'
+    const chips = isFilter
+      ? tagsVocabulary.tops(value)
+      : tagsVocabulary.sort([
+          ...tagsVocabulary.leaves(value),
+          ...tagsVocabulary.leaves(Object.keys(inheritedTags)),
+        ])
 
-    const note = (id: string) => {
-      if (isInherited(id))
-        return `Inherited from ${inheritedTags[id].join(', ')}`
-      if (isImplied(id))
-        return `Implied by ${impliedBy(id).map(tagsVocabulary.label).join(', ')}`
-      return undefined
+    const coveringChips = new Map<TagId, TagId[]>()
+    const chipSet = new Set(chips)
+    if (isFilter) {
+      options.forEach((id) => {
+        const covering = tagsVocabulary
+          .ancestors(id)
+          .map((tag) => tag.id)
+          .filter((ancestor) => chipSet.has(ancestor))
+        if (covering.length) coveringChips.set(id, covering)
+      })
+    } else {
+      chips.forEach((chip) =>
+        tagsVocabulary.ancestors(chip).forEach(({ id }) => {
+          if (!chipSet.has(id))
+            coveringChips.set(id, [...(coveringChips.get(id) ?? []), chip])
+        })
+      )
+    }
+
+    const isInherited = (id: TagId) => id in inheritedTags
+    const isCovered = (id: TagId) => coveringChips.has(id)
+
+    const note = (id: TagId) => {
+      if (isInherited(id)) return inheritedFrom(inheritedTags[id])
+      const covering = coveringChips.get(id)
+      if (!covering) return undefined
+      const labels = covering.map(tagsVocabulary.label).join(', ')
+      return isFilter ? `Included in ${labels}` : `Implied by ${labels}`
     }
 
     return (
       <MuiAutocomplete
         className={className}
         disableCloseOnSelect
-        getOptionDisabled={(id) => isInherited(id) || isImplied(id)}
+        disabled={disabled}
+        getOptionDisabled={(id) => isInherited(id) || isCovered(id)}
         getOptionLabel={tagsVocabulary.pathLabel}
         groupBy={(id) => tagsVocabulary.rootOf(id)?.label ?? ''}
         multiple
+        onBlur={onBlur}
         onChange={(_event, ids) =>
           onChange(
-            tagsVocabulary.leaves([
-              ...ids.filter((id) => !isInherited(id) || isStored(id)),
-              ...value.filter(isInherited),
-            ])
+            isFilter
+              ? filterTagsAfterPick(tagsVocabulary, ids)
+              : storedTagsAfterPick(tagsVocabulary, {
+                  picked: ids,
+                  stored: value,
+                  inheritedTags,
+                })
           )
         }
         openOnFocus
@@ -210,6 +247,7 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
           <TextField
             {...params}
             ref={ref}
+            name={name}
             variant="outlined"
             {...textFieldProps}
           />
@@ -224,47 +262,52 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
               {group}
             </ListSubheader>
             <ul className={classes.nestedList} role="presentation">
-              {nestOptions(Children.toArray(children) as OptionElement[], {
-                background: theme.palette.background.paper,
+              {nestOptions(
+                Children.toArray(children) as OptionElement[],
                 classes,
-                cx,
-              })}
+                cx
+              )}
             </ul>
           </li>
         )}
-        renderOption={({ key, ...props }, id, { selected }) => (
-          <li
-            key={key}
-            {...props}
-            aria-label={[tagsVocabulary.pathLabel(id), note(id)]
-              .filter(Boolean)
-              .join(', ')}
-            data-depth={tagsVocabulary.depth(id)}
-            style={{
-              height: optionHeight,
-              paddingLeft: tagsVocabulary.depth(id) * 16,
-            }}
-          >
-            <Checkbox
-              aria-hidden
-              checked={selected || isImplied(id)}
-              size="small"
-              tabIndex={-1}
-            />
-            {tagsVocabulary.label(id)}
-            {note(id) && (
-              <Typography className={classes.note} variant="caption">
-                {note(id)}
-              </Typography>
-            )}
-          </li>
-        )}
+        renderOption={(
+          { key, className: optionClassName, ...props },
+          id,
+          { selected }
+        ) => {
+          const optionNote = note(id)
+          return (
+            <li
+              key={key}
+              {...props}
+              aria-label={[tagsVocabulary.pathLabel(id), optionNote]
+                .filter(Boolean)
+                .join(', ')}
+              className={cx(optionClassName, classes.option)}
+              data-depth={tagsVocabulary.depth(id)}
+              style={{ '--depth': tagsVocabulary.depth(id) } as CSSProperties}
+            >
+              <Checkbox
+                aria-hidden
+                checked={selected || isCovered(id)}
+                size="small"
+                tabIndex={-1}
+              />
+              {tagsVocabulary.label(id)}
+              {optionNote && (
+                <Typography className={classes.note} variant="caption">
+                  {optionNote}
+                </Typography>
+              )}
+            </li>
+          )
+        }}
         slotProps={{
           listbox: { className: classes.listbox },
           popper: { className: popperClassName },
         }}
         renderValue={(ids, getItemProps) => {
-          const tagChip = (id: string, chipLabel: string) => {
+          const tagChip = (id: TagId, chipLabel: string) => {
             const { key, onDelete, ...itemProps } = getItemProps({
               index: ids.indexOf(id),
             })
@@ -278,7 +321,7 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
               />
             )
           }
-          const notes = (group: string[]) =>
+          const notes = (group: TagId[]) =>
             Object.fromEntries(
               group.flatMap((id) => {
                 const groupNote = note(id)
@@ -287,42 +330,42 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
             )
           return tagsVocabulary
             .siblingGroups(ids)
-            .map(({ parent, ids: group }) =>
-              parent ? (
-                <Tooltip
-                  key={`group-${parent}`}
-                  describeChild
-                  title={
-                    <TreeView
-                      ids={group}
-                      notes={notes(group)}
-                      tree={tagsVocabulary}
-                    />
-                  }
-                >
-                  <div
-                    aria-label={tagsVocabulary.pathLabel(parent)}
-                    className={classes.group}
-                    role="group"
+            .map(({ parent, ids: group }) => {
+              if (parent)
+                return (
+                  <Tooltip
+                    key={`group-${parent}`}
+                    describeChild
+                    title={
+                      <TreeView
+                        ids={group}
+                        notes={notes(group)}
+                        tree={tagsVocabulary}
+                      />
+                    }
                   >
-                    <Typography aria-hidden variant="caption">
-                      {tagsVocabulary.pathLabel(parent)} ›
-                    </Typography>
-                    {group.map((id) => tagChip(id, tagsVocabulary.label(id)))}
-                  </div>
+                    <div
+                      aria-label={tagsVocabulary.pathLabel(parent)}
+                      className={classes.group}
+                      role="group"
+                    >
+                      <Typography aria-hidden variant="caption">
+                        {tagsVocabulary.pathLabel(parent)} ›
+                      </Typography>
+                      {group.map((id) => tagChip(id, tagsVocabulary.label(id)))}
+                    </div>
+                  </Tooltip>
+                )
+              const [id] = group
+              const chip = tagChip(id, tagsVocabulary.pathLabel(id))
+              const chipNote = note(id)
+              if (!chipNote) return chip
+              return (
+                <Tooltip key={`note-${id}`} describeChild title={chipNote}>
+                  {chip}
                 </Tooltip>
-              ) : note(group[0]) ? (
-                <Tooltip
-                  key={`note-${group[0]}`}
-                  describeChild
-                  title={note(group[0])}
-                >
-                  {tagChip(group[0], tagsVocabulary.pathLabel(group[0]))}
-                </Tooltip>
-              ) : (
-                tagChip(group[0], tagsVocabulary.pathLabel(group[0]))
               )
-            )
+            })
         }}
         value={chips}
       />

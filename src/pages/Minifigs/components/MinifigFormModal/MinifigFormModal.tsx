@@ -144,19 +144,17 @@ const MinifigFormModal: FC<MinifigFormModalProps> = ({
             defaultValue={[]}
             name="tags"
             render={({ field, fieldState }) => (
-              <div>
-                <TagsAutocomplete
-                  {...field}
-                  inheritedTags={inheritedTags}
-                  itemType="minifigs"
-                  textFieldProps={{
-                    label: 'Tags',
-                    placeholder: 'Minifig tags (ex: Battle Droid, Separatists)',
-                    error: fieldState.invalid,
-                    helperText: fieldState.error?.message,
-                  }}
-                />
-              </div>
+              <TagsAutocomplete
+                {...field}
+                inheritedTags={inheritedTags}
+                itemType="minifigs"
+                textFieldProps={{
+                  label: 'Tags',
+                  placeholder: 'Minifig tags (ex: Battle Droid, Separatists)',
+                  error: fieldState.invalid,
+                  helperText: fieldState.error?.message,
+                }}
+              />
             )}
           />
         </form>

@@ -67,6 +67,13 @@ export const buildTree = <T extends TreeNode>(nodes: T[]) => {
     return sort(ids.filter((id) => !implied.has(id)))
   }
 
+  const tops = (ids: string[]) => {
+    const picked = new Set(ids)
+    return sort(
+      ids.filter((id) => !ancestors(id).some(({ id }) => picked.has(id)))
+    )
+  }
+
   const pathLabel = (id: string) =>
     [
       ...ancestors(id)
@@ -78,7 +85,7 @@ export const buildTree = <T extends TreeNode>(nodes: T[]) => {
 
   const siblingGroups = (ids: string[]): SiblingGroup[] => {
     const groups = new Map<string, SiblingGroup>()
-    leaves(ids).forEach((id) => {
+    sort(ids).forEach((id) => {
       const parent = byId.get(id)?.parent
       const shared = parent && byId.get(parent)?.parent ? parent : undefined
       const key = shared ?? id
@@ -91,7 +98,7 @@ export const buildTree = <T extends TreeNode>(nodes: T[]) => {
   }
 
   const groupedLabel = (ids: string[]) =>
-    siblingGroups(ids)
+    siblingGroups(leaves(ids))
       .map(({ parent, ids }) =>
         parent
           ? `${pathLabel(parent)} › ${ids.map(label).join(', ')}`
@@ -105,7 +112,6 @@ export const buildTree = <T extends TreeNode>(nodes: T[]) => {
     )
 
   return {
-    byId,
     ancestors,
     rootOf,
     depth,
@@ -113,6 +119,7 @@ export const buildTree = <T extends TreeNode>(nodes: T[]) => {
     withImplied,
     label,
     leaves,
+    tops,
     pathLabel,
     siblingGroups,
     groupedLabel,
