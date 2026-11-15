@@ -10,19 +10,17 @@ import {
 
 import {
   Autocomplete as MuiAutocomplete,
-  Box,
   Checkbox,
   Chip,
   ListSubheader,
   TextField,
   type TextFieldProps,
-  type Theme,
   Tooltip,
   Typography,
-  useTheme,
 } from '@mui/material'
 import TagTree from 'components/TagTree'
 import useVocabulary from 'hooks/useVocabulary'
+import { makeStyles } from 'tss-react/mui'
 import type { TagTarget } from 'types/tags'
 
 type TagsAutocompleteProps = {
@@ -41,15 +39,60 @@ const GROUP_HEIGHT = 48
 const GROUP_LAYER = 20
 const OPTION_HEIGHT = 36
 
+const useTagsAutocompleteStyles = makeStyles({ name: 'TagsAutocomplete' })(
+  (theme) => ({
+    listbox: {
+      padding: 0,
+    },
+    nestedList: {
+      padding: 0,
+    },
+    groupHeader: {
+      lineHeight: `${GROUP_HEIGHT}px`,
+      zIndex: GROUP_LAYER,
+    },
+    pinned: {
+      '&&': {
+        background: theme.palette.background.paper,
+        opacity: 1,
+        position: 'sticky',
+      },
+      '&&&[aria-disabled="true"]': {
+        color: theme.palette.text.disabled,
+        opacity: 1,
+      },
+    },
+    note: {
+      color: theme.palette.text.secondary,
+      fontStyle: 'italic',
+      marginLeft: theme.spacing(1),
+    },
+    group: {
+      alignItems: 'center',
+      background: theme.palette.action.hover,
+      border: `1px solid ${theme.palette.text.disabled}`,
+      borderRadius: theme.spacing(2),
+      display: 'inline-flex',
+      flexWrap: 'wrap',
+      gap: theme.spacing(0.5),
+      margin: theme.spacing(0.25),
+      padding: theme.spacing(0.25, 0.25, 0.25, 1),
+    },
+  })
+)
+
+type NestClasses = Record<'nestedList' | 'pinned', string>
+
 type OptionElement = ReactElement<{
-  'aria-disabled'?: boolean
+  className?: string
   'data-depth': number
   style?: CSSProperties
 }>
 
 const nestOptions = (
   options: OptionElement[],
-  palette: Theme['palette']
+  classes: NestClasses,
+  cx: (...names: Array<string | undefined>) => string
 ): ReactNode[] => {
   const nested: ReactNode[] = []
   for (let start = 0; start < options.length;) {
@@ -63,21 +106,16 @@ const nestOptions = (
         option
       ) : (
         <li key={`subtree-${option.key}`}>
-          <ul style={{ padding: 0 }}>
+          <ul className={classes.nestedList}>
             {cloneElement(option, {
+              className: cx(option.props.className, classes.pinned),
               style: {
                 ...option.props.style,
-                background: palette.background.paper,
-                color: option.props['aria-disabled']
-                  ? palette.text.disabled
-                  : undefined,
-                opacity: 1,
-                position: 'sticky',
                 top: GROUP_HEIGHT + (depth - 1) * OPTION_HEIGHT,
                 zIndex: GROUP_LAYER - depth,
               },
             })}
-            {nestOptions(options.slice(start + 1, end), palette)}
+            {nestOptions(options.slice(start + 1, end), classes, cx)}
           </ul>
         </li>
       )
@@ -101,7 +139,7 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
     ref
   ) => {
     const vocabulary = useVocabulary()
-    const theme = useTheme()
+    const { classes, cx } = useTagsAutocompleteStyles()
     const options = useMemo(
       () => vocabulary.pickable(itemType),
       [vocabulary, itemType]
@@ -153,15 +191,14 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
         )}
         renderGroup={({ key, group, children }) => (
           <li key={key}>
-            <ListSubheader
-              sx={{ lineHeight: `${GROUP_HEIGHT}px`, zIndex: GROUP_LAYER }}
-            >
+            <ListSubheader className={classes.groupHeader}>
               {group}
             </ListSubheader>
-            <ul style={{ padding: 0 }}>
+            <ul className={classes.nestedList}>
               {nestOptions(
                 Children.toArray(children) as OptionElement[],
-                theme.palette
+                classes,
+                cx
               )}
             </ul>
           </li>
@@ -179,17 +216,14 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
             <Checkbox checked={selected || isImplied(id)} size="small" />
             {vocabulary.label(id)}
             {note(id) && (
-              <Typography
-                sx={{ color: 'text.secondary', fontStyle: 'italic', ml: 1 }}
-                variant="caption"
-              >
+              <Typography className={classes.note} variant="caption">
                 {note(id)}
               </Typography>
             )}
           </li>
         )}
         slotProps={{
-          listbox: { style: { padding: 0 } },
+          listbox: { className: classes.listbox },
           popper: { className: popperClassName },
         }}
         renderValue={(ids, getItemProps) => {
@@ -226,27 +260,12 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
                   />
                 }
               >
-                <Box
-                  sx={{
-                    alignItems: 'center',
-                    bgcolor: 'action.hover',
-                    border: 1,
-                    borderColor: 'text.disabled',
-                    borderRadius: 4,
-                    display: 'inline-flex',
-                    flexWrap: 'wrap',
-                    gap: 0.5,
-                    m: 0.25,
-                    pl: 1,
-                    pr: 0.25,
-                    py: 0.25,
-                  }}
-                >
+                <div className={classes.group}>
                   <Typography variant="caption">
                     {vocabulary.pathLabel(parent)} ›
                   </Typography>
                   {group.map((id) => tagChip(id, vocabulary.label(id)))}
-                </Box>
+                </div>
               </Tooltip>
             ) : note(group[0]) ? (
               <Tooltip key={`note-${group[0]}`} title={note(group[0])}>

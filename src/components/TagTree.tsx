@@ -1,7 +1,24 @@
 import type { FC } from 'react'
 
-import { Box, Typography } from '@mui/material'
+import { Typography } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 import type { Vocabulary } from 'utils/tags'
+
+const useTagTreeStyles = makeStyles({ name: 'TagTree' })((theme) => ({
+  line: {
+    display: 'block',
+  },
+  root: {
+    fontWeight: 700,
+    marginTop: theme.spacing(0.5),
+    textTransform: 'uppercase',
+  },
+  note: {
+    fontStyle: 'italic',
+    marginLeft: theme.spacing(1),
+    opacity: 0.7,
+  },
+}))
 
 type TagTreeProps = {
   ids: string[]
@@ -10,26 +27,22 @@ type TagTreeProps = {
 }
 
 const TagTree: FC<TagTreeProps> = ({ ids, notes = {}, vocabulary }) => {
+  const { classes, cx } = useTagTreeStyles()
   const leaves = new Set(vocabulary.leaves(ids))
   return (
-    <Box>
+    <div>
       {vocabulary.tree(ids).map(({ id, label, depth }) => (
         <Typography
           key={id}
-          sx={{
-            display: 'block',
-            fontWeight: depth === 0 ? 700 : 400,
-            mt: depth === 0 ? 0.5 : 0,
-            pl: depth * 1.5,
-            textTransform: depth === 0 ? 'uppercase' : 'none',
-          }}
+          className={cx(classes.line, { [classes.root]: depth === 0 })}
+          style={{ paddingLeft: depth * 12 }}
           variant="caption"
         >
           {label}
           {leaves.has(id) && notes[id] && (
             <Typography
+              className={classes.note}
               component="span"
-              sx={{ fontStyle: 'italic', ml: 1, opacity: 0.7 }}
               variant="caption"
             >
               {notes[id]}
@@ -37,7 +50,7 @@ const TagTree: FC<TagTreeProps> = ({ ids, notes = {}, vocabulary }) => {
           )}
         </Typography>
       ))}
-    </Box>
+    </div>
   )
 }
 

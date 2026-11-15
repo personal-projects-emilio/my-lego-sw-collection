@@ -7,7 +7,7 @@ import useVocabulary from 'hooks/useVocabulary'
 import { makeStyles } from 'tss-react/mui'
 import type { TagTarget } from 'types/tags'
 
-const useStyles = makeStyles({ name: 'TagsFilter' })((theme) => ({
+const useTagsFilterStyles = makeStyles({ name: 'TagsFilter' })((theme) => ({
   autocomplete: {
     padding: theme.spacing(1),
     width: 360,
@@ -22,7 +22,7 @@ const TagsFilter = ({
   onModelChange,
 }: CustomFilterProps<{ effectiveTags: string[] }, unknown, string[]> &
   TagsFilterProps) => {
-  const { classes } = useStyles()
+  const { classes } = useTagsFilterStyles()
   const vocabulary = useVocabulary()
 
   const doesFilterPass = useCallback(
