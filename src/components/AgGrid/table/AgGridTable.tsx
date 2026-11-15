@@ -33,7 +33,14 @@ const AgGridTable = forwardRef<
   const { classes, cx } = useAgGridTableStyles()
   return (
     <div className={cx(classes.container, className)}>
-      <AgGridReact ref={ref} theme={theme} tooltipShowDelay={300} {...props} />
+      <AgGridReact
+        ref={ref}
+        theme={theme}
+        tooltipHideDelay={60000}
+        tooltipInteraction
+        tooltipShowDelay={300}
+        {...props}
+      />
     </div>
   )
 })
