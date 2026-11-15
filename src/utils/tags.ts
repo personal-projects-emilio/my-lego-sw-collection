@@ -1,6 +1,6 @@
 import type { Tag, TagsList, TagTarget } from 'types/tags'
 
-export const SEASONAL_TAG_ID = 'seasonal'
+export const seasonalTagId = 'seasonal'
 
 export type Vocabulary = ReturnType<typeof buildVocabulary>
 

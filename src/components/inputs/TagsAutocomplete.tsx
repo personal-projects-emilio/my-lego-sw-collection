@@ -35,9 +35,9 @@ type TagsAutocompleteProps = {
 
 const noInheritedTags: Record<string, Array<string | number>> = {}
 
-const GROUP_HEIGHT = 48
-const GROUP_LAYER = 20
-const OPTION_HEIGHT = 36
+const groupHeight = 48
+const groupLayer = 20
+const optionHeight = 36
 
 const useTagsAutocompleteStyles = makeStyles({ name: 'TagsAutocomplete' })(
   (theme) => ({
@@ -48,8 +48,8 @@ const useTagsAutocompleteStyles = makeStyles({ name: 'TagsAutocomplete' })(
       padding: 0,
     },
     groupHeader: {
-      lineHeight: `${GROUP_HEIGHT}px`,
-      zIndex: GROUP_LAYER,
+      lineHeight: `${groupHeight}px`,
+      zIndex: groupLayer,
     },
     pinned: {
       position: 'sticky',
@@ -134,8 +134,8 @@ const nestOptions = (
                 ...option.props.style,
                 backgroundColor: background,
                 opacity: 1,
-                top: GROUP_HEIGHT + (depth - 1) * OPTION_HEIGHT,
-                zIndex: GROUP_LAYER - depth,
+                top: groupHeight + (depth - 1) * optionHeight,
+                zIndex: groupLayer - depth,
               },
             })}
             {nestOptions(options.slice(start + 1, end), styles)}
@@ -232,7 +232,7 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
             {...props}
             data-depth={vocabulary.depth(id)}
             style={{
-              height: OPTION_HEIGHT,
+              height: optionHeight,
               paddingLeft: vocabulary.depth(id) * 16,
             }}
           >

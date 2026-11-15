@@ -9,7 +9,7 @@ import type {
 import type { CollectionSetsList, Set, SetsList } from 'types/sets'
 import type { TagsList } from 'types/tags'
 
-import { buildVocabulary, SEASONAL_TAG_ID } from './tags'
+import { buildVocabulary, seasonalTagId } from './tags'
 
 export const isSetRetired = (
   { exitDate, retired }: Pick<Set, 'exitDate' | 'retired'>,
@@ -166,7 +166,7 @@ export const buildCollection = ({
 }: StoredCollection): Collection => {
   const vocabulary = buildVocabulary(tagsList)
   const inheritable = (set: Set) =>
-    set.tags?.includes(SEASONAL_TAG_ID)
+    set.tags?.includes(seasonalTagId)
       ? []
       : vocabulary
           .withImplied(set.tags ?? [])

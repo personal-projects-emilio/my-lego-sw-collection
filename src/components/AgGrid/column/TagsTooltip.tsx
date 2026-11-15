@@ -1,15 +1,19 @@
-import { Paper } from '@mui/material'
 import type { CustomTooltipProps } from 'ag-grid-react'
 import TagTree from 'components/TagTree'
 import useVocabulary from 'hooks/useVocabulary'
 import { makeStyles } from 'tss-react/mui'
 
-const useTagsTooltipStyles = makeStyles({ name: 'TagsTooltip' })((theme) => ({
-  paper: {
+const useTagsTooltipStyles = makeStyles({ name: 'TagsTooltip' })({
+  tooltip: {
+    backgroundColor: 'var(--ag-tooltip-background-color)',
+    border: 'var(--ag-tooltip-border)',
+    borderRadius: 'var(--ag-border-radius)',
+    color: 'var(--ag-tooltip-text-color)',
     maxWidth: 420,
-    padding: theme.spacing(1, 1.5),
+    padding:
+      'var(--ag-widget-container-vertical-padding) var(--ag-widget-container-horizontal-padding)',
   },
-}))
+})
 
 type TaggedItem = {
   effectiveTags: string[]
@@ -29,9 +33,9 @@ const TagsTooltip = ({ data }: CustomTooltipProps<TaggedItem>) => {
   )
 
   return (
-    <Paper className={classes.paper} elevation={8}>
+    <div className={classes.tooltip}>
       <TagTree ids={data.effectiveTags} notes={notes} vocabulary={vocabulary} />
-    </Paper>
+    </div>
   )
 }
 

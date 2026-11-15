@@ -1,17 +1,31 @@
 import type { FC } from 'react'
 
-import { Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import type { Vocabulary } from 'utils/tags'
 
 const useTagTreeStyles = makeStyles({ name: 'TagTree' })((theme) => ({
-  line: {
-    display: 'block',
+  tree: {
+    fontFamily: theme.typography.caption.fontFamily,
+    fontSize: theme.typography.caption.fontSize,
+    letterSpacing: theme.typography.caption.letterSpacing,
+    lineHeight: theme.typography.caption.lineHeight,
+    listStyle: 'none',
+    margin: 0,
+    padding: 0,
+  },
+  branch: {
+    listStyle: 'none',
+    margin: 0,
+    paddingLeft: theme.spacing(1.5),
   },
   root: {
     fontWeight: 700,
     marginTop: theme.spacing(0.5),
     textTransform: 'uppercase',
+  },
+  child: {
+    fontWeight: 400,
+    textTransform: 'none',
   },
   note: {
     fontStyle: 'italic',
@@ -28,30 +42,30 @@ type TagTreeProps = {
 
 const TagTree: FC<TagTreeProps> = ({ ids, notes = {}, vocabulary }) => {
   const { classes, cx } = useTagTreeStyles()
+  const nodes = vocabulary.tree(ids)
   const leaves = new Set(vocabulary.leaves(ids))
-  return (
-    <div>
-      {vocabulary.tree(ids).map(({ id, label, depth }) => (
-        <Typography
-          key={id}
-          className={cx(classes.line, { [classes.root]: depth === 0 })}
-          style={{ paddingLeft: depth * 12 }}
-          variant="caption"
-        >
-          {label}
-          {leaves.has(id) && notes[id] && (
-            <Typography
-              className={classes.note}
-              component="span"
-              variant="caption"
-            >
-              {notes[id]}
-            </Typography>
-          )}
-        </Typography>
-      ))}
-    </div>
-  )
+
+  const branch = (parent: string | undefined) => {
+    const children = nodes.filter(
+      ({ id }) => vocabulary.byId.get(id)?.parent === parent
+    )
+    if (!children.length) return null
+    return (
+      <ul className={parent ? cx(classes.branch, classes.child) : classes.tree}>
+        {children.map(({ id, label }) => (
+          <li key={id} className={cx({ [classes.root]: !parent })}>
+            {label}
+            {leaves.has(id) && notes[id] && (
+              <span className={classes.note}>{notes[id]}</span>
+            )}
+            {branch(id)}
+          </li>
+        ))}
+      </ul>
+    )
+  }
+
+  return branch(undefined)
 }
 
 export default TagTree

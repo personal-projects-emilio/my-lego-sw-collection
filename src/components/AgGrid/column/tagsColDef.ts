@@ -19,7 +19,7 @@ export const tagsColDef = <TData extends { effectiveTags: string[] }>(
     (value ?? []).map(vocabulary.label).join(', '),
   minWidth: 160,
   suppressFloatingFilterButton: false,
+  tooltip: ({ value }) => (value?.length ? value : undefined),
   tooltipComponent: TagsTooltip,
-  tooltipValueGetter: ({ value }) => (value?.length ? 'tags' : undefined),
   valueFormatter: ({ value }) => vocabulary.groupedLabel(value ?? []),
 })
