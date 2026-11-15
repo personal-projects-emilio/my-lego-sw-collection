@@ -46,7 +46,7 @@ const TagsFilter = ({
       popperClassName="ag-custom-component-popup"
       itemType={itemType}
       onChange={(ids) => onModelChange(ids.length ? ids : null)}
-      textFieldProps={{ placeholder: 'Filter tags', size: 'small' }}
+      textFieldProps={{ label: 'Filter tags', size: 'small' }}
       value={model ?? []}
     />
   )

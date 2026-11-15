@@ -5,6 +5,7 @@ import {
   forwardRef,
   type ReactElement,
   type ReactNode,
+  useId,
   useMemo,
 } from 'react'
 
@@ -126,8 +127,8 @@ const nestOptions = (
       end === start + 1 ? (
         option
       ) : (
-        <li key={`subtree-${option.key}`}>
-          <ul className={classes.nestedList}>
+        <li key={`subtree-${option.key}`} role="presentation">
+          <ul className={classes.nestedList} role="presentation">
             {cloneElement(option, {
               className: cx(option.props.className, classes.pinned),
               style: {
@@ -163,6 +164,7 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
   ) => {
     const tagsVocabulary = useTagsVocabulary()
     const { classes, cx, theme } = useTagsAutocompleteStyles()
+    const groupId = useId()
     const options = useMemo(
       () => tagsVocabulary.pickable(itemType),
       [tagsVocabulary, itemType]
@@ -213,11 +215,15 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
           />
         )}
         renderGroup={({ key, group, children }) => (
-          <li key={key}>
-            <ListSubheader className={classes.groupHeader} component="div">
+          <li key={key} aria-labelledby={`${groupId}-${key}`} role="group">
+            <ListSubheader
+              className={classes.groupHeader}
+              component="div"
+              id={`${groupId}-${key}`}
+            >
               {group}
             </ListSubheader>
-            <ul className={classes.nestedList}>
+            <ul className={classes.nestedList} role="presentation">
               {nestOptions(Children.toArray(children) as OptionElement[], {
                 background: theme.palette.background.paper,
                 classes,
@@ -230,13 +236,21 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
           <li
             key={key}
             {...props}
+            aria-label={[tagsVocabulary.pathLabel(id), note(id)]
+              .filter(Boolean)
+              .join(', ')}
             data-depth={tagsVocabulary.depth(id)}
             style={{
               height: optionHeight,
               paddingLeft: tagsVocabulary.depth(id) * 16,
             }}
           >
-            <Checkbox checked={selected || isImplied(id)} size="small" />
+            <Checkbox
+              aria-hidden
+              checked={selected || isImplied(id)}
+              size="small"
+              tabIndex={-1}
+            />
             {tagsVocabulary.label(id)}
             {note(id) && (
               <Typography className={classes.note} variant="caption">
@@ -277,6 +291,7 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
               parent ? (
                 <Tooltip
                   key={`group-${parent}`}
+                  describeChild
                   title={
                     <TreeView
                       ids={group}
@@ -285,15 +300,23 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
                     />
                   }
                 >
-                  <div className={classes.group}>
-                    <Typography variant="caption">
+                  <div
+                    aria-label={tagsVocabulary.pathLabel(parent)}
+                    className={classes.group}
+                    role="group"
+                  >
+                    <Typography aria-hidden variant="caption">
                       {tagsVocabulary.pathLabel(parent)} ›
                     </Typography>
                     {group.map((id) => tagChip(id, tagsVocabulary.label(id)))}
                   </div>
                 </Tooltip>
               ) : note(group[0]) ? (
-                <Tooltip key={`note-${group[0]}`} title={note(group[0])}>
+                <Tooltip
+                  key={`note-${group[0]}`}
+                  describeChild
+                  title={note(group[0])}
+                >
                   {tagChip(group[0], tagsVocabulary.pathLabel(group[0]))}
                 </Tooltip>
               ) : (
