@@ -7,8 +7,5 @@ export type MinifigFormModalProps =
     }
   | {
       isEdit: false
-      minifigData?: Pick<
-        Minifig,
-        'appearances' | 'characterName' | 'tags' | 'timelines'
-      >
+      minifigData?: Pick<Minifig, 'characterName' | 'tags'>
     }

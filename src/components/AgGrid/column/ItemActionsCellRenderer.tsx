@@ -45,14 +45,14 @@ type ActionsCellRendererConstants = {
 const getMinifigActionsCellRendererConstants = (minifigId: Minifig['id']) =>
   ({
     addTo: { to: '/minifigs/add', search: { duplicate: minifigId } },
-    duplicateTooltip: `Duplicate appearances, character name, tags and timelines of minifig ${minifigId}`,
+    duplicateTooltip: `Duplicate character name and tags of minifig ${minifigId}`,
     editTo: { to: '/minifigs/edit/$minifigId', params: { minifigId } },
   }) as const satisfies ActionsCellRendererConstants
 
 const getSetActionsCellRendererConstants = (setId: Set['id']) =>
   ({
     addTo: { to: '/sets/add', search: { duplicate: setId } },
-    duplicateTooltip: `Duplicate appearances, subtheme, tags and timelines of set ${setId}`,
+    duplicateTooltip: `Duplicate subtheme and tags of set ${setId}`,
     editTo: { to: '/sets/edit/$setId', params: { setId } },
   }) as const satisfies ActionsCellRendererConstants
 

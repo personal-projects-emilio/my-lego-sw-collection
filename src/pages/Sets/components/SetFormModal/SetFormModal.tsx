@@ -13,23 +13,22 @@ import {
 } from '@mui/material'
 import { useNavigate } from '@tanstack/react-router'
 import DisplayIfAuthenticated from 'components/DisplayIfAuthenticated'
-import { Autocomplete, Checkbox } from 'components/inputs'
+import { Autocomplete, Checkbox, TagsAutocomplete } from 'components/inputs'
 import { useSetsAutocompleteOptions, useSetsMutations } from 'pages/Sets/hooks'
 import { type SetFormInput, setValidationSchema } from 'types/sets'
 import { formatFrDate } from 'utils/format'
 import { isSetRetired } from 'utils/lego'
 
 import { defaultSetFormValues } from './SetFormModal.constant'
-import useStyles from './SetFormModal.styles'
+import useSetFormModalStyles from './SetFormModal.styles'
 import type { SetFormModalProps } from './SetFormModal.types'
 import SetMinifigs from './SetMinifigs'
 
 const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
-  const { appearances, subthemes, ids, tags, timelines } =
-    useSetsAutocompleteOptions()
+  const { subthemes, ids } = useSetsAutocompleteOptions()
   const { addSet, editSet, isPending } = useSetsMutations()
   const navigate = useNavigate()
-  const { classes } = useStyles()
+  const { classes } = useSetFormModalStyles()
 
   const setValidationSchemaWithRefinedIdCheck = useMemo(
     () =>
@@ -147,57 +146,14 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
             defaultValue={[]}
             name="tags"
             render={({ field, fieldState }) => (
-              <Autocomplete
+              <TagsAutocomplete
                 {...field}
                 className={classes.gridSpan12}
-                freeSolo
-                multiple
-                options={tags}
+                itemType="sets"
                 textFieldProps={{
                   label: 'Tags',
-                  placeholder: 'Set tags (ex: Starfighter, Rebel Alliance...)',
-                  error: fieldState.invalid,
-                  helperText: fieldState.error?.message,
-                }}
-              />
-            )}
-          />
-          <Controller
-            control={control}
-            defaultValue={[]}
-            name="appearances"
-            render={({ field, fieldState }) => (
-              <Autocomplete
-                {...field}
-                className={classes.gridSpan12}
-                freeSolo
-                multiple
-                options={appearances}
-                textFieldProps={{
-                  label: 'Appearances',
                   placeholder:
-                    'Set appearances (ex: The Mandalorian, The Clone Wars...)',
-                  error: fieldState.invalid,
-                  helperText: fieldState.error?.message,
-                }}
-              />
-            )}
-          />
-          <Controller
-            control={control}
-            defaultValue={[]}
-            name="timelines"
-            render={({ field, fieldState }) => (
-              <Autocomplete
-                {...field}
-                className={classes.gridSpan12}
-                freeSolo
-                multiple
-                options={timelines}
-                textFieldProps={{
-                  label: 'Timelines',
-                  placeholder:
-                    'Set timelines (ex: Fall of the Jedi, Age of Rebellion)',
+                    'Set tags (ex: A New Hope, X-wing, Rebel Alliance...)',
                   error: fieldState.invalid,
                   helperText: fieldState.error?.message,
                 }}

@@ -2,6 +2,7 @@ import type { FC } from 'react'
 
 import { Button } from '@mui/material'
 import type { ColDef } from 'ag-grid-community'
+import { makeStyles } from 'tss-react/mui'
 import type { BricksetIgnoreList, BricksetRow } from 'types/brickset'
 import type { Set } from 'types/sets'
 import { bricksetRowKey } from 'utils/brickset'
@@ -27,6 +28,14 @@ type MissingSetsGridProps = {
 }
 
 /** The CSV rows that match no set, each can be added or ignored. */
+const useMissingSetsGridStyles = makeStyles({ name: 'MissingSetsGrid' })(
+  (theme) => ({
+    addAll: {
+      marginBottom: theme.spacing(1),
+    },
+  })
+)
+
 const MissingSetsGrid: FC<MissingSetsGridProps> = ({
   rows,
   newSetIds,
@@ -34,6 +43,7 @@ const MissingSetsGrid: FC<MissingSetsGridProps> = ({
   onToggleAdded,
   onIgnore,
 }) => {
+  const { classes } = useMissingSetsGridStyles()
   const rowData = rows.map((row): MissingRow => ({
     key: bricksetRowKey(row),
     id: String(newSetIds.get(row) ?? bricksetRowKey(row)),
@@ -91,7 +101,7 @@ const MissingSetsGrid: FC<MissingSetsGridProps> = ({
       <Button
         size="small"
         variant="outlined"
-        sx={{ mb: 1 }}
+        className={classes.addAll}
         onClick={() => onToggleAdded(rows.map(bricksetRowKey), false)}
       >
         Add all

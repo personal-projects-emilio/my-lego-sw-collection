@@ -6,7 +6,10 @@ import type {
   Minifig,
   MinifigsList,
 } from 'types/minifigs'
-import type { Set, SetsList } from 'types/sets'
+import type { CollectionSetsList, Set, SetsList } from 'types/sets'
+import type { TagsList, TagTarget } from 'types/tags'
+
+import { buildTagsVocabulary, seasonalTagId } from './tags'
 
 export const isSetRetired = (
   { exitDate, retired }: Pick<Set, 'exitDate' | 'retired'>,
@@ -94,10 +97,11 @@ interface StoredCollection {
   setsList: SetsList
   minifigsList: MinifigsList
   looseMinifigsList: LooseMinifigsList
+  tagsList: TagsList
 }
 
 interface Collection {
-  setsList: SetsList
+  setsList: CollectionSetsList
   minifigsList: CollectionMinifigsList
 }
 
@@ -158,7 +162,21 @@ export const buildCollection = ({
   setsList,
   minifigsList,
   looseMinifigsList,
+  tagsList,
 }: StoredCollection): Collection => {
+  const tagsVocabulary = buildTagsVocabulary(tagsList)
+  const ownTags = (tags: string[] | undefined, target: TagTarget) =>
+    tagsVocabulary.withImplied(
+      (tags ?? []).filter((id) => tagsVocabulary.appliesTo(id, target))
+    )
+  const inheritable = (set: Set) =>
+    set.tags?.includes(seasonalTagId)
+      ? []
+      : ownTags(set.tags, 'sets').filter(
+          (id) =>
+            tagsVocabulary.rootOf(id)?.inherited &&
+            tagsVocabulary.appliesTo(id, 'minifigs')
+        )
   const looseById = new Map(looseMinifigsList.map((loose) => [loose.id, loose]))
   const cleanedMinifigsList = minifigsList.map((minifig): CollectionMinifig => {
     const stored = looseById.get(minifig.id)
@@ -170,6 +188,8 @@ export const buildCollection = ({
     }
     return {
       ...minifig,
+      effectiveTags: [],
+      inheritedTags: {},
       owned: { total: loose.quantity, loose, inSet: [] },
     }
   })
@@ -185,22 +205,16 @@ export const buildCollection = ({
         const currentMinifig = updatedMinifigsList[index]
         updatedMinifigsList[index] = {
           ...currentMinifig,
-          ...(!currentSet.tags?.includes('Seasonal') && {
-            timelines: [
-              ...new Set(
-                (currentSet.timelines ?? []).concat(
-                  currentMinifig.timelines ?? []
-                )
-              ),
-            ].sort(),
-            appearances: [
-              ...new Set(
-                (currentSet.appearances ?? []).concat(
-                  currentMinifig.appearances ?? []
-                )
-              ),
-            ].sort(),
-          }),
+          inheritedTags: inheritable(currentSet).reduce(
+            (inheritedTags, id) =>
+              inheritedTags[id]?.includes(currentSet.id)
+                ? inheritedTags
+                : {
+                    ...inheritedTags,
+                    [id]: [...(inheritedTags[id] ?? []), currentSet.id],
+                  },
+            currentMinifig.inheritedTags
+          ),
           owned: {
             loose: currentMinifig.owned.loose,
             total:
@@ -223,9 +237,8 @@ export const buildCollection = ({
           ...sets,
           {
             ...currentSet,
-            timelines: Array.from(new Set(currentSet.timelines)),
             tags: Array.from(new Set(currentSet.tags)),
-            appearances: Array.from(new Set(currentSet.appearances)),
+            effectiveTags: ownTags(currentSet.tags, 'sets'),
             ...(currentSet.content && {
               content: {
                 ...currentSet.content,
@@ -243,8 +256,17 @@ export const buildCollection = ({
         minifigs: updatedMinifigsList,
       }
     },
-    { sets: [] as typeof setsList, minifigs: cleanedMinifigsList }
+    { sets: [] as CollectionSetsList, minifigs: cleanedMinifigsList }
   )
 
-  return { setsList: syncedList.sets, minifigsList: syncedList.minifigs }
+  return {
+    setsList: syncedList.sets,
+    minifigsList: syncedList.minifigs.map((minifig) => ({
+      ...minifig,
+      effectiveTags: tagsVocabulary.sort([
+        ...ownTags(minifig.tags, 'minifigs'),
+        ...Object.keys(minifig.inheritedTags),
+      ]),
+    })),
+  }
 }

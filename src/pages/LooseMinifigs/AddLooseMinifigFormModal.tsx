@@ -21,7 +21,9 @@ import { z } from 'zod'
 import { defaultLooseMinifigFormValues } from './AddLooseMinifigFormModal.constant'
 import useLooseMinifigsMutations from './useLooseMinifigsMutations'
 
-const useStyles = makeStyles({ name: 'AddLooseMinifigFormModal' })((theme) => ({
+const useAddLooseMinifigFormModalStyles = makeStyles({
+  name: 'AddLooseMinifigFormModal',
+})((theme) => ({
   container: {
     display: 'grid',
     gap: theme.spacing(2),
@@ -36,7 +38,7 @@ const AddLooseMinifigFormModal: FC = () => {
   const { minifigsList = [] } = useCollection()
   const { editLooseMinifig, isPending } = useLooseMinifigsMutations()
   const navigate = useNavigate()
-  const { classes } = useStyles()
+  const { classes } = useAddLooseMinifigFormModalStyles()
 
   const availableMinifigs = useMemo(
     () =>

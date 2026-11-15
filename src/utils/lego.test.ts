@@ -2,6 +2,7 @@
 import assert from 'node:assert/strict'
 import type { LooseMinifig, Minifig } from 'types/minifigs'
 import type { Set, SetsList } from 'types/sets'
+import type { TagsList } from 'types/tags'
 import { test } from 'vitest'
 
 import {
@@ -27,12 +28,11 @@ test('renames a minifig in every set that contains it', () => {
   assert.equal(renamed[1], setsList[1])
 })
 
-const minifig = (id: string) =>
+const minifig = (id: string, tags: string[] = []) =>
   ({
     id,
     characterName: `Name ${id}`,
-    timelines: [],
-    appearances: [],
+    tags,
   }) as unknown as Minifig
 
 const loose = (quantity: number): LooseMinifig => ({
@@ -47,8 +47,6 @@ const setWith = (id: number, ownedQuantity: number, tags: string[] = []) =>
     id,
     ownedQuantity,
     tags,
-    timelines: ['Original'],
-    appearances: ['A New Hope'],
     content: {
       minifigs: [
         {
@@ -66,6 +64,7 @@ test('buildCollection adds owned set quantities to the loose total and lists eve
     minifigsList: [minifig('sw0001')],
     looseMinifigsList: [{ id: 'sw0001', ...loose(1) }],
     setsList: [setWith(1, 1), setWith(2, 0)],
+    tagsList: [],
   })
 
   assert.equal(minifigsList[0].owned.total, 3)
@@ -81,6 +80,7 @@ test('buildCollection counts set minifigs once per owned copy of the set', () =>
     minifigsList: [minifig('sw0001')],
     looseMinifigsList: [{ id: 'sw0001', ...loose(1) }],
     setsList: [setWith(1, 2)],
+    tagsList: [],
   })
 
   assert.equal(minifigsList[0].owned.total, 5)
@@ -91,6 +91,7 @@ test('buildCollection gives a minifig without a loose entry an empty loose', () 
     minifigsList: [minifig('sw0001')],
     looseMinifigsList: [],
     setsList: [],
+    tagsList: [],
   })
 
   assert.equal(minifigsList[0].owned.total, 0)
@@ -139,22 +140,194 @@ test('renameLooseMinifig moves the entry to the new id', () => {
   assert.equal(renameLooseMinifig(list, 'sw0002', 'sw0002a'), list)
 })
 
-test('buildCollection inherits timelines and appearances except from Seasonal sets', () => {
-  const inherited = buildCollection({
-    minifigsList: [minifig('sw0001')],
+const tagsList: TagsList = [
+  {
+    id: 'timeline',
+    label: 'Timeline',
+    order: 0,
+    appliesTo: 'both',
+    inherited: true,
+  },
+  {
+    id: 'age-of-rebellion',
+    label: 'Age of Rebellion',
+    parent: 'timeline',
+    order: 0,
+  },
+  {
+    id: 'original-trilogy',
+    label: 'Original Trilogy',
+    parent: 'age-of-rebellion',
+    order: 0,
+  },
+  {
+    id: 'a-new-hope',
+    label: 'A New Hope',
+    parent: 'original-trilogy',
+    order: 0,
+    kind: 'movie',
+  },
+  { id: 'affiliation', label: 'Affiliation', order: 1, appliesTo: 'both' },
+  {
+    id: 'rebel-alliance',
+    label: 'Rebel Alliance',
+    parent: 'affiliation',
+    order: 0,
+  },
+  { id: 'product-type', label: 'Product Type', order: 2, appliesTo: 'both' },
+  { id: 'seasonal', label: 'Seasonal', parent: 'product-type', order: 0 },
+  { id: 'vehicle', label: 'Vehicle', order: 3, appliesTo: 'sets' },
+  { id: 'x-wing', label: 'X-wing', parent: 'vehicle', order: 0 },
+]
+
+const eraOf = ['age-of-rebellion', 'original-trilogy', 'a-new-hope']
+
+test.for([
+  {
+    case: 'a set implies the ancestors of its tags except the root',
+    sets: [{ id: 1, owned: 1, tags: ['a-new-hope'] }],
+    minifigTags: [],
+    expected: {
+      setEffectiveTags: eraOf,
+      effectiveTags: eraOf,
+      inheritedTags: {
+        'age-of-rebellion': [1],
+        'original-trilogy': [1],
+        'a-new-hope': [1],
+      },
+      tags: [],
+    },
+  },
+  {
+    case: 'a minifig inherits only the tags under inherited roots',
+    sets: [{ id: 1, owned: 1, tags: ['a-new-hope', 'rebel-alliance'] }],
+    minifigTags: [],
+    expected: {
+      setEffectiveTags: [...eraOf, 'rebel-alliance'],
+      effectiveTags: eraOf,
+      inheritedTags: {
+        'age-of-rebellion': [1],
+        'original-trilogy': [1],
+        'a-new-hope': [1],
+      },
+      tags: [],
+    },
+  },
+  {
+    case: 'a seasonal set passes nothing on',
+    sets: [{ id: 1, owned: 1, tags: ['a-new-hope', 'seasonal'] }],
+    minifigTags: [],
+    expected: {
+      setEffectiveTags: [...eraOf, 'seasonal'],
+      effectiveTags: [],
+      inheritedTags: {},
+      tags: [],
+    },
+  },
+  {
+    case: 'an unowned set passes its tags on and every source set is listed',
+    sets: [
+      { id: 1, owned: 0, tags: ['a-new-hope'] },
+      { id: 2, owned: 1, tags: ['original-trilogy'] },
+    ],
+    minifigTags: [],
+    expected: {
+      setEffectiveTags: eraOf,
+      effectiveTags: eraOf,
+      inheritedTags: {
+        'age-of-rebellion': [1, 2],
+        'original-trilogy': [1, 2],
+        'a-new-hope': [1],
+      },
+      tags: [],
+    },
+  },
+  {
+    case: 'a hand-picked tag a set also provides counts once and lists the set',
+    sets: [{ id: 1, owned: 1, tags: ['a-new-hope'] }],
+    minifigTags: ['a-new-hope', 'rebel-alliance'],
+    expected: {
+      setEffectiveTags: eraOf,
+      effectiveTags: [...eraOf, 'rebel-alliance'],
+      inheritedTags: {
+        'age-of-rebellion': [1],
+        'original-trilogy': [1],
+        'a-new-hope': [1],
+      },
+      tags: ['a-new-hope', 'rebel-alliance'],
+    },
+  },
+  {
+    case: 'a hand-picked minifig tag implies its parents',
+    sets: [{ id: 1, owned: 1, tags: [] }],
+    minifigTags: ['a-new-hope'],
+    expected: {
+      setEffectiveTags: [],
+      effectiveTags: eraOf,
+      inheritedTags: {},
+      tags: ['a-new-hope'],
+    },
+  },
+  {
+    case: 'a set listing the minifig twice is listed once as a source',
+    sets: [{ id: 1, owned: 1, tags: ['a-new-hope'], copies: 2 }],
+    minifigTags: [],
+    expected: {
+      setEffectiveTags: eraOf,
+      effectiveTags: eraOf,
+      inheritedTags: {
+        'age-of-rebellion': [1],
+        'original-trilogy': [1],
+        'a-new-hope': [1],
+      },
+      tags: [],
+    },
+  },
+  {
+    case: 'a stored tag under a root for the other item type is ignored',
+    sets: [{ id: 1, owned: 1, tags: ['x-wing'] }],
+    minifigTags: ['x-wing'],
+    expected: {
+      setEffectiveTags: ['x-wing'],
+      effectiveTags: [],
+      inheritedTags: {},
+      tags: ['x-wing'],
+    },
+  },
+])('buildCollection: $case', ({ sets, minifigTags, expected }) => {
+  const { setsList, minifigsList } = buildCollection({
+    minifigsList: [minifig('sw0001', minifigTags)],
     looseMinifigsList: [],
-    setsList: [setWith(1, 0)],
-  })
-  const seasonal = buildCollection({
-    minifigsList: [minifig('sw0001')],
-    looseMinifigsList: [],
-    setsList: [setWith(1, 0, ['Seasonal'])],
+    setsList: sets.map((row) => {
+      const set = setWith(row.id, row.owned, row.tags)
+      const copies = 'copies' in row ? row.copies : 1
+      return {
+        ...set,
+        content: {
+          ...set.content,
+          minifigs: Array.from(
+            { length: copies },
+            () => set.content.minifigs[0]
+          ),
+        },
+      }
+    }),
+    tagsList,
   })
 
-  assert.deepEqual(inherited.minifigsList[0].timelines, ['Original'])
-  assert.deepEqual(inherited.minifigsList[0].appearances, ['A New Hope'])
-  assert.deepEqual(seasonal.minifigsList[0].timelines, [])
-  assert.deepEqual(seasonal.minifigsList[0].appearances, [])
+  assert.deepEqual(setsList[0].effectiveTags, expected.setEffectiveTags)
+  assert.deepEqual(
+    {
+      effectiveTags: minifigsList[0].effectiveTags,
+      inheritedTags: minifigsList[0].inheritedTags,
+      tags: minifigsList[0].tags,
+    },
+    {
+      effectiveTags: expected.effectiveTags,
+      inheritedTags: expected.inheritedTags,
+      tags: expected.tags,
+    }
+  )
 })
 
 test('buildCollection refreshes the character names on set content', () => {
@@ -162,6 +335,7 @@ test('buildCollection refreshes the character names on set content', () => {
     minifigsList: [minifig('sw0001')],
     looseMinifigsList: [],
     setsList: [setWith(1, 0)],
+    tagsList: [],
   })
 
   assert.equal(setsList[0].content.minifigs[0].characterName, 'Name sw0001')

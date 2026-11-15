@@ -15,7 +15,7 @@ const theme = themeMaterial
   .withPart(colorSchemeDark)
   .withParams({ cellHorizontalPadding: { calc: 'spacing * 2' } })
 
-const useStyles = makeStyles({ name: 'AgGridTable' })((theme) => ({
+const useAgGridTableStyles = makeStyles({ name: 'AgGridTable' })((theme) => ({
   container: {
     boxSizing: 'border-box',
     height: 'calc(100vh - 48px - 57px)',
@@ -30,10 +30,17 @@ const AgGridTable = forwardRef<
   AgGridReact,
   AgGridReactProps & { className?: string }
 >(({ className, ...props }, ref) => {
-  const { classes, cx } = useStyles()
+  const { classes, cx } = useAgGridTableStyles()
   return (
     <div className={cx(classes.container, className)}>
-      <AgGridReact ref={ref} theme={theme} {...props} />
+      <AgGridReact
+        ref={ref}
+        theme={theme}
+        tooltipHideDelay={60000}
+        tooltipInteraction
+        tooltipShowDelay={300}
+        {...props}
+      />
     </div>
   )
 })

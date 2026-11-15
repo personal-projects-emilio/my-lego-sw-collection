@@ -12,7 +12,7 @@ type AvatarProps = OverrideProperties<
   { variant?: Exclude<NonNullable<MuiAvatarProps['variant']>, 'square'> }
 >
 
-const useStyles = makeStyles<void, NonNullable<AvatarProps['variant']>>({
+const useAvatarStyles = makeStyles<void, NonNullable<AvatarProps['variant']>>({
   name: 'Avatar',
 })((theme) => ({
   avatar: {
@@ -33,7 +33,7 @@ const useStyles = makeStyles<void, NonNullable<AvatarProps['variant']>>({
 
 const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
   ({ children, variant = 'circular', className, ...avatarProps }, ref) => {
-    const { classes, cx } = useStyles()
+    const { classes, cx } = useAvatarStyles()
 
     return (
       <MuiAvatar

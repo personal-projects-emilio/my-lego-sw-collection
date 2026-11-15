@@ -8,7 +8,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Stack,
   Typography,
 } from '@mui/material'
 import {
@@ -18,6 +17,7 @@ import {
 import { useSetsQuery } from 'api/sets'
 import { defaultSetFormValues } from 'pages/Sets/components/SetFormModal/SetFormModal.constant'
 import { useSetsMutations } from 'pages/Sets/hooks'
+import { makeStyles } from 'tss-react/mui'
 import type { BricksetIgnoreList, BricksetRow } from 'types/brickset'
 import { compareIds, uniqueAndSortedArray } from 'utils/array'
 import {
@@ -37,7 +37,26 @@ import ReportSection from './ReportSection'
 import SetsGrid from './SetsGrid'
 import UpdatesGrid from './UpdatesGrid'
 
+const useImportBricksetCsvStyles = makeStyles({ name: 'ImportBricksetCsv' })(
+  (theme) => ({
+    content: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: theme.spacing(2),
+    },
+    fileRow: {
+      alignItems: 'center',
+      display: 'flex',
+      gap: theme.spacing(2),
+    },
+    summary: {
+      marginBottom: theme.spacing(1),
+    },
+  })
+)
+
 const ImportBricksetCsv: FC = () => {
+  const { classes } = useImportBricksetCsvStyles()
   const [open, setOpen] = useState(false)
   const [fileName, setFileName] = useState<string>()
   const [rows, setRows] = useState<BricksetRow[]>()
@@ -170,8 +189,8 @@ const ImportBricksetCsv: FC = () => {
             Import a Brickset CSV
           </DialogTitle>
           <DialogContent dividers>
-            <Stack spacing={2}>
-              <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
+            <div className={classes.content}>
+              <div className={classes.fileRow}>
                 <Button
                   variant="outlined"
                   component="label"
@@ -185,12 +204,12 @@ const ImportBricksetCsv: FC = () => {
                     onChange={onFileChange}
                   />
                 </Button>
-                <Typography color="text.secondary">
+                <Typography color="textSecondary">
                   {fileName
                     ? `${fileName}: ${rows?.length ?? 0} rows`
                     : 'Export your sets from Brickset as CSV'}
                 </Typography>
-              </Stack>
+              </div>
               <IgnoreListFields
                 ignoreList={ignoreList}
                 isError={isIgnoreListError}
@@ -199,7 +218,7 @@ const ImportBricksetCsv: FC = () => {
               />
               {report && (
                 <div>
-                  <Alert severity="info" sx={{ mb: 1 }}>
+                  <Alert className={classes.summary} severity="info">
                     {appliedUpdatesCount} sets will be updated,{' '}
                     {addedSets.length} added, {report.unchangedCount} are
                     already up to date.
@@ -244,7 +263,7 @@ const ImportBricksetCsv: FC = () => {
                   </ReportSection>
                 </div>
               )}
-            </Stack>
+            </div>
           </DialogContent>
           <DialogActions>
             <Button onClick={onClose} color="primary">

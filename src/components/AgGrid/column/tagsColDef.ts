@@ -1,0 +1,29 @@
+import type { ColDef } from 'ag-grid-community'
+import type { TaggedItem, TagId, TagTarget } from 'types/tags'
+import type { TagsVocabulary } from 'utils/tags'
+
+import TagsFilter, { type TagsFilterProps } from './TagsFilter'
+import TagsTooltip from './TagsTooltip'
+
+export const tagsColDef = <TData extends TaggedItem>(
+  tagsVocabulary: TagsVocabulary,
+  itemType: TagTarget
+): ColDef<TData, TagId[]> => ({
+  colId: 'tags',
+  comparator: (a, b) =>
+    tagsVocabulary
+      .groupedLabel(a ?? [])
+      .localeCompare(tagsVocabulary.groupedLabel(b ?? [])),
+  field: 'effectiveTags' as ColDef<TData, TagId[]>['field'],
+  headerName: 'Tags',
+  filter: TagsFilter,
+  filterParams: { itemType } satisfies TagsFilterProps,
+  flex: 2,
+  getQuickFilterText: ({ value }) =>
+    (value ?? []).map(tagsVocabulary.label).join(', '),
+  minWidth: 160,
+  suppressFloatingFilterButton: false,
+  tooltip: ({ value }) => (value?.length ? value : undefined),
+  tooltipComponent: TagsTooltip,
+  valueFormatter: ({ value }) => tagsVocabulary.groupedLabel(value ?? []),
+})

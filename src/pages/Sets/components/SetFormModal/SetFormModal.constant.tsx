@@ -18,7 +18,6 @@ const dimensions = (
 export const defaultSetFormValues = (setData: SetFormModalProps['setData']) =>
   ({
     id: '',
-    appearances: [],
     location: '',
     name: '',
     note: '',
@@ -27,7 +26,6 @@ export const defaultSetFormValues = (setData: SetFormModalProps['setData']) =>
     releaseYear: new Date().getFullYear(),
     subtheme: '',
     tags: [],
-    timelines: [],
     bricksetImagePath: null,
     EAN: null,
     exitDate: null,

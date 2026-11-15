@@ -1,7 +1,7 @@
+import type { TagId } from 'types/tags'
 import { z } from 'zod'
 
 export const setValidationSchema = z.object({
-  appearances: z.array(z.string()),
   content: z.object({
     minifigs: z.array(
       z.object({
@@ -64,10 +64,13 @@ export const setValidationSchema = z.object({
     message: 'Subtheme is required',
   }),
   tags: z.array(z.string()),
-  timelines: z.array(z.string()),
   UPC: z.string().or(z.null()),
 })
 
 export type Set = z.infer<typeof setValidationSchema>
 export type SetFormInput = z.input<typeof setValidationSchema>
 export type SetsList = Set[]
+
+export type CollectionSet = Set & { effectiveTags: TagId[] }
+
+export type CollectionSetsList = CollectionSet[]

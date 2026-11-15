@@ -4,6 +4,7 @@ export const queryKeys = {
   minifigs: 'minifigs',
   resaleSets: 'resaleSets',
   sets: 'sets',
+  tags: 'tags',
 } as const
 
 export const endPoints = {
@@ -12,4 +13,5 @@ export const endPoints = {
   minifigs: '/minifigs.json',
   resaleSets: '/resaleSets.json',
   sets: '/sets.json',
+  tags: '/tags.json',
 } as const

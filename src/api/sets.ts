@@ -9,9 +9,7 @@ const emptyDimensions = { depth: null, height: null, width: null }
 // The Realtime DB drops null values and empty arrays, and whole objects holding only those
 const withDroppedValues = (set: Set): Set => ({
   ...set,
-  appearances: set.appearances ?? [],
   tags: set.tags ?? [],
-  timelines: set.timelines ?? [],
   bricksetImagePath: set.bricksetImagePath ?? null,
   EAN: set.EAN ?? null,
   UPC: set.UPC ?? null,

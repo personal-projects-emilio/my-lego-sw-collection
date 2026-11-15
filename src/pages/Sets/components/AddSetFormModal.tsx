@@ -22,12 +22,7 @@ const AddSetFormModal: FC = () => {
     <SetFormModal
       isEdit={false}
       {...(setToDuplicate && {
-        setData: pick(setToDuplicate, [
-          'appearances',
-          'subtheme',
-          'tags',
-          'timelines',
-        ]),
+        setData: pick(setToDuplicate, ['subtheme', 'tags']),
       })}
     />
   )

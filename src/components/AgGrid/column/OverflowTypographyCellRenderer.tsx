@@ -3,21 +3,21 @@ import OverflowTypography from 'components/OverflowTypography'
 import { makeStyles } from 'tss-react/mui'
 import { isNotNullOrUndefined } from 'utils/typescript'
 
-const useStyles = makeStyles({ name: 'OverflowTypographyCellRenderer' })(
-  () => ({
-    typography: {
-      position: 'relative',
-      top: '50%',
-      transform: 'translateY(-50%)',
-    },
-  })
-)
+const useOverflowTypographyCellRendererStyles = makeStyles({
+  name: 'OverflowTypographyCellRenderer',
+})(() => ({
+  typography: {
+    position: 'relative',
+    top: '50%',
+    transform: 'translateY(-50%)',
+  },
+}))
 
 const OverflowTypographyCellRenderer = ({
   value,
   valueFormatted,
 }: CustomCellRendererProps) => {
-  const { classes } = useStyles()
+  const { classes } = useOverflowTypographyCellRendererStyles()
   if (!isNotNullOrUndefined(value) && !isNotNullOrUndefined(valueFormatted))
     return null
 

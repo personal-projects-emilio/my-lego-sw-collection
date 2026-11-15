@@ -14,3 +14,4 @@ export {
   type ItemIdCellRenderProps,
 } from './ItemIdCellRenderer'
 export { default as OverflowTypographyCellRenderer } from './OverflowTypographyCellRenderer'
+export { tagsColDef } from './tagsColDef'

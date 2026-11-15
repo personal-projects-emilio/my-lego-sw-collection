@@ -1,6 +1,6 @@
 import { makeStyles } from 'tss-react/mui'
 
-const useStyles = makeStyles()((theme) => ({
+const useSetMinifigsStyles = makeStyles()((theme) => ({
   container: {
     alignItems: 'center',
     display: 'flex',
@@ -29,4 +29,4 @@ const useStyles = makeStyles()((theme) => ({
   },
 }))
 
-export default useStyles
+export default useSetMinifigsStyles

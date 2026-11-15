@@ -11,7 +11,8 @@ import {
   TextField,
 } from '@mui/material'
 import { useNavigate } from '@tanstack/react-router'
-import { Autocomplete } from 'components/inputs'
+import { Autocomplete, TagsAutocomplete } from 'components/inputs'
+import { useCollection } from 'hooks'
 import {
   useMinifigsAutocompleteOptions,
   useMinifigsMutations,
@@ -23,18 +24,21 @@ import {
 } from 'types/minifigs'
 
 import { defaultMinifigFormValues } from './MinifigFormModal.constant'
-import useStyles from './MinifigFormModal.styles'
+import useMinifigFormModalStyles from './MinifigFormModal.styles'
 import type { MinifigFormModalProps } from './MinifigFormModal.types'
 
 const MinifigFormModal: FC<MinifigFormModalProps> = ({
   isEdit,
   minifigData,
 }) => {
-  const { appearances, characterNames, ids, tags, timelines } =
-    useMinifigsAutocompleteOptions()
+  const { characterNames, ids } = useMinifigsAutocompleteOptions()
+  const { minifigsList } = useCollection()
+  const inheritedTags = isEdit
+    ? minifigsList?.find(({ id }) => id === minifigData.id)?.inheritedTags
+    : undefined
   const { addMinifig, editMinifig, isPending } = useMinifigsMutations()
   const navigate = useNavigate()
-  const { classes } = useStyles()
+  const { classes } = useMinifigFormModalStyles()
 
   const minifigValidationSchemaWithRefinedIdCheck = useMemo(
     () =>
@@ -140,64 +144,17 @@ const MinifigFormModal: FC<MinifigFormModalProps> = ({
             defaultValue={[]}
             name="tags"
             render={({ field, fieldState }) => (
-              <div>
-                <Autocomplete
-                  {...field}
-                  freeSolo
-                  multiple
-                  options={tags}
-                  textFieldProps={{
-                    label: 'Tags',
-                    placeholder: 'Minifig tags (ex: Battle Droid, CIS, Droid)',
-                    error: fieldState.invalid,
-                    helperText: fieldState.error?.message,
-                  }}
-                />
-              </div>
-            )}
-          />
-          <Controller
-            control={control}
-            defaultValue={[]}
-            name="timelines"
-            render={({ field, fieldState }) => (
-              <div>
-                <Autocomplete
-                  {...field}
-                  freeSolo
-                  multiple
-                  options={timelines}
-                  textFieldProps={{
-                    label: 'Timelines',
-                    placeholder:
-                      'Minifig timelines (ex: Fall of the Jedi, Age of Rebellion)',
-                    error: fieldState.invalid,
-                    helperText: fieldState.error?.message,
-                  }}
-                />
-              </div>
-            )}
-          />
-          <Controller
-            control={control}
-            defaultValue={[]}
-            name="appearances"
-            render={({ field, fieldState }) => (
-              <div>
-                <Autocomplete
-                  {...field}
-                  freeSolo
-                  multiple
-                  options={appearances}
-                  textFieldProps={{
-                    label: 'Appearances',
-                    placeholder:
-                      'Minifig appearances (ex: The Mandalorian, The Clone Wars...)',
-                    error: fieldState.invalid,
-                    helperText: fieldState.error?.message,
-                  }}
-                />
-              </div>
+              <TagsAutocomplete
+                {...field}
+                inheritedTags={inheritedTags}
+                itemType="minifigs"
+                textFieldProps={{
+                  label: 'Tags',
+                  placeholder: 'Minifig tags (ex: Battle Droid, Separatists)',
+                  error: fieldState.invalid,
+                  helperText: fieldState.error?.message,
+                }}
+              />
             )}
           />
         </form>
