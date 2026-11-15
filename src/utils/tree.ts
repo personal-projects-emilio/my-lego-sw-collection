@@ -127,6 +127,40 @@ export const buildTree = <T extends TreeNode>(nodes: T[]) => {
   }
 }
 
+export type FlatNode = { id: string; parent?: string; depth: number }
+
+export const projectDrop = (
+  nodes: FlatNode[],
+  {
+    activeId,
+    overId,
+    depthDelta,
+  }: { activeId: string; overId: string; depthDelta: number }
+) => {
+  const from = nodes.findIndex(({ id }) => id === activeId)
+  const to = nodes.findIndex(({ id }) => id === overId)
+  const moved = [...nodes]
+  const [active] = moved.splice(from, 1)
+  moved.splice(to, 0, active)
+  const previous = moved[to - 1]
+  const next = moved[to + 1]
+  const depth = Math.min(
+    Math.max(active.depth + depthDelta, next?.depth ?? 0),
+    previous ? previous.depth + 1 : 0
+  )
+  const before = moved.slice(0, to)
+  const parent =
+    depth === 0
+      ? undefined
+      : depth > previous.depth
+        ? previous.id
+        : [...before].reverse().find((node) => node.depth === depth)?.parent
+  return {
+    parent,
+    index: before.filter((node) => node.parent === parent).length,
+  }
+}
+
 export type TreeModel<T extends TreeNode = TreeNode> = ReturnType<
   typeof buildTree<T>
 >

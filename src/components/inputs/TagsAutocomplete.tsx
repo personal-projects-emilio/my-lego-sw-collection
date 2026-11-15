@@ -19,6 +19,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
+import { TagsDrawerButton } from 'components/TagsDrawer'
 import TreeView from 'components/TreeView'
 import { useTagsVocabulary } from 'hooks'
 import { makeStyles } from 'tss-react/mui'
@@ -53,6 +54,18 @@ const tint = (color: string) => `linear-gradient(${color}, ${color})`
 
 const useTagsAutocompleteStyles = makeStyles({ name: 'TagsAutocomplete' })(
   (theme) => ({
+    field: {
+      alignItems: 'flex-start',
+      display: 'flex',
+      gap: theme.spacing(0.5),
+    },
+    grow: {
+      flex: 1,
+      minWidth: 0,
+    },
+    editButton: {
+      marginTop: theme.spacing(2),
+    },
     listbox: {
       padding: 0,
     },
@@ -220,9 +233,9 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
       return isFilter ? `Included in ${labels}` : `Implied by ${labels}`
     }
 
-    return (
+    const autocomplete = (
       <MuiAutocomplete
-        className={className}
+        className={isFilter ? className : classes.grow}
         disableCloseOnSelect
         disabled={disabled}
         getOptionDisabled={(id) => isInherited(id) || isCovered(id)}
@@ -369,6 +382,14 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
         }}
         value={chips}
       />
+    )
+
+    if (isFilter) return autocomplete
+    return (
+      <div className={cx(classes.field, className)}>
+        {autocomplete}
+        <TagsDrawerButton className={classes.editButton} />
+      </div>
     )
   }
 )

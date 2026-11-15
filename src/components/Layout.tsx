@@ -4,12 +4,15 @@ import { Outlet } from '@tanstack/react-router'
 import AuthProvider from 'providers/AuthProvider'
 
 import Header from './Header'
+import { TagsDrawerProvider } from './TagsDrawer'
 
 const Layout: FC = () => {
   return (
     <AuthProvider>
-      <Header />
-      <Outlet />
+      <TagsDrawerProvider>
+        <Header />
+        <Outlet />
+      </TagsDrawerProvider>
     </AuthProvider>
   )
 }

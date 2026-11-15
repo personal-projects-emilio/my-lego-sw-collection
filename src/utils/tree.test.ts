@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'vitest'
 
-import { buildTree, type TreeNode } from './tree.ts'
+import { buildTree, type FlatNode, projectDrop, type TreeNode } from './tree.ts'
 
 const nodes: TreeNode[] = [
   { id: 'timeline', label: 'Timeline', order: 0 },
@@ -73,4 +73,64 @@ test('outline lists every ancestor with its parent in tree order', () => {
     { id: 'bespin', label: 'Bespin', parent: 'place' },
     { id: 'carbonite', label: 'Carbonite Chamber', parent: 'bespin' },
   ])
+})
+
+const flat: FlatNode[] = [
+  { id: 'timeline', depth: 0 },
+  { id: 'aor', parent: 'timeline', depth: 1 },
+  { id: 'ot', parent: 'aor', depth: 2 },
+  { id: 'anh', parent: 'ot', depth: 3 },
+  { id: 'esb', parent: 'ot', depth: 3 },
+  { id: 'place', depth: 0 },
+  { id: 'tatooine', parent: 'place', depth: 1 },
+]
+
+test.for([
+  {
+    case: 'reorders among siblings',
+    active: 'esb',
+    over: 'anh',
+    delta: 0,
+    expected: { parent: 'ot', index: 0 },
+  },
+  {
+    case: 'drops under another root',
+    active: 'tatooine',
+    over: 'esb',
+    delta: 0,
+    expected: { parent: 'ot', index: 1 },
+  },
+  {
+    case: 'nests under the row above when dragged right',
+    active: 'esb',
+    over: 'esb',
+    delta: 1,
+    expected: { parent: 'anh', index: 0 },
+  },
+  {
+    case: 'moves up a level when dragged left',
+    active: 'esb',
+    over: 'esb',
+    delta: -1,
+    expected: { parent: 'aor', index: 1 },
+  },
+  {
+    case: 'becomes a root when dragged fully left at the end',
+    active: 'tatooine',
+    over: 'tatooine',
+    delta: -3,
+    expected: { parent: undefined, index: 2 },
+  },
+  {
+    case: 'keeps the depth of the next row',
+    active: 'place',
+    over: 'esb',
+    delta: -5,
+    expected: { parent: 'ot', index: 1 },
+  },
+])('projectDrop $case', ({ active, over, delta, expected }) => {
+  assert.deepEqual(
+    projectDrop(flat, { activeId: active, overId: over, depthDelta: delta }),
+    expected
+  )
 })
