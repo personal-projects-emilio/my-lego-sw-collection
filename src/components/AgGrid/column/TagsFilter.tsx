@@ -1,11 +1,18 @@
 import { useCallback } from 'react'
 
-import { Box } from '@mui/material'
 import type { IDoesFilterPassParams } from 'ag-grid-community'
 import { type CustomFilterProps, useGridFilter } from 'ag-grid-react'
 import { TagsAutocomplete } from 'components/inputs'
 import useVocabulary from 'hooks/useVocabulary'
+import { makeStyles } from 'tss-react/mui'
 import type { TagTarget } from 'types/tags'
+
+const useStyles = makeStyles({ name: 'TagsFilter' })((theme) => ({
+  autocomplete: {
+    padding: theme.spacing(1),
+    width: 360,
+  },
+}))
 
 export type TagsFilterProps = { itemType: TagTarget }
 
@@ -15,6 +22,7 @@ const TagsFilter = ({
   onModelChange,
 }: CustomFilterProps<{ effectiveTags: string[] }, unknown, string[]> &
   TagsFilterProps) => {
+  const { classes } = useStyles()
   const vocabulary = useVocabulary()
 
   const doesFilterPass = useCallback(
@@ -33,15 +41,14 @@ const TagsFilter = ({
   useGridFilter({ doesFilterPass, getModelAsString })
 
   return (
-    <Box sx={{ p: 1, width: 360 }}>
-      <TagsAutocomplete
-        popperClassName="ag-custom-component-popup"
-        itemType={itemType}
-        onChange={(ids) => onModelChange(ids.length ? ids : null)}
-        textFieldProps={{ placeholder: 'Filter tags', size: 'small' }}
-        value={model ?? []}
-      />
-    </Box>
+    <TagsAutocomplete
+      className={classes.autocomplete}
+      popperClassName="ag-custom-component-popup"
+      itemType={itemType}
+      onChange={(ids) => onModelChange(ids.length ? ids : null)}
+      textFieldProps={{ placeholder: 'Filter tags', size: 'small' }}
+      value={model ?? []}
+    />
   )
 }
 
