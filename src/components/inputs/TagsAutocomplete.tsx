@@ -2,7 +2,6 @@ import { forwardRef, useMemo } from 'react'
 
 import {
   Autocomplete as MuiAutocomplete,
-  Box,
   Checkbox,
   Chip,
   TextField,
@@ -10,9 +9,9 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
+import TagTree from 'components/TagTree'
 import useVocabulary from 'hooks/useVocabulary'
 import type { TagTarget } from 'types/tags'
-import type { Vocabulary } from 'utils/tags'
 
 type TagsAutocompleteProps = {
   className?: string
@@ -26,43 +25,6 @@ type TagsAutocompleteProps = {
 }
 
 const noInheritedTags: Record<string, Array<string | number>> = {}
-
-const TagPath = ({
-  id,
-  note,
-  vocabulary,
-}: {
-  id: string
-  note?: string
-  vocabulary: Vocabulary
-}) => (
-  <Box>
-    {[...vocabulary.ancestors(id).reverse(), vocabulary.byId.get(id)].map(
-      (tag, depth) =>
-        tag && (
-          <Typography
-            key={tag.id}
-            sx={{
-              display: 'block',
-              fontWeight: tag.id === id ? 700 : 400,
-              pl: depth * 1.5,
-            }}
-            variant="caption"
-          >
-            {tag.label}
-          </Typography>
-        )
-    )}
-    {note && (
-      <Typography
-        sx={{ display: 'block', fontStyle: 'italic', mt: 0.5 }}
-        variant="caption"
-      >
-        {note}
-      </Typography>
-    )}
-  </Box>
-)
 
 const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
   (
@@ -84,25 +46,24 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
       [vocabulary, itemType]
     )
     const explicit = [...value, ...Object.keys(inheritedTags)]
-    const displayed = hideImplied
+    const chips = hideImplied
       ? vocabulary.sort(explicit)
-      : vocabulary.withImplied(explicit)
+      : vocabulary.leaves(explicit)
     const isInherited = (id: string) => id in inheritedTags
     const isStored = (id: string) => value.includes(id)
     const impliedBy = (id: string) =>
-      displayed.filter(
-        (other) =>
-          (isStored(other) || isInherited(other)) &&
-          vocabulary.ancestors(other).some((tag) => tag.id === id)
-      )
-    const isImpliedOnly = (id: string) =>
-      !isStored(id) && !isInherited(id) && impliedBy(id).length > 0
-    const isLocked = (id: string) => isInherited(id) || isImpliedOnly(id)
+      hideImplied
+        ? []
+        : chips.filter((chip) =>
+            vocabulary.ancestors(chip).some((tag) => tag.id === id)
+          )
+    const isImplied = (id: string) =>
+      !chips.includes(id) && impliedBy(id).length > 0
 
     const note = (id: string) => {
       if (isInherited(id))
         return `Inherited from ${inheritedTags[id].join(', ')}`
-      if (isImpliedOnly(id))
+      if (isImplied(id))
         return `Implied by ${impliedBy(id).map(vocabulary.label).join(', ')}`
       return undefined
     }
@@ -111,14 +72,14 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
       <MuiAutocomplete
         className={className}
         disableCloseOnSelect
-        getOptionDisabled={isLocked}
-        getOptionLabel={vocabulary.label}
+        getOptionDisabled={(id) => isInherited(id) || isImplied(id)}
+        getOptionLabel={hideImplied ? vocabulary.label : vocabulary.pathLabel}
         groupBy={(id) => vocabulary.rootOf(id)?.label ?? ''}
         multiple
         onChange={(_event, ids) =>
           onChange(
             vocabulary.sort([
-              ...ids.filter((id) => isStored(id) || !isLocked(id)),
+              ...ids.filter((id) => !isInherited(id) || isStored(id)),
               ...value.filter(isInherited),
             ])
           )
@@ -139,7 +100,7 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
             {...props}
             style={{ paddingLeft: vocabulary.depth(id) * 16 }}
           >
-            <Checkbox checked={selected} size="small" />
+            <Checkbox checked={selected || isImplied(id)} size="small" />
             {vocabulary.label(id)}
             {note(id) && (
               <Typography
@@ -155,25 +116,33 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
         renderValue={(ids, getItemProps) =>
           ids.map((id, index) => {
             const { key, onDelete, ...itemProps } = getItemProps({ index })
+            const chipNote = note(id)
             return (
               <Tooltip
                 key={key}
                 title={
-                  <TagPath id={id} note={note(id)} vocabulary={vocabulary} />
+                  <TagTree
+                    ids={[id]}
+                    notes={chipNote ? { [id]: chipNote } : undefined}
+                    vocabulary={vocabulary}
+                  />
                 }
               >
                 <Chip
                   {...itemProps}
-                  label={vocabulary.label(id)}
-                  onDelete={isLocked(id) ? undefined : onDelete}
+                  label={
+                    hideImplied
+                      ? vocabulary.label(id)
+                      : vocabulary.pathLabel(id)
+                  }
+                  onDelete={isInherited(id) ? undefined : onDelete}
                   size="small"
-                  variant={isImpliedOnly(id) ? 'outlined' : 'filled'}
                 />
               </Tooltip>
             )
           })
         }
-        value={displayed}
+        value={chips}
       />
     )
   }

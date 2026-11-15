@@ -69,6 +69,27 @@ export const buildVocabulary = (tagsList: TagsList) => {
 
   const label = (id: string) => byId.get(id)?.label ?? id
 
+  const leaves = (ids: string[]) => {
+    const implied = new Set(
+      ids.flatMap((id) => ancestors(id).map(({ id }) => id))
+    )
+    return sort(ids.filter((id) => !implied.has(id)))
+  }
+
+  const pathLabel = (id: string) =>
+    [
+      ...ancestors(id)
+        .filter(({ parent }) => parent)
+        .reverse()
+        .map(({ label }) => label),
+      label(id),
+    ].join(' › ')
+
+  const tree = (ids: string[]) =>
+    sort(ids.flatMap((id) => [id, ...ancestors(id).map(({ id }) => id)])).map(
+      (id) => ({ id, label: label(id), depth: depth(id) })
+    )
+
   return {
     byId,
     ancestors,
@@ -78,5 +99,8 @@ export const buildVocabulary = (tagsList: TagsList) => {
     withImplied,
     pickable,
     label,
+    leaves,
+    pathLabel,
+    tree,
   }
 }
