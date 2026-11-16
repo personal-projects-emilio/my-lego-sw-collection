@@ -7,7 +7,7 @@ const useTagsHeaderStyles = makeStyles({ name: 'TagsHeader' })((theme) => ({
     alignItems: 'center',
     display: 'flex',
     gap: theme.spacing(0.5),
-    overflow: 'hidden',
+    minWidth: 0,
   },
   label: {
     overflow: 'hidden',
@@ -15,7 +15,7 @@ const useTagsHeaderStyles = makeStyles({ name: 'TagsHeader' })((theme) => ({
   },
   button: {
     fontSize: 14,
-    padding: 2,
+    padding: 6,
   },
 }))
 
