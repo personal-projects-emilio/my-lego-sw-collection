@@ -4,10 +4,12 @@ import {
   memo,
   useCallback,
   useMemo,
+  useRef,
   useState,
 } from 'react'
 import {
   MdAdd,
+  MdCheck,
   MdChevronRight,
   MdClose,
   MdDragIndicator,
@@ -42,6 +44,7 @@ import {
   Divider,
   Drawer,
   IconButton,
+  InputAdornment,
   Menu,
   MenuItem,
   Switch,
@@ -209,6 +212,19 @@ const useTagsDrawerStyles = makeStyles({ name: 'TagsDrawer' })((theme) => ({
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
   },
+  name: {
+    flex: '1 0 auto',
+    maxWidth: '70%',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  },
+  details: {
+    minWidth: 0,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  },
   root: {
     fontWeight: 700,
     textTransform: 'uppercase',
@@ -232,30 +248,59 @@ const LabelInput: FC<LabelInputProps> = ({
   defaultValue = '',
   onCancel,
   onCommit,
-}) => (
-  <TextField
-    autoFocus
-    className={className}
-    defaultValue={defaultValue}
-    onBlur={(event) =>
-      event.target.value.trim() && event.target.value !== defaultValue
-        ? onCommit(event.target.value)
-        : onCancel()
-    }
-    onKeyDown={(event) => {
-      if (event.key === 'Enter')
-        event.currentTarget.querySelector('input')?.blur()
-      if (event.key === 'Escape') {
-        event.stopPropagation()
-        onCancel()
+}) => {
+  const input = useRef<HTMLInputElement>(null)
+  const keepFocus = (event: React.MouseEvent) => event.preventDefault()
+  return (
+    <TextField
+      autoFocus
+      className={className}
+      defaultValue={defaultValue}
+      inputRef={input}
+      onBlur={(event) =>
+        event.target.value.trim() && event.target.value !== defaultValue
+          ? onCommit(event.target.value)
+          : onCancel()
       }
-    }}
-    placeholder="Tag label"
-    size="small"
-    slotProps={{ htmlInput: { 'aria-label': 'Tag label' } }}
-    variant="standard"
-  />
-)
+      onKeyDown={(event) => {
+        if (event.key === 'Enter')
+          event.currentTarget.querySelector('input')?.blur()
+        if (event.key === 'Escape') {
+          event.stopPropagation()
+          onCancel()
+        }
+      }}
+      placeholder="Tag label"
+      size="small"
+      slotProps={{
+        htmlInput: { 'aria-label': 'Tag label' },
+        input: {
+          endAdornment: (
+            <InputAdornment position="end">
+              <IconButton
+                aria-label="Save the label"
+                onClick={() => input.current?.blur()}
+                onMouseDown={keepFocus}
+                size="small"
+              >
+                <MdCheck fontSize="inherit" />
+              </IconButton>
+              <IconButton
+                aria-label="Cancel"
+                onClick={onCancel}
+                onMouseDown={keepFocus}
+                size="small"
+              >
+                <MdClose fontSize="inherit" />
+              </IconButton>
+            </InputAdornment>
+          ),
+        },
+      }}
+      variant="standard"
+    />
+  )
+}
 
 type TagRowProps = {
   depth: number
@@ -313,7 +358,7 @@ const TagRowContent = memo<TagRowContentProps>(
           />
         ) : (
           <Typography
-            className={cx(classes.label, isRoot && classes.root)}
+            className={cx(classes.name, isRoot && classes.root)}
             variant="body2"
           >
             {label}
@@ -330,8 +375,14 @@ const TagRowContent = memo<TagRowContentProps>(
             {dropNote.text}
           </Typography>
         ) : (
+          !editing &&
           details && (
-            <Typography color="textSecondary" variant="caption">
+            <Typography
+              className={classes.details}
+              color="textSecondary"
+              title={details}
+              variant="caption"
+            >
               {details}
             </Typography>
           )
