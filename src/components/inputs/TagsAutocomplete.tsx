@@ -5,6 +5,7 @@ import {
   forwardRef,
   type ReactElement,
   type ReactNode,
+  useEffect,
   useId,
   useMemo,
 } from 'react'
@@ -19,6 +20,8 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
+import { useTagsQuery } from 'api/tags'
+import { TagsDrawerButton } from 'components/TagsDrawer'
 import TreeView from 'components/TreeView'
 import { useTagsVocabulary } from 'hooks'
 import { makeStyles } from 'tss-react/mui'
@@ -53,6 +56,18 @@ const tint = (color: string) => `linear-gradient(${color}, ${color})`
 
 const useTagsAutocompleteStyles = makeStyles({ name: 'TagsAutocomplete' })(
   (theme) => ({
+    field: {
+      alignItems: 'flex-start',
+      display: 'flex',
+      gap: theme.spacing(0.5),
+    },
+    grow: {
+      flex: 1,
+      minWidth: 0,
+    },
+    editButton: {
+      marginTop: theme.spacing(2),
+    },
     listbox: {
       padding: 0,
     },
@@ -176,6 +191,13 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
     ref
   ) => {
     const tagsVocabulary = useTagsVocabulary()
+    const { data: tagsList } = useTagsQuery()
+    useEffect(() => {
+      if (!tagsList) return
+      const known = new Set(tagsList.map(({ id }) => id))
+      if (value.some((id) => !known.has(id)))
+        onChange(value.filter((id) => known.has(id)))
+    }, [tagsList, value, onChange])
     const { classes, cx } = useTagsAutocompleteStyles()
     const groupId = useId()
     const options = useMemo(
@@ -220,9 +242,9 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
       return isFilter ? `Included in ${labels}` : `Implied by ${labels}`
     }
 
-    return (
+    const autocomplete = (
       <MuiAutocomplete
-        className={className}
+        className={isFilter ? className : classes.grow}
         disableCloseOnSelect
         disabled={disabled}
         getOptionDisabled={(id) => isInherited(id) || isCovered(id)}
@@ -369,6 +391,14 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
         }}
         value={chips}
       />
+    )
+
+    if (isFilter) return autocomplete
+    return (
+      <div className={cx(classes.field, className)}>
+        {autocomplete}
+        <TagsDrawerButton className={classes.editButton} />
+      </div>
     )
   }
 )
