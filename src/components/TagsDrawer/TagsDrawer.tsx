@@ -4,7 +4,6 @@ import {
   memo,
   useCallback,
   useMemo,
-  useRef,
   useState,
 } from 'react'
 import {
@@ -98,7 +97,9 @@ const toggledAppliesTo = (
   return appliesToTarget(appliesTo, other) ? other : appliesTo
 }
 
-const useTagsDrawerStyles = makeStyles({ name: 'TagsDrawer' })((theme) => ({
+const useTagsDrawerStyles = makeStyles<void, 'addButton'>({
+  name: 'TagsDrawer',
+})((theme, _params, classes) => ({
   drawer: {
     zIndex: theme.zIndex.modal,
   },
@@ -148,6 +149,24 @@ const useTagsDrawerStyles = makeStyles({ name: 'TagsDrawer' })((theme) => ({
     gap: theme.spacing(0.5),
     minHeight: 36,
     paddingLeft: `calc(var(--depth) * ${indent}px)`,
+    [`&:hover .${classes.addButton}, &:focus-within .${classes.addButton}`]: {
+      opacity: 1,
+    },
+  },
+  addButton: {
+    opacity: 0,
+    '@media (hover: none)': {
+      opacity: 1,
+    },
+  },
+  actions: {
+    display: 'flex',
+    flexShrink: 0,
+    marginLeft: 'auto',
+  },
+  handleSpacer: {
+    flexShrink: 0,
+    width: 28,
   },
   dragging: {
     boxShadow: theme.shadows[4],
@@ -213,14 +232,16 @@ const useTagsDrawerStyles = makeStyles({ name: 'TagsDrawer' })((theme) => ({
     whiteSpace: 'nowrap',
   },
   name: {
-    flex: '1 0 auto',
-    maxWidth: '70%',
+    flex: '0 1 auto',
+    minWidth: 0,
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
   },
   details: {
+    flex: '1 1 0',
     minWidth: 0,
+    textAlign: 'right',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
@@ -241,37 +262,46 @@ type LabelInputProps = {
   defaultValue?: string
   onCancel: () => void
   onCommit: (label: string) => void
+  placeholder?: string
+  siblingLabels: string[]
 }
+
+const normalized = (label: string) => label.trim().toLocaleLowerCase()
 
 const LabelInput: FC<LabelInputProps> = ({
   className,
   defaultValue = '',
   onCancel,
   onCommit,
+  placeholder = 'Tag label',
+  siblingLabels,
 }) => {
-  const input = useRef<HTMLInputElement>(null)
+  const [value, setValue] = useState(defaultValue)
   const keepFocus = (event: React.MouseEvent) => event.preventDefault()
+  const commit = () =>
+    value.trim() && value !== defaultValue ? onCommit(value) : onCancel()
+  const duplicate =
+    !!value.trim() &&
+    siblingLabels.some((label) => normalized(label) === normalized(value))
   return (
     <TextField
       autoFocus
       className={className}
-      defaultValue={defaultValue}
-      inputRef={input}
-      onBlur={(event) =>
-        event.target.value.trim() && event.target.value !== defaultValue
-          ? onCommit(event.target.value)
-          : onCancel()
-      }
+      color={duplicate ? 'warning' : undefined}
+      focused={duplicate || undefined}
+      helperText={duplicate && 'Another tag here has this label'}
+      onBlur={() => document.hasFocus() && onCancel()}
+      onChange={(event) => setValue(event.target.value)}
       onKeyDown={(event) => {
-        if (event.key === 'Enter')
-          event.currentTarget.querySelector('input')?.blur()
+        if (event.key === 'Enter') commit()
         if (event.key === 'Escape') {
           event.stopPropagation()
           onCancel()
         }
       }}
-      placeholder="Tag label"
+      placeholder={placeholder}
       size="small"
+      value={value}
       slotProps={{
         htmlInput: { 'aria-label': 'Tag label' },
         input: {
@@ -279,7 +309,7 @@ const LabelInput: FC<LabelInputProps> = ({
             <InputAdornment position="end">
               <IconButton
                 aria-label="Save the label"
-                onClick={() => input.current?.blur()}
+                onClick={commit}
                 onMouseDown={keepFocus}
                 size="small"
               >
@@ -314,22 +344,33 @@ type TagRowProps = {
   isRoot: boolean
   label: string
   rowActions: RowActions
+  siblingLabels?: string[]
 }
 
 type RowActions = {
+  add: (id: TagId) => void
   menu: (id: TagId, anchor: HTMLElement) => void
+  startRenaming: (id: TagId) => void
   rename: (id: TagId, label: string) => void
   stopEditing: () => void
   toggle: (id: TagId) => void
 }
 
-type TagRowContentProps = Omit<
-  TagRowProps,
-  'depth' | 'disabled' | 'isDropTarget'
->
+type TagRowContentProps = Omit<TagRowProps, 'depth' | 'isDropTarget'>
 
 const TagRowContent = memo<TagRowContentProps>(
-  ({ details, dropNote, editing, expanded, id, isRoot, label, rowActions }) => {
+  ({
+    details,
+    dropNote,
+    disabled,
+    editing,
+    expanded,
+    id,
+    isRoot,
+    label,
+    rowActions,
+    siblingLabels = [],
+  }) => {
     const { classes, cx } = useTagsDrawerStyles()
     return (
       <>
@@ -355,10 +396,12 @@ const TagRowContent = memo<TagRowContentProps>(
             defaultValue={label}
             onCancel={rowActions.stopEditing}
             onCommit={(newLabel) => rowActions.rename(id, newLabel)}
+            siblingLabels={siblingLabels}
           />
         ) : (
           <Typography
             className={cx(classes.name, isRoot && classes.root)}
+            onDoubleClick={() => !disabled && rowActions.startRenaming(id)}
             variant="body2"
           >
             {label}
@@ -387,24 +430,35 @@ const TagRowContent = memo<TagRowContentProps>(
             </Typography>
           )
         )}
-        <IconButton
-          aria-label={`Actions for ${label}`}
-          onClick={(event) => rowActions.menu(id, event.currentTarget)}
-          size="small"
-        >
-          <MdMoreVert fontSize="inherit" />
-        </IconButton>
+        <span className={classes.actions}>
+          {!editing && (
+            <Tooltip title={`Add a tag inside ${label}`}>
+              <IconButton
+                aria-label={`Add a tag inside ${label}`}
+                className={classes.addButton}
+                disabled={disabled}
+                onClick={() => rowActions.add(id)}
+                size="small"
+              >
+                <MdAdd fontSize="inherit" />
+              </IconButton>
+            </Tooltip>
+          )}
+          <IconButton
+            aria-label={`Actions for ${label}`}
+            onClick={(event) => rowActions.menu(id, event.currentTarget)}
+            size="small"
+          >
+            <MdMoreVert fontSize="inherit" />
+          </IconButton>
+        </span>
       </>
     )
   }
 )
 
-const TagRow: FC<TagRowProps> = ({
-  depth,
-  disabled,
-  isDropTarget,
-  ...content
-}) => {
+const TagRow: FC<TagRowProps> = ({ depth, isDropTarget, ...content }) => {
+  const { disabled } = content
   const { classes, cx } = useTagsDrawerStyles()
   const {
     attributes,
@@ -432,6 +486,10 @@ const TagRow: FC<TagRowProps> = ({
           transition,
         } as CSSProperties
       }
+      onKeyDown={(event) => {
+        if (event.key === 'F2' && !disabled && !content.editing)
+          content.rowActions.startRenaming(content.id)
+      }}
     >
       <span
         ref={setActivatorNodeRef}
@@ -622,7 +680,19 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
 
   const rowActions = useMemo(
     (): RowActions => ({
+      add: (id) => {
+        setExpanded(
+          (ids) =>
+            new Set([
+              ...ids,
+              ...tagsVocabulary.ancestors(id).map((t) => t.id),
+              id,
+            ])
+        )
+        setEditing({ parent: id })
+      },
       menu: (id, anchor) => setMenu({ anchor, id }),
+      startRenaming: (id) => setEditing({ id }),
       rename: (id, label) => {
         setEditing(undefined)
         run(
@@ -633,7 +703,56 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
       stopEditing: () => setEditing(undefined),
       toggle,
     }),
-    [run, state, tagsById, toggle]
+    [run, state, tagsById, tagsVocabulary, toggle]
+  )
+
+  const labelsUnder = (parent: TagId | undefined, except?: TagId) =>
+    tagsList
+      .filter((tag) => tag.parent === parent && tag.id !== except)
+      .map(({ label }) => label)
+
+  const adding = editing && !('id' in editing) ? editing : undefined
+  const addAfter =
+    adding?.parent &&
+    [...nodes]
+      .reverse()
+      .find(
+        ({ id }) =>
+          id === adding.parent ||
+          tagsVocabulary.ancestors(id).some((tag) => tag.id === adding.parent)
+      )?.id
+  const addRow = adding && (
+    <li
+      key="adding"
+      className={classes.row}
+      style={
+        {
+          '--depth': adding.parent
+            ? tagsVocabulary.depth(adding.parent) + 1
+            : 0,
+        } as CSSProperties
+      }
+    >
+      <span className={classes.handleSpacer} />
+      <span className={classes.toggleSpacer} />
+      <LabelInput
+        className={classes.input}
+        onCancel={() => setEditing(undefined)}
+        onCommit={(label) => {
+          setEditing(undefined)
+          run(
+            state && addTag(state, { label, parent: adding.parent }),
+            `Added ${label.trim()}`
+          )
+        }}
+        placeholder={
+          adding.parent
+            ? `New tag in ${tagsVocabulary.label(adding.parent)}${tagsById.get(adding.parent)?.alphabetical ? ', sorted A–Z' : ''}`
+            : 'New root'
+        }
+        siblingLabels={labelsUnder(adding.parent)}
+      />
+    </li>
   )
 
   const sortableItems = useMemo(() => nodes.map(({ id }) => id), [nodes])
@@ -761,26 +880,6 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
         </Alert>
       )}
       <Divider />
-      {editing && !('id' in editing) && (
-        <div className={classes.header}>
-          <Typography variant="body2">
-            {editing.parent
-              ? `New tag in ${tagsVocabulary.label(editing.parent)}:`
-              : 'New root:'}
-          </Typography>
-          <LabelInput
-            className={classes.input}
-            onCancel={() => setEditing(undefined)}
-            onCommit={(label) => {
-              setEditing(undefined)
-              run(
-                state && addTag(state, { label, parent: editing.parent }),
-                `Added ${label.trim()}`
-              )
-            }}
-          />
-        </div>
-      )}
       <DndContext
         collisionDetection={closestCenter}
         onDragCancel={() => setDrag(undefined)}
@@ -802,7 +901,9 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
               const tag = tagsById.get(id)
               if (!tag) return null
               const isDropped = id === activeId && drop
-              return (
+              const isEditing =
+                !!editing && 'id' in editing && editing.id === id
+              return [
                 <TagRow
                   key={id}
                   depth={isDropped ? drop.depth : depth}
@@ -823,15 +924,20 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
                   isDropTarget={
                     !!drop && !drop.refused && !drop.stays && drop.parent === id
                   }
-                  editing={!!editing && 'id' in editing && editing.id === id}
+                  editing={isEditing}
                   expanded={parents.has(id) ? expanded.has(id) : undefined}
                   id={id}
                   isRoot={!tag.parent}
                   label={tag.label}
                   rowActions={rowActions}
-                />
-              )
+                  siblingLabels={
+                    isEditing ? labelsUnder(tag.parent, id) : undefined
+                  }
+                />,
+                id === addAfter && addRow,
+              ]
             })}
+            {adding && !adding.parent && addRow}
           </ul>
         </SortableContext>
       </DndContext>
@@ -858,8 +964,7 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
             disabled={isPending}
             onClick={() => {
               closeMenu()
-              expand(menuTag.id)
-              setEditing({ parent: menuTag.id })
+              rowActions.add(menuTag.id)
             }}
           >
             Add a tag inside
