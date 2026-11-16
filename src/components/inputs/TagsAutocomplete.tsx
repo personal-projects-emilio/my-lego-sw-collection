@@ -5,6 +5,7 @@ import {
   forwardRef,
   type ReactElement,
   type ReactNode,
+  useEffect,
   useId,
   useMemo,
 } from 'react'
@@ -19,6 +20,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
+import { useTagsQuery } from 'api/tags'
 import { TagsDrawerButton } from 'components/TagsDrawer'
 import TreeView from 'components/TreeView'
 import { useTagsVocabulary } from 'hooks'
@@ -189,6 +191,13 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
     ref
   ) => {
     const tagsVocabulary = useTagsVocabulary()
+    const { data: tagsList } = useTagsQuery()
+    useEffect(() => {
+      if (!tagsList) return
+      const known = new Set(tagsList.map(({ id }) => id))
+      if (value.some((id) => !known.has(id)))
+        onChange(value.filter((id) => known.has(id)))
+    }, [tagsList, value, onChange])
     const { classes, cx } = useTagsAutocompleteStyles()
     const groupId = useId()
     const options = useMemo(

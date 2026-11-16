@@ -5,6 +5,8 @@ import { IconButton, Tooltip } from '@mui/material'
 
 import { useOpenTagsDrawer } from './openTagsDrawerContext'
 
+export const tagsDrawerButtonLabel = 'Edit the tag vocabulary'
+
 const TagsDrawerButton: FC<{ className?: string }> = ({ className }) => {
   const openTagsDrawer = useOpenTagsDrawer()
   const ref = useRef<HTMLButtonElement>(null)
@@ -16,20 +18,25 @@ const TagsDrawerButton: FC<{ className?: string }> = ({ className }) => {
       event.stopPropagation()
       openTagsDrawer()
     }
-    const onKeyDown = (event: KeyboardEvent) => event.stopPropagation()
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Enter' || event.key === ' ') event.stopPropagation()
+    }
+    const onTouchStart = (event: TouchEvent) => event.stopPropagation()
     button.addEventListener('click', onClick)
     button.addEventListener('keydown', onKeyDown)
+    button.addEventListener('touchstart', onTouchStart, { passive: true })
     return () => {
       button.removeEventListener('click', onClick)
       button.removeEventListener('keydown', onKeyDown)
+      button.removeEventListener('touchstart', onTouchStart)
     }
   }, [openTagsDrawer])
 
   return (
-    <Tooltip enterDelay={300} title="Edit the tag vocabulary">
+    <Tooltip enterDelay={300} title={tagsDrawerButtonLabel}>
       <IconButton
         ref={ref}
-        aria-label="Edit the tag vocabulary"
+        aria-label={tagsDrawerButtonLabel}
         className={className}
         size="small"
       >

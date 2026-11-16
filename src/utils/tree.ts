@@ -3,7 +3,14 @@ export type TreeNode = {
   label: string
   parent?: string
   order: number
+  alphabetical?: boolean
 }
+
+const byLabel = (a: TreeNode, b: TreeNode) =>
+  a.label.localeCompare(b.label, undefined, {
+    numeric: true,
+    sensitivity: 'base',
+  })
 
 type SiblingGroup = { parent: string | undefined; ids: string[] }
 
@@ -17,7 +24,11 @@ export const buildTree = <T extends TreeNode>(nodes: T[]) => {
   const position = new Map<string, number>()
   const walk = (parent: string | undefined) =>
     [...(children.get(parent) ?? [])]
-      .sort((a, b) => a.order - b.order)
+      .sort(
+        parent && byId.get(parent)?.alphabetical
+          ? byLabel
+          : (a, b) => a.order - b.order
+      )
       .forEach((node) => {
         position.set(node.id, position.size)
         walk(node.id)

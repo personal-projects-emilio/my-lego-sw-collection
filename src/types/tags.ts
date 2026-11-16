@@ -10,6 +10,7 @@ export type Tag = {
   kind?: 'movie' | 'show' | 'game' | 'other'
   appliesTo?: TagTarget | 'both'
   inherited?: boolean
+  alphabetical?: boolean
 }
 
 export type TagsList = Tag[]

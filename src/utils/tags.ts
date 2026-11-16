@@ -1,4 +1,4 @@
-import { omit } from 'lodash'
+import { isEqual, omit } from 'lodash'
 import type { MinifigsList } from 'types/minifigs'
 import type { SetsList } from 'types/sets'
 import type { InheritedTags, Tag, TagId, TagsList, TagTarget } from 'types/tags'
@@ -66,7 +66,9 @@ export const otherRootId = 'other'
 
 export const timelineRootId = 'timeline'
 
-const protectedTagIds = [seasonalTagId, otherRootId]
+const fixedRootIds = [otherRootId, timelineRootId]
+
+const protectedTagIds = [seasonalTagId, ...fixedRootIds]
 
 export const isProtectedTag = (id: TagId) => protectedTagIds.includes(id)
 
@@ -98,12 +100,31 @@ export const subtree = (tagsList: TagsList, id: TagId) => {
 }
 
 export const tagUsage = (
-  { setsList, minifigsList }: Pick<TagsState, 'setsList' | 'minifigsList'>,
+  { tagsList, setsList, minifigsList }: TagsState,
   ids: TagId[]
 ) => {
+  const tree = buildTagsVocabulary(tagsList)
   const uses = ({ tags }: TaggedRecord) =>
     tags?.some((id) => ids.includes(id)) ?? false
-  return { sets: setsList.filter(uses), minifigs: minifigsList.filter(uses) }
+  const passesOn = ({ tags }: TaggedRecord) =>
+    tags?.some(
+      (id) =>
+        ids.includes(id) &&
+        tree.rootOf(id)?.inherited &&
+        tree.appliesTo(id, 'minifigs')
+    ) ?? false
+  const sets = setsList.filter(uses)
+  const inheriting = new Set(
+    sets
+      .filter(passesOn)
+      .flatMap((set) => set.content?.minifigs?.map(({ id }) => id) ?? [])
+  )
+  return {
+    sets,
+    minifigs: minifigsList.filter(
+      (minifig) => uses(minifig) || inheriting.has(minifig.id)
+    ),
+  }
 }
 
 const refusesAppliesTo = (
@@ -169,7 +190,8 @@ const uniqueId = (tagsList: TagsList, label: string) => {
       .replace(/^-|-$/g, '') || 'tag'
   const ids = new Set(tagsList.map(({ id }) => id))
   let id = base
-  for (let n = 2; ids.has(id); n++) id = `${base}-${n}`
+  for (let n = 2; ids.has(id) || id in Object.prototype; n++)
+    id = `${base}-${n}`
   return id
 }
 
@@ -186,7 +208,12 @@ export const addTag = (
     parent
   )
   const index = sortedChildren(state.tagsList, parent).length
-  return { state: { ...state, tagsList: placeAt(state.tagsList, tag, index) } }
+  return {
+    state: {
+      ...state,
+      tagsList: placeAt(state.tagsList, tag, index),
+    },
+  }
 }
 
 export const editTag = (
@@ -198,6 +225,13 @@ export const editTag = (
   if (!tag) return { refused: `Unknown tag ${id}` }
   const label = changes.label?.trim() ?? tag.label
   if (!label) return { refused: 'A tag needs a label' }
+  if (
+    changes.kind &&
+    buildTree(state.tagsList).rootOf(id)?.id !== timelineRootId
+  )
+    return { refused: `Only timeline tags can be titles` }
+  if (tag.parent && ('appliesTo' in changes || 'inherited' in changes))
+    return { refused: `Only roots apply to items or are inherited` }
   if (changes.appliesTo) {
     const refused = refusesAppliesTo(state, id, changes.appliesTo)
     if (refused)
@@ -213,6 +247,29 @@ export const editTag = (
   }
 }
 
+export const sortAlphabetically = (
+  state: TagsState,
+  id: TagId,
+  alphabetical: boolean
+): TagEdit => {
+  const tag = findTag(state.tagsList, id)
+  if (!tag) return { refused: `Unknown tag ${id}` }
+  const ids = subtree(state.tagsList, id)
+  const parents = new Set(state.tagsList.map(({ parent }) => parent))
+  return {
+    state: {
+      ...state,
+      tagsList: state.tagsList.map((t) =>
+        ids.includes(t.id) && (parents.has(t.id) || t.alphabetical)
+          ? alphabetical
+            ? { ...t, alphabetical }
+            : omit(t, ['alphabetical'])
+          : t
+      ),
+    },
+  }
+}
+
 export const moveTag = (
   state: TagsState,
   id: TagId,
@@ -223,7 +280,7 @@ export const moveTag = (
   if (!tag) return { refused: `Unknown tag ${id}` }
   if (parent && !findTag(tagsList, parent))
     return { refused: `Unknown parent ${parent}` }
-  if (id === otherRootId && parent)
+  if (fixedRootIds.includes(id) && parent)
     return { refused: `${tag.label} must stay a root` }
   const tree = buildTree(tagsList)
   if (
@@ -234,13 +291,25 @@ export const moveTag = (
   const root = parent ? tree.rootOf(parent) : withParent(tag, undefined)
   const refused = refusesAppliesTo(state, id, root?.appliesTo)
   if (refused) return { refused: `${root?.label} doesn't apply: ${refused}` }
+  const target = findTag(tagsList, parent)
+  if (target?.alphabetical && tag.parent === parent)
+    return { refused: `${target.label} sorts its tags A–Z` }
+  const placed = placeAt(tagsList, withParent(tag, parent), index)
   return {
     state: {
       ...state,
-      tagsList: placeAt(tagsList, withParent(tag, parent), index),
+      tagsList:
+        root?.id === timelineRootId
+          ? placed
+          : withoutKinds(placed, subtree(tagsList, id)),
     },
   }
 }
+
+const withoutKinds = (tagsList: TagsList, ids: TagId[]) =>
+  tagsList.map((tag) =>
+    tag.kind && ids.includes(tag.id) ? omit(tag, ['kind']) : tag
+  )
 
 const withoutTag = <T extends TaggedRecord>(items: T[], id: TagId) =>
   items.some(({ tags }) => tags?.includes(id))
@@ -275,33 +344,75 @@ export const deleteTag = (state: TagsState, id: TagId): TagEdit => {
 
 const restoreTags = <T extends TaggedRecord & { id: string | number }>(
   current: T[],
-  before: T[],
-  after: T[]
+  { before, after }: { before: T[]; after: T[] },
+  known: ReadonlySet<TagId>
 ) => {
-  if (before === after) return current
   const beforeById = new Map(before.map((item) => [item.id, item]))
+  const afterById = new Map(after.map((item) => [item.id, item]))
+  let changed = false
+  const restored = current.map((item) => {
+    const had = beforeById.get(item.id)?.tags ?? []
+    const has = afterById.get(item.id)?.tags ?? []
+    const tags = item.tags ?? []
+    const next = [
+      ...tags.filter((id) => had.includes(id) || !has.includes(id)),
+      ...had.filter((id) => !has.includes(id) && !tags.includes(id)),
+    ].filter((id) => known.has(id))
+    if (isEqual(next, tags)) return item
+    changed = true
+    return { ...item, tags: next }
+  })
+  return changed ? restored : current
+}
+
+const restoreTagsList = (
+  current: TagsList,
+  before: TagsList,
+  after: TagsList
+) => {
+  const beforeById = new Map(before.map((tag) => [tag.id, tag]))
+  const afterById = new Map(after.map((tag) => [tag.id, tag]))
   const changed = new Set(
-    after.filter((item) => beforeById.get(item.id) !== item).map((i) => i.id)
+    [
+      ...before.filter((tag) => afterById.get(tag.id) !== tag),
+      ...after.filter((tag) => beforeById.get(tag.id) !== tag),
+    ].map(({ id }) => id)
   )
-  return current.map((item) =>
-    changed.has(item.id)
-      ? { ...item, tags: beforeById.get(item.id)?.tags ?? [] }
-      : item
+  const position = new Map(before.map(({ id }, index) => [id, index]))
+  return [
+    ...current.filter(({ id }) => !changed.has(id)),
+    ...before.filter(({ id }) => changed.has(id)),
+  ].sort(
+    (a, b) =>
+      (position.get(a.id) ?? before.length) -
+      (position.get(b.id) ?? before.length)
   )
 }
 
 export const undoTagEdit = (
   current: TagsState,
   { before, after }: { before: TagsState; after: TagsState }
-): TagsState => ({
-  tagsList: before.tagsList,
-  setsList: restoreTags(current.setsList, before.setsList, after.setsList),
-  minifigsList: restoreTags(
-    current.minifigsList,
-    before.minifigsList,
-    after.minifigsList
-  ),
-})
+): TagsState => {
+  const tagsList = restoreTagsList(
+    current.tagsList,
+    before.tagsList,
+    after.tagsList
+  )
+  const known = new Set(tagsList.map(({ id }) => id))
+  return {
+    tagsList,
+    setsList: restoreTags(
+      current.setsList,
+      { before: before.setsList, after: after.setsList },
+      known
+    ),
+    minifigsList: restoreTags(
+      current.minifigsList,
+      { before: before.minifigsList, after: after.minifigsList },
+      known
+    ),
+  }
+}
 
 export const rootTargets = (tagsList: TagsList, id: TagId) => {
   const appliesTo = findTag(tagsList, id)?.appliesTo
@@ -324,17 +435,22 @@ export const deleteRoot = (
     return {
       refused: `${targetId} must be another root that applies to the same items`,
     }
+  const tagsList = reparent(
+    state.tagsList.filter((t) => t.id !== id),
+    targetId,
+    [
+      ...sortedChildren(state.tagsList, targetId),
+      ...sortedChildren(state.tagsList, id),
+    ]
+  )
   return {
     state: {
-      ...state,
-      tagsList: reparent(
-        state.tagsList.filter((t) => t.id !== id),
-        targetId,
-        [
-          ...sortedChildren(state.tagsList, targetId),
-          ...sortedChildren(state.tagsList, id),
-        ]
-      ),
+      tagsList:
+        targetId === timelineRootId
+          ? tagsList
+          : withoutKinds(tagsList, subtree(state.tagsList, id)),
+      setsList: withoutTag(state.setsList, id),
+      minifigsList: withoutTag(state.minifigsList, id),
     },
   }
 }

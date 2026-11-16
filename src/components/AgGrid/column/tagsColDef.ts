@@ -1,4 +1,5 @@
 import type { ColDef } from 'ag-grid-community'
+import { tagsDrawerButtonLabel } from 'components/TagsDrawer'
 import type { TaggedItem, TagId, TagTarget } from 'types/tags'
 import type { TagsVocabulary } from 'utils/tags'
 
@@ -18,6 +19,11 @@ export const tagsColDef = <TData extends TaggedItem>(
   field: 'effectiveTags' as ColDef<TData, TagId[]>['field'],
   headerName: 'Tags',
   headerComponentParams: { innerHeaderComponent: TagsHeader },
+  suppressHeaderKeyboardEvent: ({ event }) =>
+    event.key === 'Tab' &&
+    !event.shiftKey &&
+    event.target instanceof HTMLElement &&
+    !!event.target.querySelector(`[aria-label="${tagsDrawerButtonLabel}"]`),
   filter: TagsFilter,
   filterParams: { itemType } satisfies TagsFilterProps,
   flex: 2,

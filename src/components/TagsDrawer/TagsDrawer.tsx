@@ -31,6 +31,7 @@ import {
 import {
   SortableContext,
   sortableKeyboardCoordinates,
+  type SortingStrategy,
   useSortable,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
@@ -49,26 +50,32 @@ import {
   Typography,
 } from '@mui/material'
 import { useCollection, useTagsVocabulary } from 'hooks'
+import { isEqual } from 'lodash'
 import { makeStyles } from 'tss-react/mui'
 import type { Tag, TaggedItem, TagId } from 'types/tags'
 import {
   addTag,
-  deleteTag,
   editTag,
   isProtectedTag,
   moveTag,
+  sortAlphabetically,
   type TagEdit,
   type TagsState,
-  tagUsage,
   timelineRootId,
   undoTagEdit,
 } from 'utils/tags'
 import { type FlatNode, projectDrop } from 'utils/tree'
 
 import DeleteTagDialog from './DeleteTagDialog'
-import useTagsMutations from './useTagsMutations'
+import useDrawerWidth from './useDrawerWidth'
+import useTagsMutations, { PartlySavedError } from './useTagsMutations'
+
+const saveError = (fallback: string) => (err: unknown) =>
+  err instanceof PartlySavedError ? err.message : fallback
 
 const indent = 24
+
+const keepInPlace: SortingStrategy = () => null
 
 const kinds: Array<Tag['kind']> = ['movie', 'show', 'game', 'other']
 
@@ -95,7 +102,21 @@ const useTagsDrawerStyles = makeStyles({ name: 'TagsDrawer' })((theme) => ({
   paper: {
     display: 'flex',
     flexDirection: 'column',
-    width: 'min(480px, 100vw)',
+    maxWidth: '100vw',
+  },
+  resizeHandle: {
+    bottom: 0,
+    cursor: 'col-resize',
+    left: 0,
+    position: 'absolute',
+    top: 0,
+    touchAction: 'none',
+    width: 6,
+    zIndex: 1,
+    '&:hover, &:focus-visible, &:active': {
+      backgroundColor: theme.palette.primary.main,
+      outline: 'none',
+    },
   },
   header: {
     alignItems: 'center',
@@ -238,6 +259,7 @@ const LabelInput: FC<LabelInputProps> = ({
 
 type TagRowProps = {
   depth: number
+  disabled: boolean
   details?: string
   dropNote?: { refused: boolean; text: string }
   editing: boolean
@@ -256,7 +278,10 @@ type RowActions = {
   toggle: (id: TagId) => void
 }
 
-type TagRowContentProps = Omit<TagRowProps, 'depth' | 'isDropTarget'>
+type TagRowContentProps = Omit<
+  TagRowProps,
+  'depth' | 'disabled' | 'isDropTarget'
+>
 
 const TagRowContent = memo<TagRowContentProps>(
   ({ details, dropNote, editing, expanded, id, isRoot, label, rowActions }) => {
@@ -323,7 +348,12 @@ const TagRowContent = memo<TagRowContentProps>(
   }
 )
 
-const TagRow: FC<TagRowProps> = ({ depth, isDropTarget, ...content }) => {
+const TagRow: FC<TagRowProps> = ({
+  depth,
+  disabled,
+  isDropTarget,
+  ...content
+}) => {
   const { classes, cx } = useTagsDrawerStyles()
   const {
     attributes,
@@ -333,7 +363,7 @@ const TagRow: FC<TagRowProps> = ({ depth, isDropTarget, ...content }) => {
     setNodeRef,
     transform,
     transition,
-  } = useSortable({ id: content.id })
+  } = useSortable({ disabled, id: content.id })
   return (
     <li
       ref={setNodeRef}
@@ -345,7 +375,9 @@ const TagRow: FC<TagRowProps> = ({ depth, isDropTarget, ...content }) => {
       style={
         {
           '--depth': depth,
-          transform: CSS.Translate.toString(transform),
+          transform: CSS.Translate.toString(
+            transform && { ...transform, x: 0 }
+          ),
           transition,
         } as CSSProperties
       }
@@ -368,6 +400,7 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
   const { classes } = useTagsDrawerStyles()
   const tagsVocabulary = useTagsVocabulary()
   const { state, applyTagsState, isPending } = useTagsMutations()
+  const { width, handleProps } = useDrawerWidth()
   const [error, setError] = useState<string>()
   const [editing, setEditing] = useState<Editing>()
   const [menu, setMenu] = useState<{ anchor: HTMLElement; id: TagId }>()
@@ -419,6 +452,16 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
     () => new Set(tagsList.flatMap(({ parent }) => (parent ? [parent] : []))),
     [tagsList]
   )
+  const descendants = useMemo(() => {
+    const counts = new Map<TagId, number>()
+    tagsList.forEach(({ id }) =>
+      tagsVocabulary
+        .ancestors(id)
+        .forEach((tag) => counts.set(tag.id, (counts.get(tag.id) ?? 0) + 1))
+    )
+    return counts
+  }, [tagsList, tagsVocabulary])
+  const tagsCount = tagsList.filter(({ parent }) => parent).length
   const collection = useCollection()
   const usage = useMemo(() => {
     const count = (items: TaggedItem[] = []) => {
@@ -465,20 +508,33 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
       tagsVocabulary.label(id),
     ].join(' › ')
 
+  const projectSortedDrop = useCallback(
+    (drop: { activeId: TagId; overId: TagId; depthDelta: number }) => {
+      const target = projectDrop(nodes, drop)
+      const alphabetical =
+        !!target.parent && !!tagsById.get(target.parent)?.alphabetical
+      return {
+        ...target,
+        alphabetical,
+        stays:
+          alphabetical && target.parent === tagsById.get(drop.activeId)?.parent,
+      }
+    },
+    [nodes, tagsById]
+  )
+
   const drop = useMemo(() => {
     if (!state || !drag?.overId) return undefined
-    const target = projectDrop(nodes, {
-      activeId: drag.activeId,
-      overId: drag.overId,
-      depthDelta: drag.depthDelta,
-    })
-    const edit = moveTag(state, drag.activeId, target)
+    const target = projectSortedDrop({ ...drag, overId: drag.overId })
+    const edit = target.stays
+      ? undefined
+      : moveTag(state, drag.activeId, target)
     return {
       ...target,
       depth: target.parent ? tagsVocabulary.depth(target.parent) + 1 : 0,
-      refused: 'refused' in edit ? edit.refused : undefined,
+      refused: edit && 'refused' in edit ? edit.refused : undefined,
     }
-  }, [state, drag, nodes, tagsVocabulary])
+  }, [state, drag, projectSortedDrop, tagsVocabulary])
 
   const run = useCallback(
     (edit: TagEdit | undefined, description: string) => {
@@ -487,7 +543,17 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
         setError(edit.refused)
         return
       }
+      if (isPending) {
+        setError('Wait for the previous change to be saved')
+        return
+      }
       setError(undefined)
+      if (
+        edit.state.setsList === state.setsList &&
+        edit.state.minifigsList === state.minifigsList &&
+        isEqual(edit.state.tagsList, state.tagsList)
+      )
+        return
       const before = state
       applyTagsState(edit.state)
         .then(() =>
@@ -496,9 +562,11 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
             { description, before, after: edit.state },
           ])
         )
-        .catch(() => setError('The change could not be saved'))
+        .catch((err) =>
+          setError(saveError('The change could not be saved')(err))
+        )
     },
-    [state, applyTagsState]
+    [state, isPending, applyTagsState]
   )
 
   const rowActions = useMemo(
@@ -520,11 +588,11 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
   const sortableItems = useMemo(() => nodes.map(({ id }) => id), [nodes])
 
   const undo = () => {
-    if (!state || !lastEdit) return
+    if (!state || !lastEdit || isPending) return
     setError(undefined)
     applyTagsState(undoTagEdit(state, lastEdit))
       .then(() => setHistory((entries) => entries.slice(0, -1)))
-      .catch(() => setError('The undo could not be saved'))
+      .catch((err) => setError(saveError('The undo could not be saved')(err)))
   }
 
   const onDragMove = ({ active, over, delta }: DragMoveEvent) => {
@@ -542,28 +610,20 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
     const depthDelta = Math.round(delta.x / indent)
     if (!state || !over || (active.id === over.id && !depthDelta)) return
     const id = String(active.id)
-    const target = projectDrop(nodes, {
+    const target = projectSortedDrop({
       activeId: id,
       overId: String(over.id),
       depthDelta,
     })
-    expand(target.parent)
+    if (target.stays) return
+    const edit = moveTag(state, id, target)
+    if ('state' in edit) expand(target.parent)
     run(
-      moveTag(state, id, target),
+      edit,
       target.parent === tagsById.get(id)?.parent
         ? `Reordered ${tagsVocabulary.label(id)}`
         : `Moved ${tagsVocabulary.label(id)} into ${target.parent ? fullPath(target.parent) : 'the top level'}`
     )
-  }
-
-  const askDelete = (tag: Tag) => {
-    if (!state) return
-    const usage = tagUsage(state, [tag.id])
-    if (tag.parent && !usage.sets.length && !usage.minifigs.length) {
-      run(deleteTag(state, tag.id), `Deleted ${tag.label}`)
-      return
-    }
-    setDeleting(tag)
   }
 
   const usageLabel = (tag: Tag) => {
@@ -580,6 +640,8 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
             tag.appliesTo === 'both' ? 'sets & minifigs' : tag.appliesTo,
             tag.inherited && 'inherited',
           ]),
+      tag.alphabetical && 'A–Z',
+      descendants.has(tag.id) && `${descendants.get(tag.id)} tags`,
       ...usageLabel(tag),
     ]
       .filter(Boolean)
@@ -594,13 +656,21 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
     <Drawer
       anchor="right"
       className={classes.drawer}
-      onClose={onClose}
+      onClose={() => !isPending && onClose()}
       open
-      slotProps={{ paper: { className: classes.paper } }}
+      slotProps={{ paper: { className: classes.paper, style: { width } } }}
     >
+      <div className={classes.resizeHandle} {...handleProps} />
       <div className={classes.header}>
         <Typography className={classes.title} component="h2" variant="h6">
           Tags
+          {state && (
+            <Typography
+              color="textSecondary"
+              component="span"
+              variant="body2"
+            >{` · ${tagsCount}`}</Typography>
+          )}
         </Typography>
         <Button
           disabled={!state}
@@ -626,7 +696,7 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
             <MdUnfoldLess />
           </IconButton>
         </Tooltip>
-        <IconButton aria-label="Close" onClick={onClose}>
+        <IconButton aria-label="Close" disabled={isPending} onClick={onClose}>
           <MdClose />
         </IconButton>
       </div>
@@ -672,7 +742,9 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
       >
         <SortableContext
           items={sortableItems}
-          strategy={verticalListSortingStrategy}
+          strategy={
+            drop?.alphabetical ? keepInPlace : verticalListSortingStrategy
+          }
         >
           <ul aria-label="Tag tree" className={classes.list}>
             {nodes.map(({ id, depth }) => {
@@ -683,6 +755,7 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
                 <TagRow
                   key={id}
                   depth={isDropped ? drop.depth : depth}
+                  disabled={isPending}
                   details={details(tag)}
                   dropNote={
                     isDropped
@@ -690,11 +763,15 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
                           refused: !!drop.refused,
                           text:
                             drop.refused ??
-                            `Into ${drop.parent ? fullPath(drop.parent) : 'the top level'}`,
+                            (drop.stays
+                              ? `Stays in ${tagsById.get(drop.parent ?? '')?.label}, sorted A–Z`
+                              : `Into ${drop.parent ? fullPath(drop.parent) : 'the top level'}${drop.alphabetical ? ', sorted A–Z' : ''}`),
                         }
                       : undefined
                   }
-                  isDropTarget={!!drop && !drop.refused && drop.parent === id}
+                  isDropTarget={
+                    !!drop && !drop.refused && !drop.stays && drop.parent === id
+                  }
                   editing={!!editing && 'id' in editing && editing.id === id}
                   expanded={parents.has(id) ? expanded.has(id) : undefined}
                   id={id}
@@ -709,6 +786,7 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
       </DndContext>
       <Menu
         anchorEl={menu?.anchor}
+        disableEnforceFocus
         disableRestoreFocus
         onClose={closeMenu}
         open={!!menu}
@@ -716,6 +794,7 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
         {menuTag && [
           <MenuItem
             key="rename"
+            disabled={isPending}
             onClick={() => {
               closeMenu()
               setEditing({ id: menuTag.id })
@@ -725,6 +804,7 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
           </MenuItem>,
           <MenuItem
             key="add"
+            disabled={isPending}
             onClick={() => {
               closeMenu()
               expand(menuTag.id)
@@ -733,15 +813,48 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
           >
             Add a tag inside
           </MenuItem>,
-          ...(menuTag.parent && !isTimelineTag(menuTag)
+          ...(menuTag.parent &&
+          !isTimelineTag(menuTag) &&
+          !parents.has(menuTag.id) &&
+          !menuTag.alphabetical
             ? []
             : [<Divider key="settings" />]),
+          ...(parents.has(menuTag.id) || menuTag.alphabetical
+            ? [
+                <MenuItem
+                  key="alphabetical"
+                  className={classes.switchItem}
+                  dense
+                  disabled={isPending}
+                  onClick={() =>
+                    run(
+                      state &&
+                        sortAlphabetically(
+                          state,
+                          menuTag.id,
+                          !menuTag.alphabetical
+                        ),
+                      `${menuTag.alphabetical ? 'Stopped sorting' : 'Sorted'} the tags of ${menuTag.label} A–Z`
+                    )
+                  }
+                >
+                  Sort A–Z, with all tags inside
+                  <Switch
+                    checked={!!menuTag.alphabetical}
+                    edge="end"
+                    size="small"
+                    slotProps={{ input: { tabIndex: -1 } }}
+                  />
+                </MenuItem>,
+              ]
+            : []),
           ...(menuTag.parent
             ? (isTimelineTag(menuTag) ? [undefined, ...kinds] : []).map(
                 (kind) => (
                   <MenuItem
                     key={`kind-${kind}`}
                     dense
+                    disabled={isPending}
                     onClick={() => {
                       closeMenu()
                       run(
@@ -763,7 +876,9 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
                       key={`applies-${target}`}
                       className={classes.switchItem}
                       dense
-                      disabled={checked && menuTag.appliesTo !== 'both'}
+                      disabled={
+                        isPending || (checked && menuTag.appliesTo !== 'both')
+                      }
                       onClick={() =>
                         run(
                           state &&
@@ -791,6 +906,7 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
                   key="inherited"
                   className={classes.switchItem}
                   dense
+                  disabled={isPending}
                   onClick={() =>
                     run(
                       state &&
@@ -813,10 +929,10 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
           <Divider key="danger" />,
           <MenuItem
             key="delete"
-            disabled={isProtectedTag(menuTag.id)}
+            disabled={isPending || isProtectedTag(menuTag.id)}
             onClick={() => {
               closeMenu()
-              askDelete(menuTag)
+              setDeleting(menuTag)
             }}
           >
             Delete

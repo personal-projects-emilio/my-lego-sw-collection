@@ -13,6 +13,10 @@ const useTagsHeaderStyles = makeStyles({ name: 'TagsHeader' })((theme) => ({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
+  button: {
+    fontSize: 14,
+    padding: 2,
+  },
 }))
 
 const TagsHeader = ({ displayName }: CustomInnerHeaderProps) => {
@@ -20,7 +24,7 @@ const TagsHeader = ({ displayName }: CustomInnerHeaderProps) => {
   return (
     <div className={classes.header}>
       <span className={classes.label}>{displayName}</span>
-      <TagsDrawerButton />
+      <TagsDrawerButton className={classes.button} />
     </div>
   )
 }

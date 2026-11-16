@@ -37,8 +37,6 @@ const useDeleteTagDialogStyles = makeStyles({ name: 'DeleteTagDialog' })(
     },
     items: {
       margin: 0,
-      maxHeight: 280,
-      overflowY: 'auto',
       paddingLeft: theme.spacing(2.5),
     },
   })
@@ -73,6 +71,12 @@ const DeleteTagDialog: FC<DeleteTagDialogProps> = ({
   ]
   const parentLabel = state.tagsList.find(({ id }) => id === tag.parent)?.label
   const hasChildren = state.tagsList.some(({ parent }) => parent === tag.id)
+  const target = targets.find(({ id }) => id === targetId)
+  const inheritanceChange =
+    target &&
+    hasChildren &&
+    !!target.inherited !== !!tag.inherited &&
+    `Minifigs will ${target.inherited ? 'start' : 'stop'} inheriting these tags from their sets.`
 
   return (
     <Dialog
@@ -84,29 +88,33 @@ const DeleteTagDialog: FC<DeleteTagDialogProps> = ({
     >
       <DialogTitle>{`Are you sure you want to delete ${tag.label}?`}</DialogTitle>
       <DialogContent className={classes.content}>
-        {tag.parent ? (
+        <Typography variant="body2">
+          {[
+            items.length
+              ? `${items.length} items use it and will lose it.`
+              : 'No item uses it.',
+            hasChildren &&
+              (tag.parent
+                ? `Its tags move up to ${parentLabel}.`
+                : 'Its tags move under another root and stay on their items.'),
+          ]
+            .filter(Boolean)
+            .join(' ')}
+        </Typography>
+        {!!items.length && (
+          <ul className={classes.items}>
+            {items.map((item) => (
+              <li key={item}>
+                <Typography variant="body2">{item}</Typography>
+              </li>
+            ))}
+          </ul>
+        )}
+        {!tag.parent && (
           <>
-            <Typography variant="body2">
-              {[
-                `${items.length} items use it and will lose it.`,
-                hasChildren && `Its tags move up to ${parentLabel}.`,
-              ]
-                .filter(Boolean)
-                .join(' ')}
-            </Typography>
-            <ul className={classes.items}>
-              {items.map((item) => (
-                <li key={item}>
-                  <Typography variant="body2">{item}</Typography>
-                </li>
-              ))}
-            </ul>
-          </>
-        ) : (
-          <>
-            <Typography variant="body2">
-              Its tags move under another root, so no item changes.
-            </Typography>
+            {inheritanceChange && (
+              <Typography variant="body2">{inheritanceChange}</Typography>
+            )}
             <TextField
               label="Move its tags to"
               onChange={(event) => setTargetId(event.target.value)}
