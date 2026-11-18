@@ -43,7 +43,7 @@ const TimelineFilter = ({
       inputRef={inputRef}
       label="Filter timeline"
       onChange={(ids) => onModelChange(ids.length ? ids : null)}
-      popoverClassName="ag-custom-component-popup"
+      popperClassName="ag-custom-component-popup"
       value={model ?? []}
     />
   )

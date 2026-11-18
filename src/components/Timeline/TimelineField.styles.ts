@@ -44,8 +44,9 @@ export default makeStyles({ name: 'TimelineField' })((theme) => ({
     '&[data-open]': { transform: 'rotate(180deg)' },
   },
   panel: {
-    marginTop: theme.spacing(0.5),
+    margin: theme.spacing(0.5, 0),
     maxHeight: '60vh',
+    overflow: 'auto',
     padding: theme.spacing(1.5),
   },
 }))
