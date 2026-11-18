@@ -78,7 +78,10 @@ const useTimelinePickerStyles = makeStyles({ name: 'TimelinePicker' })(
       textTransform: 'uppercase',
       letterSpacing: 0.5,
       cursor: 'pointer',
-      '&:hover': { background: theme.palette.action.hover },
+      '&:hover:not([aria-disabled="true"])': {
+        background: theme.palette.action.hover,
+        filter: 'brightness(0.92)',
+      },
     },
     eraRange: {
       fontSize: 11,
@@ -131,7 +134,10 @@ const useTimelinePickerStyles = makeStyles({ name: 'TimelinePicker' })(
       border: '1px solid transparent',
       cursor: 'pointer',
       '& svg': { flexShrink: 0 },
-      '&:hover': { background: theme.palette.action.hover },
+      '&:hover:not([aria-disabled="true"])': {
+        background: theme.palette.action.hover,
+        filter: 'brightness(0.92)',
+      },
     },
     groupNode: {
       fontSize: 11,

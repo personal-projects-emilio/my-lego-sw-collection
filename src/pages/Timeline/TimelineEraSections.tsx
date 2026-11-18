@@ -72,6 +72,8 @@ const useStyles = makeStyles({ name: 'TimelineEraSections' })((theme) => ({
     textTransform: 'uppercase',
     letterSpacing: 1.5,
     boxShadow: theme.shadows[2],
+    transition: 'box-shadow 150ms, filter 150ms',
+    '&:hover': { boxShadow: theme.shadows[6], filter: 'brightness(0.95)' },
   },
   headerRange: {
     fontSize: 11,
