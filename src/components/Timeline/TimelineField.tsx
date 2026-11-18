@@ -56,6 +56,10 @@ const useTimelineFieldStyles = makeStyles({ name: 'TimelineField' })(
       },
     },
     chipLabel: { display: 'inline-flex', alignItems: 'center', gap: 4 },
+    select: {
+      '& .MuiInputBase-root, & .MuiAutocomplete-input': { cursor: 'pointer' },
+      '& .MuiAutocomplete-input': { caretColor: 'transparent' },
+    },
     noInput: {
       '& .MuiAutocomplete-input': {
         flexGrow: '0 !important',
@@ -131,7 +135,7 @@ const TimelineField: FC<TimelineFieldProps> = ({
         <Autocomplete
           id={inputId}
           multiple
-          className={shown.length ? classes.noInput : undefined}
+          className={cx(classes.select, shown.length > 0 && classes.noInput)}
           disableClearable
           open={false}
           options={shown}
