@@ -1,696 +1,82 @@
-import {
-  type CSSProperties,
-  type FC,
-  memo,
-  useCallback,
-  useMemo,
-  useState,
-} from 'react'
+import { type FC, useMemo, useState } from 'react'
 import {
   MdAdd,
-  MdCheck,
-  MdChevronRight,
   MdClose,
-  MdDelete,
-  MdDragIndicator,
-  MdExpandMore,
-  MdMoreVert,
-  MdTextFields,
   MdUndo,
   MdUnfoldLess,
   MdUnfoldMore,
 } from 'react-icons/md'
 
-import {
-  closestCenter,
-  DndContext,
-  type DragEndEvent,
-  type DragMoveEvent,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core'
-import {
-  SortableContext,
-  sortableKeyboardCoordinates,
-  type SortingStrategy,
-  useSortable,
-} from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
+import { closestCenter, DndContext } from '@dnd-kit/core'
+import { SortableContext } from '@dnd-kit/sortable'
 import {
   Alert,
   Button,
   Divider,
   Drawer,
   IconButton,
-  InputAdornment,
-  ListItemIcon,
-  Menu,
-  MenuItem,
-  Switch,
-  TextField,
   Tooltip,
   Typography,
 } from '@mui/material'
-import { useCollection, useTagsVocabulary } from 'hooks'
-import useVocabularyMutations, {
-  PartlySavedError,
-} from 'hooks/useVocabularyMutations'
-import { isEqual } from 'lodash'
-import { makeStyles } from 'tss-react/mui'
-import type { Tag, TaggedItem, TagId } from 'types/tags'
-import {
-  addTag,
-  editTag,
-  isProtectedTag,
-  moveTag,
-  type TagEdit,
-  type TagsState,
-  undoTagEdit,
-} from 'utils/tags'
-import { type FlatNode, projectDrop } from 'utils/tree'
+import type { Tag, TagId } from 'types/tags'
+import { addTag, editTag } from 'utils/tags'
 
+import AddTagRow from './AddTagRow'
 import DeleteTagDialog from './DeleteTagDialog'
+import TagMenu from './TagMenu'
+import TagRow from './TagRow'
+import useTagsDrawerStyles from './TagsDrawer.styles'
+import {
+  type Drag,
+  type Editing,
+  keepInPlace,
+  type RowActions,
+} from './tagTree'
 import useDrawerWidth from './useDrawerWidth'
-
-const saveError = (fallback: string) => (err: unknown) =>
-  err instanceof PartlySavedError ? err.message : fallback
-
-const indent = 24
-
-const keepInPlace: SortingStrategy = () => null
-
-type Target = 'sets' | 'minifigs'
-
-const targets: Target[] = ['sets', 'minifigs']
-
-type TargetCheck = { appliesTo: Tag['appliesTo']; target: Target }
-
-const appliesToTarget = ({ appliesTo, target }: TargetCheck) =>
-  appliesTo === 'both' || appliesTo === target
-
-const toggledAppliesTo = ({
-  appliesTo,
-  target,
-}: TargetCheck): Tag['appliesTo'] => {
-  const other: Target = target === 'sets' ? 'minifigs' : 'sets'
-  if (!appliesToTarget({ appliesTo, target })) return 'both'
-  return appliesToTarget({ appliesTo, target: other }) ? other : appliesTo
-}
-
-const useTagsDrawerStyles = makeStyles<void, 'addButton'>({
-  name: 'TagsDrawer',
-})((theme, _params, classes) => ({
-  drawer: {
-    zIndex: theme.zIndex.modal,
-  },
-  paper: {
-    display: 'flex',
-    flexDirection: 'column',
-    maxWidth: '100vw',
-  },
-  resizeHandle: {
-    bottom: 0,
-    cursor: 'col-resize',
-    left: 0,
-    position: 'absolute',
-    top: 0,
-    touchAction: 'none',
-    width: 6,
-    zIndex: 1,
-    '&:hover, &:focus-visible, &:active': {
-      backgroundColor: theme.palette.primary.main,
-      outline: 'none',
-    },
-  },
-  header: {
-    alignItems: 'center',
-    display: 'flex',
-    gap: theme.spacing(1),
-    padding: theme.spacing(1, 1, 1, 2),
-  },
-  title: {
-    flex: 1,
-  },
-  alert: {
-    margin: theme.spacing(0, 2, 1),
-  },
-  list: {
-    flex: 1,
-    listStyle: 'none',
-    margin: 0,
-    overflowY: 'auto',
-    padding: theme.spacing(0, 1, 2),
-  },
-  row: {
-    alignItems: 'center',
-    backgroundColor: theme.palette.background.paper,
-    borderRadius: theme.shape.borderRadius,
-    display: 'flex',
-    gap: theme.spacing(0.5),
-    minHeight: 36,
-    paddingLeft: `calc(var(--depth) * ${indent}px)`,
-    [`&:hover .${classes.addButton}, &:focus-within .${classes.addButton}`]: {
-      opacity: 1,
-    },
-  },
-  addButton: {
-    opacity: 0,
-    '@media (hover: none)': {
-      opacity: 1,
-    },
-  },
-  actions: {
-    display: 'flex',
-    flexShrink: 0,
-    marginLeft: 'auto',
-  },
-  handleSpacer: {
-    flexShrink: 0,
-    width: 28,
-  },
-  dragging: {
-    boxShadow: theme.shadows[4],
-    outline: `1px solid ${theme.palette.primary.main}`,
-    position: 'relative',
-    zIndex: 1,
-  },
-  dropTarget: {
-    backgroundColor: theme.alpha(
-      theme.palette.primary.main,
-      theme.palette.action.selectedOpacity
-    ),
-    outline: `1px dashed ${theme.palette.primary.main}`,
-  },
-  dropNote: {
-    color: theme.palette.primary.main,
-    fontWeight: 700,
-    maxWidth: '60%',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
-  refused: {
-    color: theme.palette.error.main,
-  },
-  footer: {
-    alignItems: 'center',
-    borderTop: `1px solid ${theme.palette.divider}`,
-    display: 'flex',
-    gap: theme.spacing(1),
-    padding: theme.spacing(1, 2),
-  },
-  handle: {
-    alignItems: 'center',
-    borderRadius: '50%',
-    color: theme.palette.action.active,
-    cursor: 'grab',
-    display: 'inline-flex',
-    flexShrink: 0,
-    fontSize: theme.typography.pxToRem(18),
-    padding: 5,
-    touchAction: 'none',
-    '&:hover': {
-      backgroundColor: theme.palette.action.hover,
-    },
-    '&:focus-visible': {
-      outline: `2px solid ${theme.palette.primary.main}`,
-    },
-  },
-  toggleSpacer: {
-    flexShrink: 0,
-    width: 28,
-  },
-  menu: {
-    '& .MuiListItemIcon-root': {
-      justifyContent: 'center',
-      marginRight: theme.spacing(1.5),
-      minWidth: 0,
-      width: 32,
-    },
-  },
-  label: {
-    flex: 1,
-    minWidth: 0,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
-  name: {
-    flex: '0 1 auto',
-    minWidth: 0,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
-  details: {
-    flex: '1 1 0',
-    minWidth: 0,
-    textAlign: 'right',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
-  root: {
-    fontWeight: 700,
-    textTransform: 'uppercase',
-  },
-  input: {
-    flex: 1,
-  },
-}))
-
-type Editing = { id: TagId } | { parent?: TagId }
-
-type LabelInputProps = {
-  className: string
-  defaultValue?: string
-  onCancel: () => void
-  onCommit: (label: string) => void
-  placeholder?: string
-  siblingLabels: string[]
-}
-
-const normalized = (label: string) => label.trim().toLocaleLowerCase()
-
-const LabelInput: FC<LabelInputProps> = ({
-  className,
-  defaultValue = '',
-  onCancel,
-  onCommit,
-  placeholder = 'Tag label',
-  siblingLabels,
-}) => {
-  const [value, setValue] = useState(defaultValue)
-  const keepFocus = (event: React.MouseEvent) => event.preventDefault()
-  const commit = () =>
-    value.trim() && value !== defaultValue ? onCommit(value) : onCancel()
-  const duplicate =
-    !!value.trim() &&
-    siblingLabels.some((label) => normalized(label) === normalized(value))
-  return (
-    <TextField
-      autoFocus
-      className={className}
-      color={duplicate ? 'warning' : undefined}
-      focused={duplicate || undefined}
-      helperText={duplicate && 'Another tag here has this label'}
-      onBlur={() => document.hasFocus() && onCancel()}
-      onChange={(event) => setValue(event.target.value)}
-      onKeyDown={(event) => {
-        if (event.key === 'Enter') commit()
-        if (event.key === 'Escape') {
-          event.stopPropagation()
-          onCancel()
-        }
-      }}
-      placeholder={placeholder}
-      size="small"
-      value={value}
-      slotProps={{
-        htmlInput: { 'aria-label': 'Tag label' },
-        input: {
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton
-                aria-label="Save the label"
-                onClick={commit}
-                onMouseDown={keepFocus}
-                size="small"
-              >
-                <MdCheck fontSize="inherit" />
-              </IconButton>
-              <IconButton
-                aria-label="Cancel"
-                onClick={onCancel}
-                onMouseDown={keepFocus}
-                size="small"
-              >
-                <MdClose fontSize="inherit" />
-              </IconButton>
-            </InputAdornment>
-          ),
-        },
-      }}
-      variant="standard"
-    />
-  )
-}
-
-type TagRowProps = {
-  depth: number
-  disabled: boolean
-  details?: string
-  dropNote?: { refused: boolean; text: string }
-  editing: boolean
-  expanded?: boolean
-  id: TagId
-  isDropTarget: boolean
-  isRoot: boolean
-  label: string
-  rowActions: RowActions
-  siblingLabels?: string[]
-}
-
-type RowActions = {
-  add: (id: TagId) => void
-  menu: (id: TagId, anchor: HTMLElement) => void
-  startRenaming: (id: TagId) => void
-  rename: (id: TagId, label: string) => void
-  stopEditing: () => void
-  toggle: (id: TagId) => void
-}
-
-type TagRowContentProps = Omit<TagRowProps, 'depth' | 'isDropTarget'>
-
-const TagRowContent = memo<TagRowContentProps>(
-  ({
-    details,
-    dropNote,
-    disabled,
-    editing,
-    expanded,
-    id,
-    isRoot,
-    label,
-    rowActions,
-    siblingLabels = [],
-  }) => {
-    const { classes, cx } = useTagsDrawerStyles()
-    return (
-      <>
-        {expanded === undefined ? (
-          <span className={classes.toggleSpacer} />
-        ) : (
-          <IconButton
-            aria-expanded={expanded}
-            aria-label={`${expanded ? 'Collapse' : 'Expand'} ${label}`}
-            onClick={() => rowActions.toggle(id)}
-            size="small"
-          >
-            {expanded ? (
-              <MdExpandMore fontSize="inherit" />
-            ) : (
-              <MdChevronRight fontSize="inherit" />
-            )}
-          </IconButton>
-        )}
-        {editing ? (
-          <LabelInput
-            className={classes.input}
-            defaultValue={label}
-            onCancel={rowActions.stopEditing}
-            onCommit={(newLabel) => rowActions.rename(id, newLabel)}
-            siblingLabels={siblingLabels}
-          />
-        ) : (
-          <Typography
-            className={cx(classes.name, isRoot && classes.root)}
-            onDoubleClick={() => !disabled && rowActions.startRenaming(id)}
-            variant="body2"
-          >
-            {label}
-          </Typography>
-        )}
-        {dropNote ? (
-          <Typography
-            className={cx(
-              classes.dropNote,
-              dropNote.refused && classes.refused
-            )}
-            variant="caption"
-          >
-            {dropNote.text}
-          </Typography>
-        ) : (
-          !editing &&
-          details && (
-            <Typography
-              className={classes.details}
-              color="textSecondary"
-              title={details}
-              variant="caption"
-            >
-              {details}
-            </Typography>
-          )
-        )}
-        <span className={classes.actions}>
-          {!editing && (
-            <Tooltip title={`Add a tag inside ${label}`}>
-              <IconButton
-                aria-label={`Add a tag inside ${label}`}
-                className={classes.addButton}
-                disabled={disabled}
-                onClick={() => rowActions.add(id)}
-                size="small"
-              >
-                <MdAdd fontSize="inherit" />
-              </IconButton>
-            </Tooltip>
-          )}
-          <IconButton
-            aria-label={`Actions for ${label}`}
-            onClick={(event) => rowActions.menu(id, event.currentTarget)}
-            size="small"
-          >
-            <MdMoreVert fontSize="inherit" />
-          </IconButton>
-        </span>
-      </>
-    )
-  }
-)
-
-const TagRow: FC<TagRowProps> = ({ depth, isDropTarget, ...content }) => {
-  const { disabled } = content
-  const { classes, cx } = useTagsDrawerStyles()
-  const {
-    attributes,
-    isDragging,
-    listeners,
-    setActivatorNodeRef,
-    setNodeRef,
-    transform,
-    transition,
-  } = useSortable({ disabled, id: content.id })
-  return (
-    <li
-      ref={setNodeRef}
-      className={cx(
-        classes.row,
-        isDragging && classes.dragging,
-        isDropTarget && classes.dropTarget
-      )}
-      style={
-        {
-          '--depth': depth,
-          transform: CSS.Translate.toString(
-            transform && { ...transform, x: 0 }
-          ),
-          transition,
-        } as CSSProperties
-      }
-      onKeyDown={(event) => {
-        if (event.key === 'F2' && !disabled && !content.editing)
-          content.rowActions.startRenaming(content.id)
-      }}
-    >
-      <span
-        ref={setActivatorNodeRef}
-        aria-label={`Move ${content.label}`}
-        className={classes.handle}
-        {...attributes}
-        {...listeners}
-      >
-        <MdDragIndicator />
-      </span>
-      <TagRowContent {...content} />
-    </li>
-  )
-}
+import useTagDetails from './useTagDetails'
+import useTagDrag from './useTagDrag'
+import useTagEdits from './useTagEdits'
+import useTagTree from './useTagTree'
 
 const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
   const { classes } = useTagsDrawerStyles()
-  const tagsVocabulary = useTagsVocabulary()
-  const { state, apply, isPending } = useVocabularyMutations('tags')
+  const { state, isPending, error, setError, run, lastEdit, undo } =
+    useTagEdits()
   const { width, handleProps } = useDrawerWidth()
-  const [error, setError] = useState<string>()
   const [editing, setEditing] = useState<Editing>()
   const [menu, setMenu] = useState<{ anchor: HTMLElement; id: TagId }>()
   const [deleting, setDeleting] = useState<Tag>()
-  const [drag, setDrag] = useState<{
-    activeId: TagId
-    overId?: TagId
-    depthDelta: number
-  }>()
-  const activeId = drag?.activeId
-  const [history, setHistory] = useState<
-    Array<{ description: string; before: TagsState; after: TagsState }>
-  >([])
-  const lastEdit = history[history.length - 1]
-  const [expanded, setExpanded] = useState<ReadonlySet<TagId>>(new Set())
-  const expand = (id: TagId | undefined) =>
-    id &&
-    setExpanded((ids) =>
-      ids.has(id)
-        ? ids
-        : new Set([
-            ...ids,
-            ...tagsVocabulary.ancestors(id).map((t) => t.id),
-            id,
-          ])
-    )
-  const toggle = useCallback(
-    (id: TagId) =>
-      setExpanded((ids) =>
-        ids.has(id)
-          ? new Set([...ids].filter((other) => other !== id))
-          : new Set([...ids, id])
-      ),
-    []
-  )
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  )
-
+  const [drag, setDrag] = useState<Drag>()
   const tagsList = useMemo(() => state?.tagsList ?? [], [state])
-  const tagsById = useMemo(
-    () => new Map(tagsList.map((tag) => [tag.id, tag])),
-    [tagsList]
-  )
-  const parents = useMemo(
-    () => new Set(tagsList.flatMap(({ parent }) => (parent ? [parent] : []))),
-    [tagsList]
-  )
-  const descendants = useMemo(() => {
-    const counts = new Map<TagId, number>()
-    tagsList.forEach(({ id }) =>
-      tagsVocabulary
-        .ancestors(id)
-        .forEach((tag) => counts.set(tag.id, (counts.get(tag.id) ?? 0) + 1))
-    )
-    return counts
-  }, [tagsList, tagsVocabulary])
-  const tagsCount = tagsList.filter(({ parent }) => parent).length
-  const collection = useCollection()
-  const usage = useMemo(() => {
-    const count = (items: TaggedItem[] = []) => {
-      const counts = new Map<TagId, number>()
-      items.forEach(({ effectiveTags }) =>
-        new Set(
-          effectiveTags.flatMap((id) => [
-            id,
-            tagsVocabulary.rootOf(id)?.id ?? id,
-          ])
-        ).forEach((id) => counts.set(id, (counts.get(id) ?? 0) + 1))
-      )
-      return counts
-    }
-    return {
-      sets: count(collection.setsList),
-      minifigs: count(collection.minifigsList),
-    }
-  }, [collection.setsList, collection.minifigsList, tagsVocabulary])
-  const draggedParent = activeId && parents.has(activeId) ? activeId : undefined
-  const nodes = useMemo(
-    (): FlatNode[] =>
-      tagsVocabulary
-        .sort(tagsList.map(({ id }) => id))
-        .filter((id) =>
-          tagsVocabulary
-            .ancestors(id)
-            .every((tag) => tag.id !== draggedParent && expanded.has(tag.id))
-        )
-        .map((id) => ({
-          id,
-          parent: tagsById.get(id)?.parent,
-          depth: tagsVocabulary.depth(id),
-        })),
-    [tagsVocabulary, tagsList, tagsById, draggedParent, expanded]
-  )
-
-  const fullPath = (id: TagId) =>
-    [
-      ...tagsVocabulary
-        .ancestors(id)
-        .reverse()
-        .map(({ label }) => label),
-      tagsVocabulary.label(id),
-    ].join(' › ')
-
-  const projectSortedDrop = useCallback(
-    (drop: { activeId: TagId; overId: TagId; depthDelta: number }) => {
-      const target = projectDrop({ nodes, ...drop })
-      return {
-        ...target,
-        stays: target.parent === tagsById.get(drop.activeId)?.parent,
-      }
-    },
-    [nodes, tagsById]
-  )
-
-  const drop = useMemo(() => {
-    if (!state || !drag?.overId) return undefined
-    const target = projectSortedDrop({ ...drag, overId: drag.overId })
-    const edit = target.stays
-      ? undefined
-      : moveTag({ state, id: drag.activeId, parent: target.parent })
-    return {
-      ...target,
-      depth: target.parent ? tagsVocabulary.depth(target.parent) + 1 : 0,
-      refused: edit && 'refused' in edit ? edit.refused : undefined,
-    }
-  }, [state, drag, projectSortedDrop, tagsVocabulary])
-
-  const run = useCallback(
-    (edit: TagEdit | undefined, description: string) => {
-      if (!edit || !state) return
-      if ('refused' in edit) {
-        setError(edit.refused)
-        return
-      }
-      if (isPending) {
-        setError('Wait for the previous change to be saved')
-        return
-      }
-      setError(undefined)
-      if (
-        edit.state.setsList === state.setsList &&
-        edit.state.minifigsList === state.minifigsList &&
-        isEqual(edit.state.tagsList, state.tagsList)
-      )
-        return
-      const before = state
-      apply(edit.state)
-        .then(() =>
-          setHistory((entries) => [
-            ...entries,
-            { description, before, after: edit.state },
-          ])
-        )
-        .catch((err) =>
-          setError(saveError('The change could not be saved')(err))
-        )
-    },
-    [state, isPending, apply]
-  )
+  const tree = useTagTree({ tagsList, activeId: drag?.activeId })
+  const { drop, dropNoteOf, isDropTarget, contextProps } = useTagDrag({
+    state,
+    tree,
+    run,
+    drag,
+    setDrag,
+  })
+  const {
+    nodes,
+    tagsById,
+    tagsVocabulary,
+    parents,
+    expanded,
+    labelsUnder,
+    expand,
+    toggle,
+  } = tree
+  const details = useTagDetails(tree.descendants)
+  const sortableItems = useMemo(() => nodes.map(({ id }) => id), [nodes])
+  const tagsCount = state
+    ? tagsList.filter(({ parent }) => parent).length
+    : undefined
+  const lastDescription = lastEdit?.description
 
   const rowActions = useMemo(
     (): RowActions => ({
       add: (id) => {
-        setExpanded(
-          (ids) =>
-            new Set([
-              ...ids,
-              ...tagsVocabulary.ancestors(id).map((t) => t.id),
-              id,
-            ])
-        )
+        expand(id)
         setEditing({ parent: id })
       },
       menu: (id, anchor) => setMenu({ anchor, id }),
@@ -705,19 +91,8 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
       stopEditing: () => setEditing(undefined),
       toggle,
     }),
-    [run, state, tagsById, tagsVocabulary, toggle]
+    [run, state, tagsById, expand, toggle]
   )
-
-  const labelsUnder = ({
-    parent,
-    except,
-  }: {
-    parent?: TagId
-    except?: TagId
-  }) =>
-    tagsList
-      .filter((tag) => tag.parent === parent && tag.id !== except)
-      .map(({ label }) => label)
 
   const adding = editing && !('id' in editing) ? editing : undefined
   const addAfter =
@@ -730,100 +105,25 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
           tagsVocabulary.ancestors(id).some((tag) => tag.id === adding.parent)
       )?.id
   const addRow = adding && (
-    <li
+    <AddTagRow
       key="adding"
-      className={classes.row}
-      style={
-        {
-          '--depth': adding.parent
-            ? tagsVocabulary.depth(adding.parent) + 1
-            : 0,
-        } as CSSProperties
+      depth={adding.parent ? tagsVocabulary.depth(adding.parent) + 1 : 0}
+      onCancel={() => setEditing(undefined)}
+      onCommit={(label) => {
+        setEditing(undefined)
+        run(
+          state && addTag({ state, label, parent: adding.parent }),
+          `Added ${label.trim()}`
+        )
+      }}
+      placeholder={
+        adding.parent
+          ? `New tag in ${tagsVocabulary.label(adding.parent)}`
+          : 'New root'
       }
-    >
-      <span className={classes.handleSpacer} />
-      <span className={classes.toggleSpacer} />
-      <LabelInput
-        className={classes.input}
-        onCancel={() => setEditing(undefined)}
-        onCommit={(label) => {
-          setEditing(undefined)
-          run(
-            state && addTag({ state, label, parent: adding.parent }),
-            `Added ${label.trim()}`
-          )
-        }}
-        placeholder={
-          adding.parent
-            ? `New tag in ${tagsVocabulary.label(adding.parent)}`
-            : 'New root'
-        }
-        siblingLabels={labelsUnder({ parent: adding.parent })}
-      />
-    </li>
+      siblingLabels={labelsUnder({ parent: adding.parent })}
+    />
   )
-
-  const sortableItems = useMemo(() => nodes.map(({ id }) => id), [nodes])
-
-  const undo = () => {
-    if (!state || !lastEdit || isPending) return
-    setError(undefined)
-    apply(undoTagEdit({ current: state, ...lastEdit }))
-      .then(() => setHistory((entries) => entries.slice(0, -1)))
-      .catch((err) => setError(saveError('The undo could not be saved')(err)))
-  }
-
-  const onDragMove = ({ active, over, delta }: DragMoveEvent) => {
-    const overId = over ? String(over.id) : undefined
-    const depthDelta = Math.round(delta.x / indent)
-    setDrag((current) =>
-      current && current.overId === overId && current.depthDelta === depthDelta
-        ? current
-        : { activeId: String(active.id), overId, depthDelta }
-    )
-  }
-
-  const onDragEnd = ({ active, over, delta }: DragEndEvent) => {
-    setDrag(undefined)
-    const depthDelta = Math.round(delta.x / indent)
-    if (!state || !over || (active.id === over.id && !depthDelta)) return
-    const id = String(active.id)
-    const target = projectSortedDrop({
-      activeId: id,
-      overId: String(over.id),
-      depthDelta,
-    })
-    if (target.stays) return
-    const edit = moveTag({ state, id, parent: target.parent })
-    if ('state' in edit) expand(target.parent)
-    run(
-      edit,
-      `Moved ${tagsVocabulary.label(id)} into ${target.parent ? fullPath(target.parent) : 'the top level'}`
-    )
-  }
-
-  const usageLabel = (tag: Tag) => {
-    const sets = usage.sets.get(tag.id) ?? 0
-    const minifigs = usage.minifigs.get(tag.id) ?? 0
-    return [sets && `${sets} sets`, minifigs && `${minifigs} minifigs`]
-  }
-
-  const details = (tag: Tag) =>
-    [
-      ...(tag.parent
-        ? []
-        : [
-            tag.appliesTo === 'both' ? 'sets & minifigs' : tag.appliesTo,
-            tag.inherited && 'inherited',
-          ]),
-      descendants.has(tag.id) && `${descendants.get(tag.id)} tags`,
-      ...usageLabel(tag),
-    ]
-      .filter(Boolean)
-      .join(' · ')
-
-  const closeMenu = () => setMenu(undefined)
-  const menuTag = menu && tagsById.get(menu.id)
 
   return (
     <Drawer
@@ -837,7 +137,7 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
       <div className={classes.header}>
         <Typography className={classes.title} component="h2" variant="h6">
           Tags
-          {state && (
+          {tagsCount !== undefined && (
             <Typography
               color="textSecondary"
               component="span"
@@ -846,7 +146,7 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
           )}
         </Typography>
         <Button
-          disabled={!state}
+          disabled={tagsCount === undefined}
           loading={isPending}
           onClick={() => setEditing({})}
           startIcon={<MdAdd />}
@@ -854,18 +154,12 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
           Add root
         </Button>
         <Tooltip title="Expand all">
-          <IconButton
-            aria-label="Expand all"
-            onClick={() => setExpanded(new Set(parents))}
-          >
+          <IconButton aria-label="Expand all" onClick={tree.expandAll}>
             <MdUnfoldMore />
           </IconButton>
         </Tooltip>
         <Tooltip title="Collapse all">
-          <IconButton
-            aria-label="Collapse all"
-            onClick={() => setExpanded(new Set())}
-          >
+          <IconButton aria-label="Collapse all" onClick={tree.collapseAll}>
             <MdUnfoldLess />
           </IconButton>
         </Tooltip>
@@ -883,45 +177,22 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
         </Alert>
       )}
       <Divider />
-      <DndContext
-        collisionDetection={closestCenter}
-        onDragCancel={() => setDrag(undefined)}
-        onDragEnd={onDragEnd}
-        onDragMove={onDragMove}
-        onDragStart={({ active }) =>
-          setDrag({ activeId: String(active.id), depthDelta: 0 })
-        }
-        sensors={sensors}
-      >
+      <DndContext collisionDetection={closestCenter} {...contextProps}>
         <SortableContext items={sortableItems} strategy={keepInPlace}>
           <ul aria-label="Tag tree" className={classes.list}>
             {nodes.map(({ id, depth }) => {
               const tag = tagsById.get(id)
               if (!tag) return null
-              const isDropped = id === activeId && drop
               const isEditing =
                 !!editing && 'id' in editing && editing.id === id
               return [
                 <TagRow
                   key={id}
-                  depth={isDropped ? drop.depth : depth}
+                  depth={id === drag?.activeId && drop ? drop.depth : depth}
                   disabled={isPending}
                   details={details(tag)}
-                  dropNote={
-                    isDropped
-                      ? {
-                          refused: !!drop.refused,
-                          text:
-                            drop.refused ??
-                            (drop.stays
-                              ? `Stays in ${drop.parent ? fullPath(drop.parent) : 'the top level'}`
-                              : `Into ${drop.parent ? fullPath(drop.parent) : 'the top level'}`),
-                        }
-                      : undefined
-                  }
-                  isDropTarget={
-                    !!drop && !drop.refused && !drop.stays && drop.parent === id
-                  }
+                  dropNote={dropNoteOf(id)}
+                  isDropTarget={isDropTarget(id)}
                   editing={isEditing}
                   expanded={parents.has(id) ? expanded.has(id) : undefined}
                   id={id}
@@ -941,135 +212,17 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
           </ul>
         </SortableContext>
       </DndContext>
-      <Menu
-        anchorEl={menu?.anchor}
-        className={classes.menu}
-        disableEnforceFocus
-        disableRestoreFocus
-        onClose={closeMenu}
-        open={!!menu}
-      >
-        {menuTag && [
-          <MenuItem
-            key="rename"
-            disabled={isPending}
-            onClick={() => {
-              closeMenu()
-              setEditing({ id: menuTag.id })
-            }}
-          >
-            <ListItemIcon>
-              <MdTextFields aria-hidden />
-            </ListItemIcon>
-            Rename
-          </MenuItem>,
-          <MenuItem
-            key="add"
-            disabled={isPending}
-            onClick={() => {
-              closeMenu()
-              rowActions.add(menuTag.id)
-            }}
-          >
-            <ListItemIcon>
-              <MdAdd aria-hidden />
-            </ListItemIcon>
-            Add a tag inside
-          </MenuItem>,
-          ...(menuTag.parent
-            ? []
-            : [
-                <Divider key="settings" />,
-                ...targets.map((target) => {
-                  const checked = appliesToTarget({
-                    appliesTo: menuTag.appliesTo,
-                    target,
-                  })
-                  return (
-                    <MenuItem
-                      key={`applies-${target}`}
-                      aria-checked={checked}
-                      dense
-                      role="menuitemcheckbox"
-                      disabled={
-                        isPending || (checked && menuTag.appliesTo !== 'both')
-                      }
-                      onClick={() =>
-                        run(
-                          state &&
-                            editTag({
-                              state,
-                              id: menuTag.id,
-                              changes: {
-                                appliesTo: toggledAppliesTo({
-                                  appliesTo: menuTag.appliesTo,
-                                  target,
-                                }),
-                              },
-                            }),
-                          `${checked ? 'Stopped' : 'Started'} applying ${menuTag.label} to ${target}`
-                        )
-                      }
-                    >
-                      <ListItemIcon>
-                        <Switch
-                          checked={checked}
-                          size="xsmall"
-                          slotProps={{
-                            input: { tabIndex: -1, 'aria-hidden': true },
-                          }}
-                        />
-                      </ListItemIcon>
-                      {`Applies to ${target}`}
-                    </MenuItem>
-                  )
-                }),
-                <MenuItem
-                  key="inherited"
-                  aria-checked={!!menuTag.inherited}
-                  dense
-                  role="menuitemcheckbox"
-                  disabled={isPending}
-                  onClick={() =>
-                    run(
-                      state &&
-                        editTag({
-                          state,
-                          id: menuTag.id,
-                          changes: { inherited: !menuTag.inherited },
-                        }),
-                      `Turned ${menuTag.inherited ? 'off' : 'on'} inheritance of ${menuTag.label}`
-                    )
-                  }
-                >
-                  <ListItemIcon>
-                    <Switch
-                      checked={!!menuTag.inherited}
-                      size="xsmall"
-                      slotProps={{
-                        input: { tabIndex: -1, 'aria-hidden': true },
-                      }}
-                    />
-                  </ListItemIcon>
-                  Minifigs inherit it from their sets
-                </MenuItem>,
-              ]),
-          <Divider key="danger" />,
-          <MenuItem
-            key="delete"
-            disabled={isPending || isProtectedTag(menuTag.id)}
-            onClick={() => {
-              closeMenu()
-              setDeleting(menuTag)
-            }}
-          >
-            <ListItemIcon>
-              <MdDelete aria-hidden />
-            </ListItemIcon>
-            Delete
-          </MenuItem>,
-        ]}
-      </Menu>
+      <TagMenu
+        anchor={menu?.anchor}
+        tag={menu && tagsById.get(menu.id)}
+        state={state}
+        isPending={isPending}
+        run={run}
+        onClose={() => setMenu(undefined)}
+        onRename={(tag) => setEditing({ id: tag.id })}
+        onAdd={(tag) => rowActions.add(tag.id)}
+        onDelete={setDeleting}
+      />
       {deleting && state && (
         <DeleteTagDialog
           isPending={isPending}
@@ -1084,11 +237,13 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
       )}
       <div className={classes.footer}>
         <Tooltip
-          title={lastEdit ? `Undo: ${lastEdit.description}` : 'Nothing to undo'}
+          title={
+            lastDescription ? `Undo: ${lastDescription}` : 'Nothing to undo'
+          }
         >
           <span>
             <Button
-              disabled={!lastEdit}
+              disabled={!lastDescription}
               loading={isPending}
               onClick={undo}
               startIcon={<MdUndo />}
@@ -1097,13 +252,13 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
             </Button>
           </span>
         </Tooltip>
-        {lastEdit && (
+        {lastDescription && (
           <Typography
             className={classes.label}
             color="textSecondary"
             variant="caption"
           >
-            {lastEdit.description}
+            {lastDescription}
           </Typography>
         )}
       </div>

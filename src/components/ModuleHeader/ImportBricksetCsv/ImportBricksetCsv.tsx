@@ -17,7 +17,6 @@ import {
 import { useSetsQuery } from 'api/sets'
 import { defaultSetFormValues } from 'pages/Sets/components/SetFormModal/SetFormModal.constant'
 import { useSetsMutations } from 'pages/Sets/hooks'
-import { makeStyles } from 'tss-react/mui'
 import type { BricksetIgnoreList, BricksetRow } from 'types/brickset'
 import { compareIds, uniqueAndSortedArray } from 'utils/array'
 import {
@@ -32,28 +31,11 @@ import { readCsvFile } from 'utils/csv'
 
 import IgnoredRowsGrid from './IgnoredRowsGrid'
 import IgnoreListFields from './IgnoreListFields'
+import useImportBricksetCsvStyles from './ImportBricksetCsv.styles'
 import MissingSetsGrid from './MissingSetsGrid'
 import ReportSection from './ReportSection'
 import SetsGrid from './SetsGrid'
 import UpdatesGrid from './UpdatesGrid'
-
-const useImportBricksetCsvStyles = makeStyles({ name: 'ImportBricksetCsv' })(
-  (theme) => ({
-    content: {
-      display: 'flex',
-      flexDirection: 'column',
-      gap: theme.spacing(2),
-    },
-    fileRow: {
-      alignItems: 'center',
-      display: 'flex',
-      gap: theme.spacing(2),
-    },
-    summary: {
-      marginBottom: theme.spacing(1),
-    },
-  })
-)
 
 const ImportBricksetCsv: FC = () => {
   const { classes } = useImportBricksetCsvStyles()

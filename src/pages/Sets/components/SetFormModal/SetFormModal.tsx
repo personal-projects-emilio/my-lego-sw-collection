@@ -8,19 +8,31 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  TextField,
   Typography,
 } from '@mui/material'
 import { useNavigate } from '@tanstack/react-router'
 import DisplayIfAuthenticated from 'components/DisplayIfAuthenticated'
-import { Autocomplete, Checkbox, TagsAutocomplete } from 'components/inputs'
+import {
+  Autocomplete,
+  Checkbox,
+  FormTextField,
+  parseInteger,
+  parseSetId,
+  TagsAutocomplete,
+} from 'components/inputs'
 import { TimelineField } from 'components/Timeline'
 import { useSetsAutocompleteOptions, useSetsMutations } from 'pages/Sets/hooks'
 import { type SetFormInput, setValidationSchema } from 'types/sets'
 import { formatFrDate } from 'utils/format'
 import { isSetRetired } from 'utils/lego'
 
-import { defaultSetFormValues } from './SetFormModal.constant'
+import {
+  defaultSetFormValues,
+  dimensionFields,
+  mapBrickLinkPricesToLabels,
+  mapContentToLabels,
+  mapPricesToLabels,
+} from './SetFormModal.constant'
 import useSetFormModalStyles from './SetFormModal.styles'
 import type { SetFormModalProps } from './SetFormModal.types'
 import SetMinifigs from './SetMinifigs'
@@ -82,46 +94,23 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
           onSubmit={handleSubmit(onSubmit)}
           noValidate
         >
-          <Controller
+          <FormTextField
             control={control}
             name="id"
-            render={({ field, fieldState }) => (
-              <TextField
-                {...field}
-                autoFocus={!isEdit}
-                className={classes.gridSpan12}
-                error={fieldState.invalid}
-                helperText={fieldState.error?.message}
-                label="Id"
-                placeholder="Set id (ex: 75000)"
-                onChange={(event) => {
-                  const { value } = event.target
-                  if (/\D/.test(value)) {
-                    // contains non-digits
-                    field?.onChange(value)
-                  } else {
-                    // contains only digits
-                    field?.onChange(parseInt(value, 10))
-                  }
-                }}
-                required
-              />
-            )}
+            autoFocus={!isEdit}
+            className={classes.gridSpan12}
+            label="Id"
+            placeholder="Set id (ex: 75000)"
+            parse={parseSetId}
+            required
           />
-          <Controller
+          <FormTextField
             control={control}
             name="name"
-            render={({ field, fieldState }) => (
-              <TextField
-                {...field}
-                className={classes.gridSpan12}
-                error={fieldState.invalid}
-                helperText={fieldState.error?.message}
-                label="Name"
-                placeholder="Set name (ex: X-Wing)"
-                required
-              />
-            )}
+            className={classes.gridSpan12}
+            label="Name"
+            placeholder="Set name (ex: X-Wing)"
+            required
           />
           <Controller
             control={control}
@@ -173,72 +162,40 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
               />
             )}
           />
-          <Controller
+          <FormTextField
+            control={control}
             name="location"
-            control={control}
-            render={({ field, fieldState }) => (
-              <TextField
-                {...field}
-                className={classes.gridSpan12}
-                error={fieldState.invalid}
-                helperText={fieldState.error?.message}
-                label="Location"
-                multiline
-                placeholder="Set location (ex: Attic, Office...)"
-                required={watch('ownedQuantity') > 0}
-              />
-            )}
+            className={classes.gridSpan12}
+            label="Location"
+            multiline
+            placeholder="Set location (ex: Attic, Office...)"
+            required={watch('ownedQuantity') > 0}
           />
-          <Controller
+          <FormTextField
+            control={control}
             name="note"
-            control={control}
-            render={({ field, fieldState }) => (
-              <TextField
-                {...field}
-                className={classes.gridSpan12}
-                error={fieldState.invalid}
-                helperText={fieldState.error?.message}
-                label="Notes"
-                multiline
-                placeholder="Misce notes"
-              />
-            )}
+            className={classes.gridSpan12}
+            label="Notes"
+            multiline
+            placeholder="Misce notes"
           />
-          <Controller
+          <FormTextField
+            control={control}
             name="releaseYear"
-            control={control}
-            render={({ field, fieldState }) => (
-              <TextField
-                {...field}
-                className={classes.gridSpan4}
-                error={fieldState.invalid}
-                helperText={fieldState.error?.message}
-                label="Release Year"
-                onChange={(event) =>
-                  field?.onChange?.(parseInt(event.target.value, 10))
-                }
-                required
-                type="number"
-              />
-            )}
+            className={classes.gridSpan4}
+            label="Release Year"
+            parse={parseInteger}
+            required
+            type="number"
           />
-          <Controller
-            name="ownedQuantity"
+          <FormTextField
             control={control}
-            render={({ field, fieldState }) => (
-              <TextField
-                {...field}
-                className={classes.gridSpan4}
-                error={fieldState.invalid}
-                helperText={fieldState.error?.message}
-                label="Owned quantity"
-                onChange={(event) =>
-                  field?.onChange?.(parseInt(event.target.value, 10))
-                }
-                required
-                type="number"
-              />
-            )}
+            name="ownedQuantity"
+            className={classes.gridSpan4}
+            label="Owned quantity"
+            parse={parseInteger}
+            required
+            type="number"
           />
           <Controller
             name="retired"
@@ -258,30 +215,16 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
               )
             }}
           />
-          <Controller
-            name="EAN"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                className={classes.gridSpan6}
-                disabled
-                label="EAN"
-              />
-            )}
-          />
-          <Controller
-            name="UPC"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                className={classes.gridSpan6}
-                disabled
-                label="UPC"
-              />
-            )}
-          />
+          {(['EAN', 'UPC'] as const).map((name) => (
+            <FormTextField
+              key={name}
+              control={control}
+              name={name}
+              className={classes.gridSpan6}
+              disabled
+              label={name}
+            />
+          ))}
           <Typography variant="h6" className={classes.gridSpan12}>
             Content
           </Typography>
@@ -292,59 +235,28 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
               return <SetMinifigs className={classes.gridSpan12} {...field} />
             }}
           />
-          <Controller
-            name="content.box"
+          {Object.entries(mapContentToLabels).map(([name, label]) => (
+            <Controller
+              key={name}
+              name={name as keyof typeof mapContentToLabels}
+              control={control}
+              render={({ field }) => (
+                <Checkbox
+                  {...field}
+                  className={classes.gridSpan3}
+                  label={label}
+                  isIndeterminate
+                />
+              )}
+            />
+          ))}
+          <FormTextField
             control={control}
-            render={({ field }) => (
-              <Checkbox
-                {...field}
-                className={classes.gridSpan3}
-                label="Box"
-                isIndeterminate
-              />
-            )}
-          />
-          <Controller
-            name="content.notice"
-            control={control}
-            render={({ field }) => (
-              <Checkbox
-                {...field}
-                className={classes.gridSpan3}
-                label="Notice"
-                isIndeterminate
-              />
-            )}
-          />
-          <Controller
-            name="content.bags"
-            control={control}
-            render={({ field }) => (
-              <Checkbox
-                {...field}
-                className={classes.gridSpan3}
-                label="Bags"
-                isIndeterminate
-              />
-            )}
-          />
-          <Controller
             name="content.partsQuantity"
-            control={control}
-            render={({ field, fieldState }) => (
-              <TextField
-                {...field}
-                className={classes.gridSpan3}
-                error={fieldState.invalid}
-                helperText={fieldState.error?.message}
-                label="Parts quantity"
-                onChange={(event) =>
-                  field?.onChange?.(parseInt(event.target.value, 10))
-                }
-                type="number"
-                value={field.value}
-              />
-            )}
+            className={classes.gridSpan3}
+            label="Parts quantity"
+            parse={parseInteger}
+            type="number"
           />
           <Typography variant="h6" className={classes.gridSpan12}>
             Dimensions
@@ -353,172 +265,43 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
             From brickset (in cm) - You can update them by uploading a new CSV
             from Brickset
           </Typography>
-          <Controller
-            name="dimensions.model.width"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                className={classes.gridSpan4}
-                disabled
-                label="Model width"
-                value={field.value ?? ''}
-              />
-            )}
-          />
-          <Controller
-            name="dimensions.model.height"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                className={classes.gridSpan4}
-                disabled
-                label="Model height"
-                value={field.value ?? ''}
-              />
-            )}
-          />
-          <Controller
-            name="dimensions.model.depth"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                className={classes.gridSpan4}
-                disabled
-                label="Model depth"
-                value={field.value ?? ''}
-              />
-            )}
-          />
-          <Controller
-            name="dimensions.box.width"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                className={classes.gridSpan4}
-                disabled
-                label="Box width"
-                value={field.value ?? ''}
-              />
-            )}
-          />
-          <Controller
-            name="dimensions.box.height"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                className={classes.gridSpan4}
-                disabled
-                label="Box height"
-                value={field.value ?? ''}
-              />
-            )}
-          />
-          <Controller
-            name="dimensions.box.depth"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                className={classes.gridSpan4}
-                disabled
-                label="Box depth"
-                value={field.value ?? ''}
-              />
-            )}
-          />
+          {dimensionFields.map(({ name, label }) => (
+            <FormTextField
+              key={name}
+              control={control}
+              name={name}
+              className={classes.gridSpan4}
+              disabled
+              label={label}
+            />
+          ))}
           <DisplayIfAuthenticated>
             <Typography variant="h6" className={classes.gridSpan12}>
               Prices
             </Typography>
-            <Controller
-              name="prices.bought"
-              control={control}
-              render={({ field, fieldState }) => (
-                <TextField
-                  {...field}
-                  className={classes.gridSpan4}
-                  error={fieldState.invalid}
-                  helperText={fieldState.error?.message}
-                  label="Bought"
-                  onChange={(event) =>
-                    field?.onChange?.(parseFloat(event.target.value))
-                  }
-                  required
-                  type="number"
-                />
-              )}
-            />
-            <Controller
-              name="prices.storeValue"
-              control={control}
-              render={({ field, fieldState }) => (
-                <TextField
-                  {...field}
-                  className={classes.gridSpan4}
-                  error={fieldState.invalid}
-                  helperText={fieldState.error?.message}
-                  label="Store Value"
-                  onChange={(event) =>
-                    field?.onChange?.(parseFloat(event.target.value))
-                  }
-                  required
-                  type="number"
-                />
-              )}
-            />
-            <Controller
-              name="prices.marketValue"
-              control={control}
-              render={({ field, fieldState }) => (
-                <TextField
-                  {...field}
-                  className={classes.gridSpan4}
-                  error={fieldState.invalid}
-                  helperText={fieldState.error?.message}
-                  label="Market Value"
-                  onChange={(event) =>
-                    field?.onChange?.(parseFloat(event.target.value))
-                  }
-                  required
-                  type="number"
-                />
-              )}
-            />
-            <Controller
-              name="prices.brickLinkSoldPriceNew"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  disabled
-                  className={classes.gridSpan6}
-                  helperText={
-                    'This value is updated when you upload a new CSV from Brickset'
-                  }
-                  label="BrickLink Sold Price New"
-                />
-              )}
-            />
-            <Controller
-              name="prices.brickLinkSoldPriceUsed"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  disabled
-                  className={classes.gridSpan6}
-                  helperText={
-                    'This value is updated when you upload a new CSV from Brickset'
-                  }
-                  label="BrickLink Sold Price Used"
-                />
-              )}
-            />
+            {Object.entries(mapPricesToLabels).map(([name, label]) => (
+              <FormTextField
+                key={name}
+                control={control}
+                name={name as keyof typeof mapPricesToLabels}
+                className={classes.gridSpan4}
+                label={label}
+                parse={parseFloat}
+                required
+                type="number"
+              />
+            ))}
+            {Object.entries(mapBrickLinkPricesToLabels).map(([name, label]) => (
+              <FormTextField
+                key={name}
+                control={control}
+                name={name as keyof typeof mapBrickLinkPricesToLabels}
+                className={classes.gridSpan6}
+                disabled
+                helperText="This value is updated when you upload a new CSV from Brickset"
+                label={label}
+              />
+            ))}
           </DisplayIfAuthenticated>
         </form>
       </DialogContent>

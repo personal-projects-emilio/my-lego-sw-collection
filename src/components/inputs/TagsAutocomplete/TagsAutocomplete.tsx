@@ -1,10 +1,7 @@
 import {
   Children,
-  cloneElement,
   type CSSProperties,
   forwardRef,
-  type ReactElement,
-  type ReactNode,
   useEffect,
   useId,
   useMemo,
@@ -24,13 +21,12 @@ import { useTagsQuery } from 'api/tags'
 import { TagsDrawerButton } from 'components/TagsDrawer'
 import TreeView from 'components/TreeView'
 import { useTagsVocabulary } from 'hooks'
-import { makeStyles } from 'tss-react/mui'
 import type { InheritedTags, TagId, TagTarget } from 'types/tags'
-import {
-  filterTagsAfterPick,
-  inheritedFrom,
-  storedTagsAfterPick,
-} from 'utils/tags'
+import { filterTagsAfterPick, storedTagsAfterPick } from 'utils/tags'
+
+import nestOptions, { type OptionElement } from './nestOptions'
+import useTagsAutocompleteStyles from './TagsAutocomplete.styles'
+import useTagNotes from './useTagNotes'
 
 type TagsAutocompleteProps = {
   className?: string
@@ -47,139 +43,6 @@ type TagsAutocompleteProps = {
 }
 
 const noInheritedTags: InheritedTags = {}
-
-const groupHeight = 48
-const groupLayer = 20
-const optionHeight = 36
-
-const tint = (color: string) => `linear-gradient(${color}, ${color})`
-
-const useTagsAutocompleteStyles = makeStyles({ name: 'TagsAutocomplete' })(
-  (theme) => ({
-    field: {
-      alignItems: 'flex-start',
-      display: 'flex',
-      gap: theme.spacing(0.5),
-    },
-    grow: {
-      flex: 1,
-      minWidth: 0,
-    },
-    editButton: {
-      marginTop: theme.spacing(2),
-    },
-    listbox: {
-      padding: 0,
-    },
-    nestedList: {
-      padding: 0,
-    },
-    groupHeader: {
-      lineHeight: `${groupHeight}px`,
-      zIndex: groupLayer,
-    },
-    option: {
-      '&&&': {
-        height: optionHeight,
-        paddingLeft: `calc(var(--depth) * ${theme.spacing(2)})`,
-      },
-    },
-    pinned: {
-      '&&&&&': {
-        backgroundColor: theme.palette.background.paper,
-        opacity: 1,
-        position: 'sticky',
-        top: `calc(${groupHeight}px + (var(--depth) - 1) * ${optionHeight}px)`,
-        zIndex: `calc(${groupLayer} - var(--depth))`,
-      },
-      '&.Mui-focused': {
-        backgroundImage: tint(theme.palette.action.hover),
-      },
-      '&[aria-selected="true"]': {
-        backgroundImage: tint(
-          theme.alpha(
-            theme.palette.primary.main,
-            theme.palette.action.selectedOpacity
-          )
-        ),
-      },
-      '&[aria-selected="true"].Mui-focused': {
-        backgroundImage: tint(
-          theme.alpha(
-            theme.palette.primary.main,
-            theme.palette.action.selectedOpacity +
-              theme.palette.action.hoverOpacity
-          )
-        ),
-      },
-      '&&&&&[aria-disabled="true"]': {
-        color: theme.palette.text.disabled,
-      },
-    },
-    note: {
-      color: theme.palette.text.secondary,
-      fontStyle: 'italic',
-      marginLeft: theme.spacing(1),
-    },
-    group: {
-      alignItems: 'center',
-      background: theme.palette.action.hover,
-      border: `1px solid ${theme.palette.text.disabled}`,
-      borderRadius: theme.spacing(2),
-      display: 'inline-flex',
-      flexWrap: 'wrap',
-      gap: theme.spacing(0.5),
-      margin: theme.spacing(0.25),
-      padding: theme.spacing(0.25, 0.25, 0.25, 1),
-    },
-  })
-)
-
-type NestClasses = Record<'nestedList' | 'pinned', string>
-
-type OptionElement = ReactElement<{
-  className?: string
-  'data-depth': number
-}>
-
-const nestOptions = ({
-  options,
-  classes,
-  cx,
-}: {
-  options: OptionElement[]
-  classes: NestClasses
-  cx: (...names: Array<string | undefined>) => string
-}): ReactNode[] => {
-  const nested: ReactNode[] = []
-  for (let start = 0; start < options.length;) {
-    const option = options[start]
-    const depth = option.props['data-depth']
-    let end = start + 1
-    while (end < options.length && options[end].props['data-depth'] > depth)
-      end++
-    nested.push(
-      end === start + 1 ? (
-        option
-      ) : (
-        <li key={`subtree-${option.key}`} role="presentation">
-          <ul className={classes.nestedList} role="presentation">
-            {cloneElement(option, {
-              className: cx(option.props.className, classes.pinned),
-            })}
-            {nestOptions({
-              options: options.slice(start + 1, end),
-              classes,
-              cx,
-            })}
-          </ul>
-        </li>
-      )
-    )
-    start = end
-  }
-  return nested
-}
 
 const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
   (
@@ -220,35 +83,13 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
           ...tagsVocabulary.leaves(Object.keys(inheritedTags)),
         ])
 
-    const coveringChips = new Map<TagId, TagId[]>()
-    const chipSet = new Set(chips)
-    if (isFilter) {
-      options.forEach((id) => {
-        const covering = tagsVocabulary
-          .ancestors(id)
-          .map((tag) => tag.id)
-          .filter((ancestor) => chipSet.has(ancestor))
-        if (covering.length) coveringChips.set(id, covering)
-      })
-    } else {
-      chips.forEach((chip) =>
-        tagsVocabulary.ancestors(chip).forEach(({ id }) => {
-          if (!chipSet.has(id))
-            coveringChips.set(id, [...(coveringChips.get(id) ?? []), chip])
-        })
-      )
-    }
-
-    const isInherited = (id: TagId) => id in inheritedTags
-    const isCovered = (id: TagId) => coveringChips.has(id)
-
-    const note = (id: TagId) => {
-      if (isInherited(id)) return inheritedFrom(inheritedTags[id])
-      const covering = coveringChips.get(id)
-      if (!covering) return undefined
-      const labels = covering.map(tagsVocabulary.label).join(', ')
-      return isFilter ? `Included in ${labels}` : `Implied by ${labels}`
-    }
+    const { isInherited, isCovered, note } = useTagNotes({
+      tagsVocabulary,
+      options,
+      chips,
+      isFilter,
+      inheritedTags,
+    })
 
     const autocomplete = (
       <MuiAutocomplete

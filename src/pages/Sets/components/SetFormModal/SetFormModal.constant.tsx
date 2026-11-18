@@ -56,3 +56,27 @@ export const defaultSetFormValues = (setData: SetFormModalProps['setData']) =>
       ...(setData && 'prices' in setData && setData.prices),
     },
   }) satisfies Set
+
+export const dimensionFields = (['model', 'box'] as const).flatMap((part) =>
+  (['width', 'height', 'depth'] as const).map((axis) => ({
+    name: `dimensions.${part}.${axis}` as const,
+    label: `${part === 'model' ? 'Model' : 'Box'} ${axis}`,
+  }))
+)
+
+export const mapPricesToLabels = {
+  'prices.bought': 'Bought',
+  'prices.storeValue': 'Store Value',
+  'prices.marketValue': 'Market Value',
+} as const
+
+export const mapBrickLinkPricesToLabels = {
+  'prices.brickLinkSoldPriceNew': 'BrickLink Sold Price New',
+  'prices.brickLinkSoldPriceUsed': 'BrickLink Sold Price Used',
+} as const
+
+export const mapContentToLabels = {
+  'content.box': 'Box',
+  'content.notice': 'Notice',
+  'content.bags': 'Bags',
+} as const
