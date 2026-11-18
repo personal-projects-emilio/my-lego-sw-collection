@@ -105,6 +105,7 @@ const TimelineField: FC<TimelineFieldProps> = ({
   const timeline = useTimeline()
   const [open, setOpen] = useState(false)
   const openedByFocus = useRef(false)
+  const pointerDown = useRef(false)
   const inputId = useId()
   const panelId = useId()
   const picks = { value, inherited }
@@ -123,7 +124,11 @@ const TimelineField: FC<TimelineFieldProps> = ({
   return (
     <div className={className}>
       <div
+        onMouseDown={() => {
+          pointerDown.current = true
+        }}
         onClick={(event) => {
+          pointerDown.current = false
           if (openedByFocus.current) {
             openedByFocus.current = false
             return
@@ -169,7 +174,7 @@ const TimelineField: FC<TimelineFieldProps> = ({
                   onFocus: (event: FocusEvent<HTMLInputElement>) => {
                     params.slotProps.htmlInput.onFocus?.(event)
                     if (!openOnFocus || open) return
-                    openedByFocus.current = true
+                    openedByFocus.current = pointerDown.current
                     setOpen(true)
                   },
                   onBlur: (event: FocusEvent<HTMLInputElement>) => {

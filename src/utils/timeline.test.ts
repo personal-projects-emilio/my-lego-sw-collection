@@ -18,6 +18,7 @@ import {
 const timelineList: TimelineList = [
   { id: 'aor', label: 'Age of Rebellion', start: 0, end: 5 },
   { id: 'ot', label: 'Original Trilogy', parent: 'aor' },
+  { id: 'nr', label: 'New Republic', start: 9, end: 30 },
   {
     id: 'anh',
     label: 'A New Hope',
@@ -85,6 +86,10 @@ test.for([
     case: 'a trilogy under a trilogy',
     entry: { label: 'Skywalker Saga', parent: 'ot' },
   },
+  {
+    case: 'an era holding trilogies moved under an era',
+    entry: { id: 'aor', label: 'Age of Rebellion', parent: 'nr' },
+  },
 ] satisfies Array<{ case: string; entry: EntryDraft }>)(
   'saveEntry refuses $case',
   ({ entry }) => {
@@ -137,8 +142,11 @@ test('deleteEntry removes it from items and moves its children up', () => {
   assert.equal(next.setsList, state.setsList)
 })
 
-test('deleteEntry refuses an unknown entry', () => {
-  assert.ok('refused' in deleteEntry(state, 'nope'))
+test.for([
+  { case: 'an unknown entry', id: 'nope' },
+  { case: 'an era holding trilogies', id: 'aor' },
+])('deleteEntry refuses ', ({ id }) => {
+  assert.ok('refused' in deleteEntry(state, id))
 })
 
 test.for([

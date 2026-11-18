@@ -196,7 +196,12 @@ const useStyles = makeStyles({ name: 'TimelineEraSections' })((theme) => ({
   },
 }))
 
-type Row = { year?: number; gap?: number; compressed?: boolean }
+type Row = {
+  year?: number
+  gap?: number
+  compressed?: boolean
+  empty?: boolean
+}
 
 type TimelineEraSectionsProps = {
   timeline: Timeline
@@ -285,9 +290,14 @@ const TimelineEraSections: FC<TimelineEraSectionsProps> = ({
           return [...spacer, { year }]
         })
         if (titles.some(({ start }) => start === undefined)) rows.push({})
+        const emptyTrilogies = trilogies.filter(
+          (trilogy) => !titles.some(({ parent }) => parent === trilogy.id)
+        )
+        if (emptyTrilogies.length) rows.push({ empty: true })
         const rowOf = (entry: TimelineEntry) =>
           rows.findIndex(
-            ({ year, gap }) => gap === undefined && year === entry.start
+            ({ year, gap, empty }) =>
+              gap === undefined && !empty && year === entry.start
           ) + 2
         const side = (entry: TimelineEntry) =>
           entry.kind === 'movie' ? 'left' : 'right'
@@ -364,18 +374,24 @@ const TimelineEraSections: FC<TimelineEraSectionsProps> = ({
                 >
                   {row.gap === undefined && (
                     <span className={classes.year}>
-                      {row.year === undefined
-                        ? 'Undated'
-                        : formatYear(row.year)}
+                      {row.empty
+                        ? 'No titles yet'
+                        : row.year === undefined
+                          ? 'Undated'
+                          : formatYear(row.year)}
                     </span>
                   )}
                 </div>
                 {row.gap === undefined &&
                   (['left', 'right'] as const).map((cellSide) => {
-                    const inCell = titles.filter(
-                      (title) =>
-                        title.start === row.year && side(title) === cellSide
-                    )
+                    const inCell = row.empty
+                      ? cellSide === 'right'
+                        ? emptyTrilogies
+                        : []
+                      : titles.filter(
+                          (title) =>
+                            title.start === row.year && side(title) === cellSide
+                        )
                     return inCell.length ? (
                       <div
                         key={cellSide}

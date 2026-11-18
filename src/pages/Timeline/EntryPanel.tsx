@@ -22,7 +22,7 @@ import {
   type TimelineEdit,
 } from 'utils/timeline'
 
-import { countLabel, type Counts } from './counts'
+import { countLabel, type Counts, plural } from './counts'
 import useTimelineMutations from './useTimelineMutations'
 
 const useEntryPanelStyles = makeStyles({ name: 'EntryPanel' })((theme) => ({
@@ -71,6 +71,10 @@ const EntryForm: FC<EntryPanelProps & { draft: EntryDraft }> = ({
   const [error, setError] = useState<string>()
   const [confirmDelete, setConfirmDelete] = useState(false)
   const { id } = draft
+  const picking = (items: Array<{ appearances?: string[] }> = []) =>
+    items.filter(({ appearances }) => id && appearances?.includes(id)).length
+  const pickedBySets = picking(state?.setsList)
+  const pickedByMinifigs = picking(state?.minifigsList)
   const isEdit = id !== undefined && timeline.has(id)
   const parents = [...timeline.eras, ...timeline.trilogies].filter(
     (candidate) =>
@@ -197,8 +201,8 @@ const EntryForm: FC<EntryPanelProps & { draft: EntryDraft }> = ({
       </div>
       {confirmDelete && (
         <Typography variant="caption" className={classes.warning} role="alert">
-          {id && counts.has(id)
-            ? `Its children move up and it is removed from ${countLabel(counts, id)}.`
+          {pickedBySets || pickedByMinifigs
+            ? `Its children move up and it is removed from ${plural(pickedBySets, 'set')} · ${plural(pickedByMinifigs, 'minifig')}.`
             : 'Its children move up.'}
         </Typography>
       )}

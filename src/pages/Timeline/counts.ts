@@ -23,7 +23,7 @@ export const countItems = (
   return counts
 }
 
-const plural = (count: number, noun: string) =>
+export const plural = (count: number, noun: string) =>
   `${count} ${noun}${count === 1 ? '' : 's'}`
 
 export const countLabel = (counts: Counts, id: TimelineId) => {

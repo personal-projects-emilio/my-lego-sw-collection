@@ -1,6 +1,7 @@
 import {
   type FC,
   type PropsWithChildren,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -59,6 +60,7 @@ const ModuleHeader: FC<PropsWithChildren<ModuleHeaderProps>> = ({
     () => debounce(setQuickFilter, 500),
     [setQuickFilter]
   )
+  useEffect(() => () => debouncedQuickFilter.clear(), [debouncedQuickFilter])
 
   const clearSearch = () => {
     debouncedQuickFilter.clear()

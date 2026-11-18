@@ -119,6 +119,7 @@ const createTimeline = (timelineList: TimelineList) => {
     groupedLabel,
     childrenOf,
     eraOf,
+    entries: sorted,
     eras,
     erasWithTitles: eras.filter((era) =>
       titles.some(({ id }) => eraOf(id) === era)
@@ -174,6 +175,10 @@ export const saveEntry = (
     return { refused: `${parentEntry.label} is a title and can't hold entries` }
   if (!kind && parentEntry?.parent)
     return { refused: 'A trilogy goes directly under an era' }
+  const holdsTrilogies = (entryId: TimelineId) =>
+    timeline.childrenOf(entryId).some((child) => !timeline.entry(child)?.kind)
+  if (!kind && parentEntry && id && holdsTrilogies(id))
+    return { refused: `${label} holds trilogies, so it must stay an era` }
   if (kind && id && timeline.childrenOf(id).length)
     return { refused: `${label} has entries under it, so it can't be a title` }
   if (
@@ -223,6 +228,13 @@ export const deleteEntry = (
 ): TimelineEdit => {
   const entry = state.timelineList.find((e) => e.id === id)
   if (!entry) return { refused: `Unknown entry ${id}` }
+  if (
+    !entry.parent &&
+    state.timelineList.some((e) => e.parent === id && !e.kind)
+  )
+    return {
+      refused: `Move or delete the trilogies of ${entry.label} first`,
+    }
   return {
     state: {
       timelineList: state.timelineList.flatMap((e) =>

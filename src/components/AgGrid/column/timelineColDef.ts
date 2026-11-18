@@ -10,15 +10,7 @@ type AppearingItem = { effectiveAppearances: TimelineId[] }
 export const timelineColDef = <TData extends AppearingItem>(
   timeline: Timeline
 ): ColDef<TData, TimelineId[]> => {
-  const order = new Map(
-    timeline
-      .sort(
-        [...timeline.eras, ...timeline.trilogies, ...timeline.titles].map(
-          ({ id }) => id
-        )
-      )
-      .map((id, index) => [id, index])
-  )
+  const order = new Map(timeline.entries.map(({ id }, index) => [id, index]))
   const rank = (ids: TimelineId[] | null | undefined) =>
     timeline.leaves(ids ?? []).map((id) => order.get(id) ?? Infinity)
   return {
