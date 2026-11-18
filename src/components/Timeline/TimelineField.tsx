@@ -38,7 +38,7 @@ const TimelineField: FC<TimelineFieldProps> = ({
   defaultOpen = false,
   value,
 }) => {
-  const { classes, cx } = useTimelineFieldStyles()
+  const { classes } = useTimelineFieldStyles()
   const timeline = useTimeline()
   const [open, setOpen] = useState(defaultOpen)
   const inputId = useId()
@@ -59,7 +59,8 @@ const TimelineField: FC<TimelineFieldProps> = ({
         <Autocomplete
           id={inputId}
           multiple
-          className={cx(classes.select, shown.length > 0 && classes.noInput)}
+          className={classes.select}
+          data-filled={shown.length > 0 || undefined}
           disableClearable
           open={false}
           options={shown}
@@ -73,7 +74,8 @@ const TimelineField: FC<TimelineFieldProps> = ({
           }
           popupIcon={
             <MdArrowDropDown
-              className={cx(classes.chevron, open && classes.chevronOpen)}
+              className={classes.chevron}
+              data-open={open || undefined}
             />
           }
           renderInput={(params) => (

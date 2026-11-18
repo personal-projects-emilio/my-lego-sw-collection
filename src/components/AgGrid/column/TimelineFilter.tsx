@@ -5,7 +5,7 @@ import { type CustomFilterProps, useGridFilter } from 'ag-grid-react'
 import { TimelineField } from 'components/Timeline'
 import { useTimeline } from 'hooks'
 import { makeStyles } from 'tss-react/mui'
-import type { TimelineId,TimelineItem } from 'types/timeline'
+import type { TimelineId, TimelineItem } from 'types/timeline'
 
 const useTimelineFilterStyles = makeStyles({ name: 'TimelineFilter' })(
   (theme) => ({

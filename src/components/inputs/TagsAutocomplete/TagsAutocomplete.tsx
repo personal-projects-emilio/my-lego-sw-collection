@@ -69,7 +69,7 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
       if (value.some((id) => !known.has(id)))
         onChange(value.filter((id) => known.has(id)))
     }, [tagsList, value, onChange])
-    const { classes, cx } = useTagsAutocompleteStyles()
+    const { classes } = useTagsAutocompleteStyles()
     const groupId = useId()
     const options = useMemo(
       () => tagsVocabulary.pickable(itemType),
@@ -136,8 +136,7 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
             <ul className={classes.nestedList} role="presentation">
               {nestOptions({
                 options: Children.toArray(children) as OptionElement[],
-                classes,
-                cx,
+                subtreeClassName: classes.subtree,
               })}
             </ul>
           </li>
@@ -155,7 +154,7 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
               aria-label={[tagsVocabulary.pathLabel(id), optionNote]
                 .filter(Boolean)
                 .join(', ')}
-              className={cx(optionClassName, classes.option)}
+              className={optionClassName}
               data-depth={tagsVocabulary.depth(id)}
               style={{ '--depth': tagsVocabulary.depth(id) } as CSSProperties}
             >
@@ -174,6 +173,7 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
             </li>
           )
         }}
+        classes={{ option: classes.option }}
         slotProps={{
           listbox: { className: classes.listbox },
           popper: { className: popperClassName },
@@ -256,7 +256,7 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
 
     if (isFilter) return autocomplete
     return (
-      <div className={cx(classes.field, className)}>
+      <div className={`${classes.field} ${className ?? ''}`}>
         {autocomplete}
         <TagsDrawerButton className={classes.editButton} />
       </div>

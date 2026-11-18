@@ -67,6 +67,8 @@ const useTreeViewStyles = makeStyles({ name: 'TreeView' })((theme) => ({
     opacity: 0.7,
   },
   rootNote: {
+    fontStyle: 'italic',
+    opacity: 0.7,
     fontWeight: 400,
     marginLeft: 0,
     textTransform: 'none',
@@ -81,7 +83,7 @@ type TreeViewProps = {
 }
 
 const TreeView: FC<TreeViewProps> = ({ className, ids, notes = {}, tree }) => {
-  const { classes, cx } = useTreeViewStyles()
+  const { classes } = useTreeViewStyles()
   const nodes = tree.outline(ids)
   const leaves = new Set(tree.leaves(ids))
   const childrenOf = (parent: string) =>
@@ -106,7 +108,7 @@ const TreeView: FC<TreeViewProps> = ({ className, ids, notes = {}, tree }) => {
   }
 
   return (
-    <ul className={cx(classes.tree, className)}>
+    <ul className={`${classes.tree} ${className ?? ''}`}>
       {nodes
         .filter((node) => !node.parent)
         .map(({ id, label }) => (
@@ -114,9 +116,7 @@ const TreeView: FC<TreeViewProps> = ({ className, ids, notes = {}, tree }) => {
             <div className={classes.divider}>
               {label}
               {leaves.has(id) && notes[id] && (
-                <span className={cx(classes.note, classes.rootNote)}>
-                  {notes[id]}
-                </span>
+                <span className={classes.rootNote}>{notes[id]}</span>
               )}
             </div>
             {branch(id)}

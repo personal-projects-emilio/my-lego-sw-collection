@@ -57,6 +57,19 @@ export default makeStyles<void, 'addButton'>({
     [`&:hover .${classes.addButton}, &:focus-within .${classes.addButton}`]: {
       opacity: 1,
     },
+    '&[data-dragging]': {
+      boxShadow: theme.shadows[4],
+      outline: `1px solid ${theme.palette.primary.main}`,
+      position: 'relative',
+      zIndex: 1,
+    },
+    '&[data-drop-target]': {
+      backgroundColor: theme.alpha(
+        theme.palette.primary.main,
+        theme.palette.action.selectedOpacity
+      ),
+      outline: `1px dashed ${theme.palette.primary.main}`,
+    },
   },
   addButton: {
     opacity: 0,
@@ -73,19 +86,6 @@ export default makeStyles<void, 'addButton'>({
     flexShrink: 0,
     width: 28,
   },
-  dragging: {
-    boxShadow: theme.shadows[4],
-    outline: `1px solid ${theme.palette.primary.main}`,
-    position: 'relative',
-    zIndex: 1,
-  },
-  dropTarget: {
-    backgroundColor: theme.alpha(
-      theme.palette.primary.main,
-      theme.palette.action.selectedOpacity
-    ),
-    outline: `1px dashed ${theme.palette.primary.main}`,
-  },
   dropNote: {
     color: theme.palette.primary.main,
     fontWeight: 700,
@@ -93,9 +93,9 @@ export default makeStyles<void, 'addButton'>({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
-  },
-  refused: {
-    color: theme.palette.error.main,
+    '&[data-refused]': {
+      color: theme.palette.error.main,
+    },
   },
   footer: {
     alignItems: 'center',
@@ -146,6 +146,10 @@ export default makeStyles<void, 'addButton'>({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
+    '&[data-root]': {
+      fontWeight: 700,
+      textTransform: 'uppercase',
+    },
   },
   details: {
     flex: '1 1 0',
@@ -154,10 +158,6 @@ export default makeStyles<void, 'addButton'>({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
-  },
-  root: {
-    fontWeight: 700,
-    textTransform: 'uppercase',
   },
   input: {
     flex: 1,

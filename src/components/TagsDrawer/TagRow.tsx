@@ -14,7 +14,7 @@ type TagRowProps = TagRowContentProps & {
 
 const TagRow: FC<TagRowProps> = ({ depth, isDropTarget, ...content }) => {
   const { disabled } = content
-  const { classes, cx } = useTagsDrawerStyles()
+  const { classes } = useTagsDrawerStyles()
   const {
     attributes,
     isDragging,
@@ -27,11 +27,9 @@ const TagRow: FC<TagRowProps> = ({ depth, isDropTarget, ...content }) => {
   return (
     <li
       ref={setNodeRef}
-      className={cx(
-        classes.row,
-        isDragging && classes.dragging,
-        isDropTarget && classes.dropTarget
-      )}
+      className={classes.row}
+      data-dragging={isDragging || undefined}
+      data-drop-target={isDropTarget || undefined}
       style={
         {
           '--depth': depth,

@@ -1,20 +1,13 @@
-import { cloneElement, type ReactElement, type ReactNode } from 'react'
+import type { ReactElement, ReactNode } from 'react'
 
-type NestClasses = Record<'nestedList' | 'pinned', string>
-
-export type OptionElement = ReactElement<{
-  className?: string
-  'data-depth': number
-}>
+export type OptionElement = ReactElement<{ 'data-depth': number }>
 
 const nestOptions = ({
   options,
-  classes,
-  cx,
+  subtreeClassName,
 }: {
   options: OptionElement[]
-  classes: NestClasses
-  cx: (...names: Array<string | undefined>) => string
+  subtreeClassName: string
 }): ReactNode[] => {
   const nested: ReactNode[] = []
   for (let start = 0; start < options.length;) {
@@ -28,14 +21,11 @@ const nestOptions = ({
         option
       ) : (
         <li key={`subtree-${option.key}`} role="presentation">
-          <ul className={classes.nestedList} role="presentation">
-            {cloneElement(option, {
-              className: cx(option.props.className, classes.pinned),
-            })}
+          <ul className={subtreeClassName} role="presentation">
+            {option}
             {nestOptions({
               options: options.slice(start + 1, end),
-              classes,
-              cx,
+              subtreeClassName,
             })}
           </ul>
         </li>

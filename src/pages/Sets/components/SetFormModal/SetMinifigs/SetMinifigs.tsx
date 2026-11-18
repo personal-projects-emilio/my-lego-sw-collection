@@ -25,7 +25,7 @@ type SetMinifigsProps = {
 
 export const SetMinifigs = forwardRef<HTMLDivElement, SetMinifigsProps>(
   ({ value = [], onChange, className }, ref) => {
-    const { classes, cx } = useSetMinifigsStyles()
+    const { classes } = useSetMinifigsStyles()
     const [dialogMinifig, setDialogMinifig] =
       useState<SetIndividualMinifigProps | null>(null)
 
@@ -60,7 +60,7 @@ export const SetMinifigs = forwardRef<HTMLDivElement, SetMinifigsProps>(
     }
 
     return (
-      <div className={cx(className, classes.container)} ref={ref}>
+      <div className={`${className} ${classes.container}`} ref={ref}>
         <Typography>{`Minifigs${totalNumberOfMinifigs ? ` (${totalNumberOfMinifigs})` : ''}:`}</Typography>
         {values.map((minifig, minifigIndex) => (
           <div

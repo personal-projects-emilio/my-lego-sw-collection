@@ -17,7 +17,7 @@ import TimelinePickerBranch from './TimelinePickerBranch'
 export type { TimelinePickerProps } from './pickButton'
 
 const TimelinePicker: FC<TimelinePickerProps> = (props) => {
-  const { classes, cx, theme } = useTimelinePickerStyles()
+  const { classes, theme } = useTimelinePickerStyles()
   const { timeline, picks } = props
   const looseTitles = timeline
     .childrenOf(undefined)
@@ -68,7 +68,7 @@ const TimelinePicker: FC<TimelinePickerProps> = (props) => {
                 describeChild
               >
                 <button
-                  className={cx(classes.button, classes.eraName)}
+                  className={classes.eraButton}
                   style={pickStyle({ ...props, entry: era })}
                   {...toggleProps({ ...props, entry: era })}
                 >

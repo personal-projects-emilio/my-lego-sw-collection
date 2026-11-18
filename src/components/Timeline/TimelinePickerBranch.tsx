@@ -16,7 +16,7 @@ import useTimelinePickerStyles from './TimelinePicker.styles'
 type NodeProps = { props: TimelinePickerProps; entry: TimelineEntry }
 
 const Node: FC<NodeProps> = ({ props, entry }) => {
-  const { classes, cx } = useTimelinePickerStyles()
+  const { classes } = useTimelinePickerStyles()
   const children = props.timeline.childrenOf(entry.id)
   return (
     <>
@@ -26,11 +26,7 @@ const Node: FC<NodeProps> = ({ props, entry }) => {
         describeChild
       >
         <button
-          className={cx(
-            classes.button,
-            classes.node,
-            !entry.kind && classes.groupNode
-          )}
+          className={entry.kind ? classes.node : classes.groupNode}
           style={pickStyle({ ...props, entry })}
           {...toggleProps({ ...props, entry })}
         >

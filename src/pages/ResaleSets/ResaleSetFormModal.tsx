@@ -13,12 +13,7 @@ import {
 } from '@mui/material'
 import { useNavigate } from '@tanstack/react-router'
 import { useSetsQuery } from 'api/sets'
-import {
-  Checkbox,
-  FormTextField,
-  parseNullableNumber,
-  parseSetId,
-} from 'components/inputs'
+import { Checkbox, FormTextField } from 'components/inputs'
 import capitalize from 'lodash/capitalize'
 import {
   boxConditions,
@@ -27,6 +22,7 @@ import {
   resaleSetValidationSchema,
   setConditions,
 } from 'types/resale'
+import { parseNullableNumber, parseNullableText, parseSetId } from 'utils/parse'
 
 import { defaultResaleSetFormValues } from './ResaleSetFormModal.constant'
 import useResaleSetFormModalStyles from './ResaleSetFormModal.styles'
@@ -132,7 +128,7 @@ const ResaleSetFormModal: FC<ResaleSetFormModalProps> = ({ resaleSet }) => {
             control={control}
             name="exitDate"
             label="Exit date"
-            parse={(value) => value || null}
+            parse={parseNullableText}
             slotProps={{ inputLabel: { shrink: true } }}
             type="date"
           />

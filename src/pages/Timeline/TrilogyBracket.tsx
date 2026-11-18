@@ -25,19 +25,14 @@ const TrilogyBracket: FC<TrilogyBracketProps> = ({
   duplicate,
   onSelect,
 }) => {
-  const { classes, cx } = useTimelineEraSectionsStyles()
+  const { classes } = useTimelineEraSectionsStyles()
   return (
     <button
       type="button"
       onClick={() => onSelect(trilogy.id)}
       aria-hidden={duplicate || undefined}
       tabIndex={duplicate ? -1 : undefined}
-      className={cx(
-        classes.focusable,
-        classes.bracket,
-        classes.clickable,
-        side === 'left' ? classes.leftBracket : classes.rightBracket
-      )}
+      className={side === 'left' ? classes.leftBracket : classes.rightBracket}
       style={{
         gridColumn: side === 'left' ? 1 : 5,
         gridRow: `${from} / ${to + 1}`,

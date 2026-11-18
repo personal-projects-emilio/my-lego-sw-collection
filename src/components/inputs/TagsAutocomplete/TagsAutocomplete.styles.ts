@@ -35,36 +35,37 @@ export default makeStyles({ name: 'TagsAutocomplete' })((theme) => ({
       paddingLeft: `calc(var(--depth) * ${theme.spacing(2)})`,
     },
   },
-  pinned: {
-    '&&&&&': {
+  subtree: {
+    padding: 0,
+    '&&&&& > li:first-of-type': {
       backgroundColor: theme.palette.background.paper,
       opacity: 1,
       position: 'sticky',
       top: `calc(${groupHeight}px + (var(--depth) - 1) * ${optionHeight}px)`,
       zIndex: `calc(${groupLayer} - var(--depth))`,
-    },
-    '&.Mui-focused': {
-      backgroundImage: tint(theme.palette.action.hover),
-    },
-    '&[aria-selected="true"]': {
-      backgroundImage: tint(
-        theme.alpha(
-          theme.palette.primary.main,
-          theme.palette.action.selectedOpacity
-        )
-      ),
-    },
-    '&[aria-selected="true"].Mui-focused': {
-      backgroundImage: tint(
-        theme.alpha(
-          theme.palette.primary.main,
-          theme.palette.action.selectedOpacity +
-            theme.palette.action.hoverOpacity
-        )
-      ),
-    },
-    '&&&&&[aria-disabled="true"]': {
-      color: theme.palette.text.disabled,
+      '&.Mui-focused': {
+        backgroundImage: tint(theme.palette.action.hover),
+      },
+      '&[aria-selected="true"]': {
+        backgroundImage: tint(
+          theme.alpha(
+            theme.palette.primary.main,
+            theme.palette.action.selectedOpacity
+          )
+        ),
+      },
+      '&[aria-selected="true"].Mui-focused': {
+        backgroundImage: tint(
+          theme.alpha(
+            theme.palette.primary.main,
+            theme.palette.action.selectedOpacity +
+              theme.palette.action.hoverOpacity
+          )
+        ),
+      },
+      '&[aria-disabled="true"]': {
+        color: theme.palette.text.disabled,
+      },
     },
   },
   note: {

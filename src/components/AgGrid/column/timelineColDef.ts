@@ -1,13 +1,13 @@
 import type { ColDef } from 'ag-grid-community'
-import type { TimelineId,TimelineItem } from 'types/timeline'
+import type { TimelineId, TimelineItem } from 'types/timeline'
 import type { Timeline } from 'utils/timeline'
 
 import TimelineFilter from './TimelineFilter'
 import TimelineTooltip from './TimelineTooltip'
 
-export const timelineColDef = <Row extends TimelineItem>(
+export const timelineColDef = <TData extends TimelineItem>(
   timeline: Timeline
-): ColDef<Row, TimelineId[]> => {
+): ColDef<TData, TimelineId[]> => {
   const mapIdsToOrder = new Map(
     timeline.entries.map(({ id }, index) => [id, index])
   )
@@ -33,7 +33,7 @@ export const timelineColDef = <Row extends TimelineItem>(
         ? left.length - right.length
         : (left[index] ?? -Infinity) - (right[index] ?? -Infinity)
     },
-    field: 'effectiveTimeline' as ColDef<Row, TimelineId[]>['field'],
+    field: 'effectiveTimeline' as ColDef<TData, TimelineId[]>['field'],
     headerName: 'Timeline',
     filter: TimelineFilter,
     flex: 2,

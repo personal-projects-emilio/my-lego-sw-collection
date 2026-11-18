@@ -18,14 +18,6 @@ type FormTextFieldProps<Form extends FieldValues, Output> = Omit<
   rules?: UseControllerProps<Form, FieldPath<Form>, Output>['rules']
 }
 
-export const parseInteger = (value: string) => parseInt(value, 10)
-
-export const parseSetId = (value: string) =>
-  /\D/.test(value) ? value : parseInt(value, 10)
-
-export const parseNullableNumber = (value: string) =>
-  value === '' ? null : parseFloat(value)
-
 const FormTextField = <Form extends FieldValues, Output = Form>({
   control,
   name,

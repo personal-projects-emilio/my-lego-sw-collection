@@ -43,7 +43,7 @@ export default config(
         {
           selector: 'typeParameter',
           format: ['PascalCase'],
-          custom: { regex: '^[A-Z][a-z]', match: true },
+          custom: { regex: '^(TData$|[A-Z][a-z])', match: true },
         },
       ],
       'max-params': ['error', 3],

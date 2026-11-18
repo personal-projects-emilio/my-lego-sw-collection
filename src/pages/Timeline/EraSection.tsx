@@ -31,7 +31,7 @@ const EraSection: FC<EraSectionProps> = ({
   counts,
   onSelect,
 }) => {
-  const { classes, cx } = useTimelineEraSectionsStyles()
+  const { classes } = useTimelineEraSectionsStyles()
   const color = eraColor({ timeline, id: era?.id })
   const { rows, brackets, cellOf } = eraLayout({ titles, trilogies, spacing })
 
@@ -51,11 +51,7 @@ const EraSection: FC<EraSectionProps> = ({
           <button
             type="button"
             onClick={() => onSelect(era.id)}
-            className={cx(
-              classes.focusable,
-              classes.headerPill,
-              classes.clickable
-            )}
+            className={classes.headerButton}
             style={{ background: color }}
           >
             {era.label}
@@ -73,7 +69,8 @@ const EraSection: FC<EraSectionProps> = ({
         <Fragment key={index}>
           <div
             aria-hidden={row.gap !== undefined || undefined}
-            className={cx(classes.axis, row.compressed && classes.compressed)}
+            className={classes.axis}
+            data-compressed={row.compressed || undefined}
             style={{ gridRow: index + 2 }}
           >
             {row.gap === undefined && (
@@ -92,10 +89,9 @@ const EraSection: FC<EraSectionProps> = ({
               return inCell.length ? (
                 <div
                   key={side}
-                  className={cx(
-                    classes.cell,
+                  className={
                     side === 'left' ? classes.leftCell : classes.rightCell
-                  )}
+                  }
                   style={{
                     gridColumn: side === 'left' ? 2 : 4,
                     gridRow: index + 2,

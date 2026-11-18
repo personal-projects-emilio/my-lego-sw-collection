@@ -31,9 +31,7 @@ export default makeStyles({ name: 'TimelineField' })((theme) => ({
   select: {
     '& .MuiInputBase-root, & .MuiAutocomplete-input': { cursor: 'pointer' },
     '& .MuiAutocomplete-input': { caretColor: 'transparent' },
-  },
-  noInput: {
-    '& .MuiAutocomplete-input': {
+    '&[data-filled] .MuiAutocomplete-input': {
       flexGrow: '0 !important',
       minWidth: '0 !important',
       width: '0 !important',
@@ -41,8 +39,10 @@ export default makeStyles({ name: 'TimelineField' })((theme) => ({
     },
   },
   lock: { opacity: 0.8 },
-  chevron: { transition: 'transform 150ms' },
-  chevronOpen: { transform: 'rotate(180deg)' },
+  chevron: {
+    transition: 'transform 150ms',
+    '&[data-open]': { transform: 'rotate(180deg)' },
+  },
   panel: {
     marginTop: theme.spacing(1),
     padding: theme.spacing(1.5),

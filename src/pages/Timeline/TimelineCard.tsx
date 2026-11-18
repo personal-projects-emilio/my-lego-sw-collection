@@ -21,17 +21,12 @@ const TimelineCard: FC<TimelineCardProps> = ({
   counts,
   onSelect,
 }) => {
-  const { classes, cx } = useTimelineEraSectionsStyles()
+  const { classes } = useTimelineEraSectionsStyles()
   return (
     <button
       type="button"
       onClick={() => onSelect(entry.id)}
-      className={cx(
-        classes.focusable,
-        classes.card,
-        classes.clickable,
-        side === 'left' ? classes.leftCard : classes.rightCard
-      )}
+      className={side === 'left' ? classes.leftCard : classes.rightCard}
     >
       <KindIcon kind={entry.kind} />
       <span className={classes.cardText}>

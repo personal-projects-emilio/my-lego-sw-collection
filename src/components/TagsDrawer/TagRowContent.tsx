@@ -34,7 +34,7 @@ const TagRowContent = memo<TagRowContentProps>(
     rowActions,
     siblingLabels = [],
   }) => {
-    const { classes, cx } = useTagsDrawerStyles()
+    const { classes } = useTagsDrawerStyles()
     return (
       <>
         {expanded === undefined ? (
@@ -63,7 +63,8 @@ const TagRowContent = memo<TagRowContentProps>(
           />
         ) : (
           <Typography
-            className={cx(classes.name, isRoot && classes.root)}
+            className={classes.name}
+            data-root={isRoot || undefined}
             onDoubleClick={() => !disabled && rowActions.startRenaming(id)}
             variant="body2"
           >
@@ -72,10 +73,8 @@ const TagRowContent = memo<TagRowContentProps>(
         )}
         {dropNote ? (
           <Typography
-            className={cx(
-              classes.dropNote,
-              dropNote.refused && classes.refused
-            )}
+            className={classes.dropNote}
+            data-refused={dropNote.refused || undefined}
             variant="caption"
           >
             {dropNote.text}

@@ -9,13 +9,9 @@ import {
   DialogTitle,
 } from '@mui/material'
 import { useMinifigsQuery } from 'api/minifigs'
-import {
-  Autocomplete,
-  Checkbox,
-  FormTextField,
-  parseInteger,
-} from 'components/inputs'
+import { Autocomplete, Checkbox, FormTextField } from 'components/inputs'
 import { useMinifigsAutocompleteOptions } from 'pages/Minifigs/hooks'
+import { parseInteger } from 'utils/parse'
 
 import type { SetIndividualMinifigProps } from './SetMinifigs.constant'
 import useSetMinifigsStyles from './SetMinifigs.styles'

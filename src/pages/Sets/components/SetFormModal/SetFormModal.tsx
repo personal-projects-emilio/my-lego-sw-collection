@@ -16,8 +16,6 @@ import {
   Autocomplete,
   Checkbox,
   FormTextField,
-  parseInteger,
-  parseSetId,
   TagsAutocomplete,
 } from 'components/inputs'
 import { TimelineField } from 'components/Timeline'
@@ -25,6 +23,7 @@ import { useSetsAutocompleteOptions, useSetsMutations } from 'pages/Sets/hooks'
 import { type SetFormInput, setValidationSchema } from 'types/sets'
 import { formatFrDate } from 'utils/format'
 import { isSetRetired } from 'utils/lego'
+import { parseInteger, parseSetId } from 'utils/parse'
 
 import {
   defaultSetFormValues,

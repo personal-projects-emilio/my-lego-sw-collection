@@ -18,10 +18,10 @@ const useReportGridStyles = makeStyles({ name: 'ReportGrid' })({
   autoHeight: { height: 'auto', maxHeight: 'none', padding: 0 },
 })
 
-type ReportGridProps<Row> = AgGridReactProps<Row> & { rowData: Row[] }
+type ReportGridProps<TData> = AgGridReactProps<TData> & { rowData: TData[] }
 
 /** The grid used by every import report section, short lists shrink to their rows. */
-const ReportGrid = <Row,>({ rowData, ...props }: ReportGridProps<Row>) => {
+const ReportGrid = <TData,>({ rowData, ...props }: ReportGridProps<TData>) => {
   const { classes } = useReportGridStyles()
   const isShort = rowData.length <= autoHeightMaxRows
   return (
