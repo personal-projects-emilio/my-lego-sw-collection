@@ -205,7 +205,12 @@ test.for([
   )
 })
 
-test.for([
+test.for<{
+  case: string
+  value: string[]
+  inherited: Record<string, string[]>
+  expected: boolean
+}>([
   {
     case: 'an entry implied only by inherited ones',
     value: [],
