@@ -218,9 +218,8 @@ const useTagsDrawerStyles = makeStyles<void, 'addButton'>({
     flexShrink: 0,
     width: 28,
   },
-  switchItem: {
-    justifyContent: 'space-between',
-    gap: theme.spacing(2),
+  menu: {
+    '& .MuiListItemIcon-root': { minWidth: 44 },
   },
   label: {
     flex: 1,
@@ -927,6 +926,7 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
       </DndContext>
       <Menu
         anchorEl={menu?.anchor}
+        className={classes.menu}
         disableEnforceFocus
         disableRestoreFocus
         onClose={closeMenu}
@@ -968,8 +968,9 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
                   return (
                     <MenuItem
                       key={`applies-${target}`}
-                      className={classes.switchItem}
+                      aria-checked={checked}
                       dense
+                      role="menuitemcheckbox"
                       disabled={
                         isPending || (checked && menuTag.appliesTo !== 'both')
                       }
@@ -986,20 +987,25 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
                         )
                       }
                     >
+                      <ListItemIcon>
+                        <Switch
+                          checked={checked}
+                          edge="start"
+                          size="small"
+                          slotProps={{
+                            input: { tabIndex: -1, 'aria-hidden': true },
+                          }}
+                        />
+                      </ListItemIcon>
                       {`Applies to ${target}`}
-                      <Switch
-                        checked={checked}
-                        edge="end"
-                        size="small"
-                        slotProps={{ input: { tabIndex: -1 } }}
-                      />
                     </MenuItem>
                   )
                 }),
                 <MenuItem
                   key="inherited"
-                  className={classes.switchItem}
+                  aria-checked={!!menuTag.inherited}
                   dense
+                  role="menuitemcheckbox"
                   disabled={isPending}
                   onClick={() =>
                     run(
@@ -1011,13 +1017,17 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
                     )
                   }
                 >
+                  <ListItemIcon>
+                    <Switch
+                      checked={!!menuTag.inherited}
+                      edge="start"
+                      size="small"
+                      slotProps={{
+                        input: { tabIndex: -1, 'aria-hidden': true },
+                      }}
+                    />
+                  </ListItemIcon>
                   Minifigs inherit it from their sets
-                  <Switch
-                    checked={!!menuTag.inherited}
-                    edge="end"
-                    size="small"
-                    slotProps={{ input: { tabIndex: -1 } }}
-                  />
                 </MenuItem>,
               ]),
           <Divider key="danger" />,
