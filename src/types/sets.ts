@@ -65,7 +65,7 @@ export const setValidationSchema = z.object({
     message: 'Subtheme is required',
   }),
   tags: z.array(z.string()),
-  appearances: z.array(z.string()),
+  timeline: z.array(z.string()),
   UPC: z.string().or(z.null()),
 })
 
@@ -75,7 +75,7 @@ export type SetsList = Set[]
 
 export type CollectionSet = Set & {
   effectiveTags: TagId[]
-  effectiveAppearances: TimelineId[]
+  effectiveTimeline: TimelineId[]
 }
 
 export type CollectionSetsList = CollectionSet[]

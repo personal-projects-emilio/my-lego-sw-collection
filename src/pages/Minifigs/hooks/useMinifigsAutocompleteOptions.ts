@@ -25,7 +25,9 @@ const useMinifigsAutocompleteOptions = () => {
       }
     )
     return {
-      characterNames: uniqueAndSortedArray(statistics.characterNames),
+      characterNames: uniqueAndSortedArray({
+        array: statistics.characterNames,
+      }),
       ids: statistics.ids,
     }
   }, [minifigsList])

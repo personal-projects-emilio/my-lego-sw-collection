@@ -145,7 +145,7 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
           <Controller
             control={control}
             defaultValue={[]}
-            name="appearances"
+            name="timeline"
             render={({ field }) => (
               <TimelineField
                 className={classes.gridSpan12}

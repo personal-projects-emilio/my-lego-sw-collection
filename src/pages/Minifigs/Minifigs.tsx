@@ -1,4 +1,4 @@
-import { type FC, useState } from 'react'
+import { type FC, useDeferredValue, useState } from 'react'
 
 import { Skeleton } from '@mui/material'
 import { Outlet } from '@tanstack/react-router'
@@ -14,6 +14,7 @@ const Minifigs: FC = () => {
   const { minifigsList, isLoading } = useCollection()
   const minifigsColumnDefs = useMinifigsColDefs()
   const [quickFilter, setQuickFilter] = useState('')
+  const deferredQuickFilter = useDeferredValue(quickFilter)
   const { percentageVariantsOwned, totalOwned, totalVariants, variantsOwned } =
     useMinifigsStatistics()
 
@@ -24,13 +25,14 @@ const Minifigs: FC = () => {
     <>
       <ModuleHeader
         addTo="/minifigs/add"
+        quickFilter={quickFilter}
         setQuickFilter={setQuickFilter}
         statisticsTooltipTitle={`You owned ${variantsOwned} of the ${totalVariants} minifig variants in our database (${formatPercentage(percentageVariantsOwned)}). The total of minifigs you owned is ${totalOwned}`}
       />
       <AgGridTable
         columnDefs={minifigsColumnDefs}
         defaultColDef={defaultMinifigsColumnDefs}
-        quickFilterText={quickFilter}
+        quickFilterText={deferredQuickFilter}
         rowData={structuredClone(minifigsList)}
       />
       <Outlet />

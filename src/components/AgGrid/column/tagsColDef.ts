@@ -7,16 +7,19 @@ import TagsFilter, { type TagsFilterProps } from './TagsFilter'
 import TagsHeader from './TagsHeader'
 import TagsTooltip from './TagsTooltip'
 
-export const tagsColDef = <TData extends TaggedItem>(
-  tagsVocabulary: TagsVocabulary,
+export const tagsColDef = <Row extends TaggedItem>({
+  tagsVocabulary,
+  itemType,
+}: {
+  tagsVocabulary: TagsVocabulary
   itemType: TagTarget
-): ColDef<TData, TagId[]> => ({
+}): ColDef<Row, TagId[]> => ({
   colId: 'tags',
   comparator: (a, b) =>
     tagsVocabulary
       .groupedLabel(a ?? [])
       .localeCompare(tagsVocabulary.groupedLabel(b ?? [])),
-  field: 'effectiveTags' as ColDef<TData, TagId[]>['field'],
+  field: 'effectiveTags' as ColDef<Row, TagId[]>['field'],
   headerName: 'Tags',
   headerComponentParams: { innerHeaderComponent: TagsHeader },
   suppressHeaderKeyboardEvent: ({ event }) =>

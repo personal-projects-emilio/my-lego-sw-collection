@@ -85,7 +85,8 @@ const ImportBricksetCsv: FC = () => {
       new Map(
         report?.missing.map((row) => [
           row,
-          bricksetRowToSetId(row, {
+          bricksetRowToSetId({
+            row,
             rows: rows ?? [],
             setsList: setsList ?? [],
           }),
@@ -99,18 +100,18 @@ const ImportBricksetCsv: FC = () => {
       report?.missing
         .filter((row) => addedKeys.includes(bricksetRowKey(row)))
         .map((row) =>
-          newSetFromBricksetRow(
+          newSetFromBricksetRow({
             row,
-            defaultSetFormValues(undefined),
-            newSetIds.get(row) ?? bricksetRowKey(row)
-          )
+            base: defaultSetFormValues(undefined),
+            id: newSetIds.get(row) ?? bricksetRowKey(row),
+          })
         ) ?? [],
     [report, addedKeys, newSetIds]
   )
 
   const changeKeysBySet =
     report?.updates.map(({ set, changes }) =>
-      changes.map(({ field }) => changeKey(set.id, field))
+      changes.map(({ field }) => changeKey({ id: set.id, field }))
     ) ?? []
   const isApplied = (key: string) => !skippedKeys.includes(key)
   const changesCount = changeKeysBySet.flat().length
@@ -119,11 +120,17 @@ const ImportBricksetCsv: FC = () => {
     keys.some(isApplied)
   ).length
 
-  const toggleAdded = (keys: string[], isAdded: boolean) =>
+  const toggleAdded = ({
+    keys,
+    isAdded,
+  }: {
+    keys: string[]
+    isAdded: boolean
+  }) =>
     setAddedKeys((previousKeys) =>
       isAdded
         ? previousKeys.filter((key) => !keys.includes(key))
-        : uniqueAndSortedArray([...previousKeys, ...keys])
+        : uniqueAndSortedArray({ array: [...previousKeys, ...keys] })
     )
 
   const onClose = () => {
@@ -143,19 +150,33 @@ const ImportBricksetCsv: FC = () => {
     setRows(await readCsvFile(file))
   }
 
-  const updateIgnoreList = (key: keyof BricksetIgnoreList, values: string[]) =>
-    ignoreList && setEditedIgnoreList({ ...ignoreList, [key]: values })
+  const updateIgnoreList = ({
+    key,
+    values,
+  }: {
+    key: keyof BricksetIgnoreList
+    values: string[]
+  }) => ignoreList && setEditedIgnoreList({ ...ignoreList, [key]: values })
 
-  const addToIgnoreList = (key: keyof BricksetIgnoreList, value: string) =>
+  const addToIgnoreList = ({
+    key,
+    value,
+  }: {
+    key: keyof BricksetIgnoreList
+    value: string
+  }) =>
     ignoreList &&
-    updateIgnoreList(key, uniqueAndSortedArray([...ignoreList[key], value]))
+    updateIgnoreList({
+      key,
+      values: uniqueAndSortedArray({ array: [...ignoreList[key], value] }),
+    })
 
   const onValidate = async () => {
     if (!report || !ignoreList) return
     await saveIgnoreList(ignoreList)
     if (appliedUpdatesCount > 0 || addedSets.length > 0) {
       await editSetsList(
-        [...skipChanges(report, skippedKeys), ...addedSets].sort((a, b) =>
+        [...skipChanges({ report, skippedKeys }), ...addedSets].sort((a, b) =>
           compareIds(a.id, b.id)
         )
       )

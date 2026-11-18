@@ -54,6 +54,9 @@ import {
   Typography,
 } from '@mui/material'
 import { useCollection, useTagsVocabulary } from 'hooks'
+import useVocabularyMutations, {
+  PartlySavedError,
+} from 'hooks/useVocabularyMutations'
 import { isEqual } from 'lodash'
 import { makeStyles } from 'tss-react/mui'
 import type { Tag, TaggedItem, TagId } from 'types/tags'
@@ -70,7 +73,6 @@ import { type FlatNode, projectDrop } from 'utils/tree'
 
 import DeleteTagDialog from './DeleteTagDialog'
 import useDrawerWidth from './useDrawerWidth'
-import useTagsMutations, { PartlySavedError } from './useTagsMutations'
 
 const saveError = (fallback: string) => (err: unknown) =>
   err instanceof PartlySavedError ? err.message : fallback
@@ -83,16 +85,18 @@ type Target = 'sets' | 'minifigs'
 
 const targets: Target[] = ['sets', 'minifigs']
 
-const appliesToTarget = (appliesTo: Tag['appliesTo'], target: Target) =>
+type TargetCheck = { appliesTo: Tag['appliesTo']; target: Target }
+
+const appliesToTarget = ({ appliesTo, target }: TargetCheck) =>
   appliesTo === 'both' || appliesTo === target
 
-const toggledAppliesTo = (
-  appliesTo: Tag['appliesTo'],
-  target: Target
-): Tag['appliesTo'] => {
+const toggledAppliesTo = ({
+  appliesTo,
+  target,
+}: TargetCheck): Tag['appliesTo'] => {
   const other: Target = target === 'sets' ? 'minifigs' : 'sets'
-  if (!appliesToTarget(appliesTo, target)) return 'both'
-  return appliesToTarget(appliesTo, other) ? other : appliesTo
+  if (!appliesToTarget({ appliesTo, target })) return 'both'
+  return appliesToTarget({ appliesTo, target: other }) ? other : appliesTo
 }
 
 const useTagsDrawerStyles = makeStyles<void, 'addButton'>({
@@ -510,7 +514,7 @@ const TagRow: FC<TagRowProps> = ({ depth, isDropTarget, ...content }) => {
 const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
   const { classes } = useTagsDrawerStyles()
   const tagsVocabulary = useTagsVocabulary()
-  const { state, apply, isPending } = useTagsMutations()
+  const { state, apply, isPending } = useVocabularyMutations('tags')
   const { width, handleProps } = useDrawerWidth()
   const [error, setError] = useState<string>()
   const [editing, setEditing] = useState<Editing>()
@@ -621,7 +625,7 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
 
   const projectSortedDrop = useCallback(
     (drop: { activeId: TagId; overId: TagId; depthDelta: number }) => {
-      const target = projectDrop(nodes, drop)
+      const target = projectDrop({ nodes, ...drop })
       return {
         ...target,
         stays: target.parent === tagsById.get(drop.activeId)?.parent,
@@ -635,7 +639,7 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
     const target = projectSortedDrop({ ...drag, overId: drag.overId })
     const edit = target.stays
       ? undefined
-      : moveTag(state, drag.activeId, target)
+      : moveTag({ state, id: drag.activeId, parent: target.parent })
     return {
       ...target,
       depth: target.parent ? tagsVocabulary.depth(target.parent) + 1 : 0,
@@ -694,7 +698,7 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
       rename: (id, label) => {
         setEditing(undefined)
         run(
-          state && editTag(state, id, { label }),
+          state && editTag({ state, id, changes: { label } }),
           `Renamed ${tagsById.get(id)?.label} to ${label.trim()}`
         )
       },
@@ -704,7 +708,13 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
     [run, state, tagsById, tagsVocabulary, toggle]
   )
 
-  const labelsUnder = (parent: TagId | undefined, except?: TagId) =>
+  const labelsUnder = ({
+    parent,
+    except,
+  }: {
+    parent?: TagId
+    except?: TagId
+  }) =>
     tagsList
       .filter((tag) => tag.parent === parent && tag.id !== except)
       .map(({ label }) => label)
@@ -739,7 +749,7 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
         onCommit={(label) => {
           setEditing(undefined)
           run(
-            state && addTag(state, { label, parent: adding.parent }),
+            state && addTag({ state, label, parent: adding.parent }),
             `Added ${label.trim()}`
           )
         }}
@@ -748,7 +758,7 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
             ? `New tag in ${tagsVocabulary.label(adding.parent)}`
             : 'New root'
         }
-        siblingLabels={labelsUnder(adding.parent)}
+        siblingLabels={labelsUnder({ parent: adding.parent })}
       />
     </li>
   )
@@ -758,7 +768,7 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
   const undo = () => {
     if (!state || !lastEdit || isPending) return
     setError(undefined)
-    apply(undoTagEdit(state, lastEdit))
+    apply(undoTagEdit({ current: state, ...lastEdit }))
       .then(() => setHistory((entries) => entries.slice(0, -1)))
       .catch((err) => setError(saveError('The undo could not be saved')(err)))
   }
@@ -784,7 +794,7 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
       depthDelta,
     })
     if (target.stays) return
-    const edit = moveTag(state, id, target)
+    const edit = moveTag({ state, id, parent: target.parent })
     if ('state' in edit) expand(target.parent)
     run(
       edit,
@@ -919,7 +929,9 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
                   label={tag.label}
                   rowActions={rowActions}
                   siblingLabels={
-                    isEditing ? labelsUnder(tag.parent, id) : undefined
+                    isEditing
+                      ? labelsUnder({ parent: tag.parent, except: id })
+                      : undefined
                   }
                 />,
                 id === addAfter && addRow,
@@ -969,7 +981,10 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
             : [
                 <Divider key="settings" />,
                 ...targets.map((target) => {
-                  const checked = appliesToTarget(menuTag.appliesTo, target)
+                  const checked = appliesToTarget({
+                    appliesTo: menuTag.appliesTo,
+                    target,
+                  })
                   return (
                     <MenuItem
                       key={`applies-${target}`}
@@ -982,11 +997,15 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
                       onClick={() =>
                         run(
                           state &&
-                            editTag(state, menuTag.id, {
-                              appliesTo: toggledAppliesTo(
-                                menuTag.appliesTo,
-                                target
-                              ),
+                            editTag({
+                              state,
+                              id: menuTag.id,
+                              changes: {
+                                appliesTo: toggledAppliesTo({
+                                  appliesTo: menuTag.appliesTo,
+                                  target,
+                                }),
+                              },
                             }),
                           `${checked ? 'Stopped' : 'Started'} applying ${menuTag.label} to ${target}`
                         )
@@ -1014,8 +1033,10 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
                   onClick={() =>
                     run(
                       state &&
-                        editTag(state, menuTag.id, {
-                          inherited: !menuTag.inherited,
+                        editTag({
+                          state,
+                          id: menuTag.id,
+                          changes: { inherited: !menuTag.inherited },
                         }),
                       `Turned ${menuTag.inherited ? 'off' : 'on'} inheritance of ${menuTag.label}`
                     )

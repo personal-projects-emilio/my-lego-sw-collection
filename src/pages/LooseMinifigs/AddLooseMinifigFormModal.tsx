@@ -95,10 +95,13 @@ const AddLooseMinifigFormModal: FC = () => {
       setError('root', { message: 'Unable to add the loose minifig' })
     )
 
-  const numberField = (
-    name: 'quantity' | 'unitBoughtPrice' | 'unitMarketValue',
+  const numberField = ({
+    name,
+    label,
+  }: {
+    name: 'quantity' | 'unitBoughtPrice' | 'unitMarketValue'
     label: string
-  ) => (
+  }) => (
     <Controller
       control={control}
       name={name}
@@ -150,14 +153,14 @@ const AddLooseMinifigFormModal: FC = () => {
               </div>
             )}
           />
-          {numberField('quantity', 'Quantity')}
+          {numberField({ name: 'quantity', label: 'Quantity' })}
           <Controller
             control={control}
             name="isInFrame"
             render={({ field }) => <Checkbox {...field} label="In frame" />}
           />
-          {numberField('unitBoughtPrice', 'Unit bought price')}
-          {numberField('unitMarketValue', 'Unit market value')}
+          {numberField({ name: 'unitBoughtPrice', label: 'Unit bought price' })}
+          {numberField({ name: 'unitMarketValue', label: 'Unit market value' })}
           {errors.root && (
             <Typography color="error" className={classes.fullWidth}>
               {errors.root.message}

@@ -1,4 +1,4 @@
-import { type FC, useMemo, useState } from 'react'
+import { type FC, useDeferredValue, useMemo, useState } from 'react'
 
 import { Skeleton } from '@mui/material'
 import { Navigate, Outlet } from '@tanstack/react-router'
@@ -16,6 +16,7 @@ const LooseMinifigs: FC = () => {
   const { minifigsList, isLoading } = useCollection()
   const columnDefs = useLooseMinifigsColDefs()
   const [quickFilter, setQuickFilter] = useState('')
+  const deferredQuickFilter = useDeferredValue(quickFilter)
 
   const looseMinifigs = useMemo(
     () => minifigsList?.filter(({ owned }) => owned.loose.quantity > 0),
@@ -45,6 +46,7 @@ const LooseMinifigs: FC = () => {
     <>
       <ModuleHeader
         addTo="/loose-minifigs/add"
+        quickFilter={quickFilter}
         setQuickFilter={setQuickFilter}
         statisticsTooltipTitle={`You have ${statistics.quantity} loose minifigs across ${looseMinifigs?.length ?? 0} variants. You have spent ${formatFrEuroCurrency(statistics.bought)} on them and their market value is ${formatFrEuroCurrency(statistics.marketValue)}`}
       />
@@ -52,7 +54,7 @@ const LooseMinifigs: FC = () => {
         columnDefs={columnDefs}
         defaultColDef={defaultMinifigsColumnDefs}
         getRowId={({ data }) => data.id}
-        quickFilterText={quickFilter}
+        quickFilterText={deferredQuickFilter}
         rowData={looseMinifigs}
       />
       <Outlet />

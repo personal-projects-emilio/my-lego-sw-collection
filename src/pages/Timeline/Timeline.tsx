@@ -41,7 +41,7 @@ const Timeline: FC = () => {
   const timeline = useTimeline()
   const [draft, setDraft] = useState<EntryDraft>()
   const counts = useMemo(
-    () => countItems(setsList, minifigsList),
+    () => countItems({ setsList, minifigsList }),
     [setsList, minifigsList]
   )
 

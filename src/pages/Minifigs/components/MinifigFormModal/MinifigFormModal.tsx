@@ -144,10 +144,10 @@ const MinifigFormModal: FC<MinifigFormModalProps> = ({
           <Controller
             control={control}
             defaultValue={[]}
-            name="appearances"
+            name="timeline"
             render={({ field }) => (
               <TimelineField
-                inherited={collectionMinifig?.inheritedAppearances}
+                inherited={collectionMinifig?.inheritedTimeline}
                 onChange={field.onChange}
                 value={field.value}
               />

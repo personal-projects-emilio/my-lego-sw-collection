@@ -20,11 +20,15 @@ const clearAuthLocalStorage = () => {
   localStorage.removeItem('refreshToken')
 }
 
-const saveSession = (
-  idToken: string,
-  refreshToken: string,
+const saveSession = ({
+  idToken,
+  refreshToken,
+  expiresIn,
+}: {
+  idToken: string
+  refreshToken: string
   expiresIn: string
-): Session => {
+}): Session => {
   const expirationDate = new Date(
     Date.now() + parseInt(expiresIn, 10) * 1000
   ).toISOString()
@@ -62,7 +66,13 @@ const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
       onSuccess: (data) => {
         if (!data) return
         const { expires_in, id_token, refresh_token } = data
-        setSession(saveSession(id_token, refresh_token, expires_in))
+        setSession(
+          saveSession({
+            idToken: id_token,
+            refreshToken: refresh_token,
+            expiresIn: expires_in,
+          })
+        )
       },
       onError: () => {
         logout()
@@ -72,7 +82,7 @@ const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
   const { mutate: login, isPending: isLoginPending } = useMutation({
     mutationFn: loginUser,
     onSuccess: ({ expiresIn, idToken, refreshToken }) => {
-      setSession(saveSession(idToken, refreshToken, expiresIn))
+      setSession(saveSession({ idToken, refreshToken, expiresIn }))
       history.back()
     },
     onError: () => {

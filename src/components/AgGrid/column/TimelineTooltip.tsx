@@ -2,7 +2,7 @@ import type { CustomTooltipProps } from 'ag-grid-react'
 import TreeView from 'components/TreeView'
 import { useTimeline } from 'hooks'
 import { makeStyles } from 'tss-react/mui'
-import type { AppearingItem } from 'types/timeline'
+import type { TimelineItem } from 'types/timeline'
 import { inheritedFrom } from 'utils/tags'
 
 const useTimelineTooltipStyles = makeStyles({ name: 'TimelineTooltip' })({
@@ -17,13 +17,13 @@ const useTimelineTooltipStyles = makeStyles({ name: 'TimelineTooltip' })({
   },
 })
 
-const TimelineTooltip = ({ data }: CustomTooltipProps<AppearingItem>) => {
+const TimelineTooltip = ({ data }: CustomTooltipProps<TimelineItem>) => {
   const { classes } = useTimelineTooltipStyles()
   const timeline = useTimeline()
-  if (!data?.effectiveAppearances.length) return null
+  if (!data?.effectiveTimeline.length) return null
 
   const notes = Object.fromEntries(
-    Object.entries(data.inheritedAppearances ?? {}).map(([id, sources]) => [
+    Object.entries(data.inheritedTimeline ?? {}).map(([id, sources]) => [
       id,
       inheritedFrom(sources),
     ])
@@ -32,7 +32,7 @@ const TimelineTooltip = ({ data }: CustomTooltipProps<AppearingItem>) => {
   return (
     <TreeView
       className={classes.tooltip}
-      ids={data.effectiveAppearances}
+      ids={data.effectiveTimeline}
       notes={notes}
       tree={timeline}
     />

@@ -5,7 +5,7 @@ import { type CustomFilterProps, useGridFilter } from 'ag-grid-react'
 import { TimelineField } from 'components/Timeline'
 import { useTimeline } from 'hooks'
 import { makeStyles } from 'tss-react/mui'
-import type { AppearingItem, TimelineId } from 'types/timeline'
+import type { TimelineId,TimelineItem } from 'types/timeline'
 
 const useTimelineFilterStyles = makeStyles({ name: 'TimelineFilter' })(
   (theme) => ({
@@ -21,14 +21,14 @@ const useTimelineFilterStyles = makeStyles({ name: 'TimelineFilter' })(
 const TimelineFilter = ({
   model,
   onModelChange,
-}: CustomFilterProps<AppearingItem, unknown, TimelineId[]>) => {
+}: CustomFilterProps<TimelineItem, unknown, TimelineId[]>) => {
   const { classes } = useTimelineFilterStyles()
   const timeline = useTimeline()
   const inputRef = useRef<HTMLInputElement>(null)
 
   const doesFilterPass = useCallback(
-    ({ data }: IDoesFilterPassParams<AppearingItem>) =>
-      !model || model.some((id) => data.effectiveAppearances.includes(id)),
+    ({ data }: IDoesFilterPassParams<TimelineItem>) =>
+      !model || model.some((id) => data.effectiveTimeline.includes(id)),
     [model]
   )
   const getModelAsString = useCallback(

@@ -15,7 +15,7 @@ const nodes: TreeNode[] = [
   { id: 'carbonite', label: 'Carbonite Chamber', parent: 'bespin' },
 ]
 
-const tree = buildTree(nodes)
+const tree = buildTree({ nodes })
 
 test.for([
   { ids: ['anh', 'aor', 'ot'], leaves: ['anh'], tops: ['aor'] },
@@ -130,7 +130,12 @@ test.for([
   },
 ])('projectDrop $case', ({ active, over, delta, expected }) => {
   assert.deepEqual(
-    projectDrop(flat, { activeId: active, overId: over, depthDelta: delta }),
+    projectDrop({
+      nodes: flat,
+      activeId: active,
+      overId: over,
+      depthDelta: delta,
+    }),
     expected
   )
 })
@@ -138,8 +143,8 @@ test.for([
 test('buildTree sorts siblings with the given comparator', () => {
   const byLabelDesc = (a: TreeNode, b: TreeNode) =>
     b.label.localeCompare(a.label)
-  assert.deepEqual(buildTree(nodes, byLabelDesc).sort(['anh', 'esb']), [
-    'esb',
-    'anh',
-  ])
+  assert.deepEqual(
+    buildTree({ nodes, compare: byLabelDesc }).sort(['anh', 'esb']),
+    ['esb', 'anh']
+  )
 })

@@ -1,4 +1,4 @@
-import { type FC, useMemo, useState } from 'react'
+import { type FC, useDeferredValue, useMemo, useState } from 'react'
 
 import { Alert, FormControlLabel, Skeleton, Switch } from '@mui/material'
 import { Navigate, Outlet } from '@tanstack/react-router'
@@ -18,6 +18,7 @@ const ResaleSets: FC = () => {
   const { data: resaleSetsList, isError, isLoading } = useResaleSetsQuery()
   const columnDefs = useResaleSetsColDefs()
   const [quickFilter, setQuickFilter] = useState('')
+  const deferredQuickFilter = useDeferredValue(quickFilter)
   const [inStockOnly, setInStockOnly] = useState(true)
   const [totals, setTotals] = useState(() => getResaleTotals([]))
 
@@ -58,6 +59,7 @@ const ResaleSets: FC = () => {
     <>
       <ModuleHeader
         addTo="/resale-sets/add"
+        quickFilter={quickFilter}
         setQuickFilter={setQuickFilter}
         statisticsTooltipTitle={`You have ${resaleSetsList?.length ?? 0} sets in your resale table`}
       >
@@ -77,7 +79,7 @@ const ResaleSets: FC = () => {
         getRowId={({ data }) => String(data.id)}
         onModelUpdated={onModelUpdated}
         pinnedBottomRowData={pinnedBottomRowData}
-        quickFilterText={quickFilter}
+        quickFilterText={deferredQuickFilter}
         rowData={rows}
       />
       <Outlet />

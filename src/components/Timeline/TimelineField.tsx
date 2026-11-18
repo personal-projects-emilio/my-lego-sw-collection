@@ -1,80 +1,18 @@
 import { type FC, type KeyboardEvent, type Ref, useId, useState } from 'react'
-import { MdArrowDropDown, MdLock } from 'react-icons/md'
+import { MdArrowDropDown } from 'react-icons/md'
 
-import {
-  Autocomplete,
-  Chip,
-  Collapse,
-  TextField,
-  Tooltip,
-  Typography,
-} from '@mui/material'
+import { Autocomplete, Collapse, TextField } from '@mui/material'
 import { useTimeline } from 'hooks'
-import { makeStyles } from 'tss-react/mui'
-import type { InheritedAppearances, TimelineId } from 'types/timeline'
-import { inheritedFrom } from 'utils/tags'
+import type { InheritedTimeline, TimelineId } from 'types/timeline'
 import { togglePick } from 'utils/timeline'
 
-import { eraColor } from './eraColor'
-import KindIcon from './KindIcon'
+import TimelineChips from './TimelineChips'
+import useTimelineFieldStyles from './TimelineField.styles'
 import TimelinePicker from './TimelinePicker'
-
-const useTimelineFieldStyles = makeStyles({ name: 'TimelineField' })(
-  (theme) => ({
-    group: {
-      alignItems: 'center',
-      background: 'var(--era-color)',
-      color: 'rgba(0, 0, 0, 0.87)',
-      borderRadius: theme.spacing(2),
-      display: 'inline-flex',
-      flexWrap: 'wrap',
-      gap: theme.spacing(0.75),
-      margin: theme.spacing(0.5),
-      padding: theme.spacing(0.5, 0.5, 0.5, 1.25),
-      '& .MuiChip-root': {
-        background: 'rgba(255, 255, 255, 0.45)',
-        margin: 0,
-      },
-    },
-    chip: {
-      background: 'var(--era-color)',
-      margin: theme.spacing(0.5),
-      padding: theme.spacing(0, 0.5),
-      color: 'rgba(0, 0, 0, 0.87)',
-      '& .MuiChip-icon': { color: 'inherit', fontSize: 14 },
-      '& .MuiChip-deleteIcon': {
-        color: 'rgba(0, 0, 0, 0.5)',
-        '&:hover': { color: 'rgba(0, 0, 0, 0.87)' },
-      },
-    },
-    chipLabel: { display: 'inline-flex', alignItems: 'center', gap: 4 },
-    select: {
-      '& .MuiInputBase-root, & .MuiAutocomplete-input': { cursor: 'pointer' },
-      '& .MuiAutocomplete-input': { caretColor: 'transparent' },
-    },
-    noInput: {
-      '& .MuiAutocomplete-input': {
-        flexGrow: '0 !important',
-        minWidth: '0 !important',
-        width: '0 !important',
-        padding: '0 !important',
-      },
-    },
-    lock: { opacity: 0.8 },
-    chevron: { transition: 'transform 150ms' },
-    chevronOpen: { transform: 'rotate(180deg)' },
-    panel: {
-      marginTop: theme.spacing(1),
-      padding: theme.spacing(1.5),
-      border: `1px solid ${theme.palette.divider}`,
-      borderRadius: theme.shape.borderRadius,
-    },
-  })
-)
 
 type TimelineFieldProps = {
   className?: string
-  inherited?: InheritedAppearances
+  inherited?: InheritedTimeline
   inputRef?: Ref<HTMLInputElement>
   label?: string
   onChange: (value: TimelineId[]) => void
@@ -82,9 +20,9 @@ type TimelineFieldProps = {
   value: TimelineId[]
 }
 
-const noInherited: InheritedAppearances = {}
+const noInherited: InheritedTimeline = {}
 
-const keyActions: Record<string, (open: boolean) => boolean> = {
+const mapKeysToActions: Record<string, (open: boolean) => boolean> = {
   ArrowDown: () => true,
   Enter: (open) => !open,
   ' ': (open) => !open,
@@ -107,16 +45,8 @@ const TimelineField: FC<TimelineFieldProps> = ({
   const panelId = useId()
   const picks = { value, inherited }
   const shown = timeline.leaves([...value, ...Object.keys(inherited)])
-  const groups = shown.reduce<
-    Array<{ parent?: TimelineId; ids: TimelineId[] }>
-  >((result, id) => {
-    const parent = timeline.entry(id)?.parent
-    const existing = parent && result.find((group) => group.parent === parent)
-    if (existing) existing.ids.push(id)
-    else result.push({ parent, ids: [id] })
-    return result
-  }, [])
-  const toggle = (id: TimelineId) => onChange(togglePick(timeline, picks, id))
+  const toggle = (id: TimelineId) =>
+    onChange(togglePick({ timeline, picks, id }))
 
   return (
     <div className={className}>
@@ -163,7 +93,7 @@ const TimelineField: FC<TimelineFieldProps> = ({
                   'aria-autocomplete': 'none',
                   readOnly: true,
                   onKeyDown: (event: KeyboardEvent<HTMLInputElement>) => {
-                    const next = keyActions[event.key]?.(open)
+                    const next = mapKeysToActions[event.key]?.(open)
                     if (next === undefined || next === open) return
                     event.preventDefault()
                     setOpen(next)
@@ -172,67 +102,13 @@ const TimelineField: FC<TimelineFieldProps> = ({
               }}
             />
           )}
-          renderValue={(values, getItemProps) => {
-            const chip = (id: TimelineId, label: string) => {
-              const entry = timeline.entry(id)
-              if (!entry) return null
-              const sources = inherited[id]
-              const { key, onDelete, ...itemProps } = getItemProps({
-                index: values.indexOf(id),
-              })
-              return (
-                <Tooltip
-                  key={key}
-                  title={sources ? inheritedFrom(sources) : ''}
-                  describeChild
-                >
-                  <Chip
-                    {...itemProps}
-                    aria-label={
-                      sources
-                        ? `${label}, ${inheritedFrom(sources)}`
-                        : undefined
-                    }
-                    size="small"
-                    className={classes.chip}
-                    style={{
-                      ['--era-color' as string]: eraColor(timeline, id),
-                    }}
-                    icon={<KindIcon kind={entry.kind} />}
-                    label={
-                      <span className={classes.chipLabel}>
-                        {label}
-                        {sources && (
-                          <MdLock className={classes.lock} aria-hidden />
-                        )}
-                      </span>
-                    }
-                    onDelete={sources ? undefined : onDelete}
-                  />
-                </Tooltip>
-              )
-            }
-            return groups.map(({ parent, ids }) =>
-              parent && ids.length > 1 ? (
-                <div
-                  key={`group-${parent}`}
-                  role="group"
-                  aria-label={timeline.pathLabel(parent)}
-                  className={classes.group}
-                  style={{
-                    ['--era-color' as string]: eraColor(timeline, parent),
-                  }}
-                >
-                  <Typography variant="caption" aria-hidden>
-                    {timeline.pathLabel(parent)} ›
-                  </Typography>
-                  {ids.map((id) => chip(id, timeline.label(id)))}
-                </div>
-              ) : (
-                ids.map((id) => chip(id, timeline.pathLabel(id)))
-              )
-            )
-          }}
+          renderValue={(values, getItemProps) => (
+            <TimelineChips
+              ids={values}
+              inherited={inherited}
+              getItemProps={getItemProps}
+            />
+          )}
         />
       </div>
       <Collapse in={open}>

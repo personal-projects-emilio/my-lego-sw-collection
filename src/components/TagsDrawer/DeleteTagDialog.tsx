@@ -58,13 +58,13 @@ const DeleteTagDialog: FC<DeleteTagDialogProps> = ({
   tag,
 }) => {
   const { classes } = useDeleteTagDialogStyles()
-  const targets = rootTargets(state.tagsList, tag.id)
+  const targets = rootTargets({ tagsList: state.tagsList, id: tag.id })
   const [targetId, setTargetId] = useState(
     targets.some(({ id }) => id === otherRootId)
       ? otherRootId
       : (targets[0]?.id ?? '')
   )
-  const { sets, minifigs } = tagUsage(state, [tag.id])
+  const { sets, minifigs } = tagUsage({ state, ids: [tag.id] })
   const items = [
     ...sets.map(({ id, name }) => `Set ${id} ${name}`),
     ...minifigs.map(({ id, name }) => `Minifig ${id} ${name}`),
@@ -144,8 +144,8 @@ const DeleteTagDialog: FC<DeleteTagDialogProps> = ({
           onClick={() =>
             onConfirm(
               tag.parent
-                ? deleteTag(state, tag.id)
-                : deleteRoot(state, tag.id, targetId)
+                ? deleteTag({ state, id: tag.id })
+                : deleteRoot({ state, id: tag.id, targetId })
             )
           }
           variant="contained"

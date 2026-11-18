@@ -142,11 +142,15 @@ type OptionElement = ReactElement<{
   'data-depth': number
 }>
 
-const nestOptions = (
-  options: OptionElement[],
-  classes: NestClasses,
+const nestOptions = ({
+  options,
+  classes,
+  cx,
+}: {
+  options: OptionElement[]
+  classes: NestClasses
   cx: (...names: Array<string | undefined>) => string
-): ReactNode[] => {
+}): ReactNode[] => {
   const nested: ReactNode[] = []
   for (let start = 0; start < options.length;) {
     const option = options[start]
@@ -163,7 +167,11 @@ const nestOptions = (
             {cloneElement(option, {
               className: cx(option.props.className, classes.pinned),
             })}
-            {nestOptions(options.slice(start + 1, end), classes, cx)}
+            {nestOptions({
+              options: options.slice(start + 1, end),
+              classes,
+              cx,
+            })}
           </ul>
         </li>
       )
@@ -255,8 +263,9 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
         onChange={(_event, ids) =>
           onChange(
             isFilter
-              ? filterTagsAfterPick(tagsVocabulary, ids)
-              : storedTagsAfterPick(tagsVocabulary, {
+              ? filterTagsAfterPick({ tagsVocabulary, picked: ids })
+              : storedTagsAfterPick({
+                  tagsVocabulary,
                   picked: ids,
                   stored: value,
                   inheritedTags,
@@ -284,11 +293,11 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
               {group}
             </ListSubheader>
             <ul className={classes.nestedList} role="presentation">
-              {nestOptions(
-                Children.toArray(children) as OptionElement[],
+              {nestOptions({
+                options: Children.toArray(children) as OptionElement[],
                 classes,
-                cx
-              )}
+                cx,
+              })}
             </ul>
           </li>
         )}
@@ -329,7 +338,13 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
           popper: { className: popperClassName },
         }}
         renderValue={(ids, getItemProps) => {
-          const tagChip = (id: TagId, chipLabel: string) => {
+          const tagChip = ({
+            id,
+            chipLabel,
+          }: {
+            id: TagId
+            chipLabel: string
+          }) => {
             const { key, onDelete, ...itemProps } = getItemProps({
               index: ids.indexOf(id),
             })
@@ -374,12 +389,17 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
                       <Typography aria-hidden variant="caption">
                         {tagsVocabulary.pathLabel(parent)} ›
                       </Typography>
-                      {group.map((id) => tagChip(id, tagsVocabulary.label(id)))}
+                      {group.map((id) =>
+                        tagChip({ id, chipLabel: tagsVocabulary.label(id) })
+                      )}
                     </div>
                   </Tooltip>
                 )
               const [id] = group
-              const chip = tagChip(id, tagsVocabulary.pathLabel(id))
+              const chip = tagChip({
+                id,
+                chipLabel: tagsVocabulary.pathLabel(id),
+              })
               const chipNote = note(id)
               if (!chipNote) return chip
               return (

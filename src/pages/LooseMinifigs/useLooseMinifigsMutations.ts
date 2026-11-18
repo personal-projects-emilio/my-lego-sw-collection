@@ -41,7 +41,7 @@ const useLooseMinifigsMutations = () => {
     async (minifigId: Minifig['id'], changes: Partial<LooseMinifig>) => {
       assert(isNotNullOrUndefined(looseMinifigsList))
       await editLooseMinifigsList(
-        updateLooseMinifig(looseMinifigsList, minifigId, changes)
+        updateLooseMinifig({ looseMinifigsList, minifigId, changes })
       )
     },
     [editLooseMinifigsList, looseMinifigsList]

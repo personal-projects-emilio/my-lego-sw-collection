@@ -1,17 +1,9 @@
-import {
-  type FC,
-  type PropsWithChildren,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import { type FC, type PropsWithChildren, useRef } from 'react'
 import { FaSearch } from 'react-icons/fa'
 import { MdBarChart, MdClose } from 'react-icons/md'
 
 import {
   Button,
-  debounce,
   IconButton,
   InputAdornment,
   TextField,
@@ -27,6 +19,7 @@ import ImportBricksetCsv from './ImportBricksetCsv'
 
 type ModuleHeaderProps = {
   addTo: NonNullable<LinkProps['to']>
+  quickFilter: string
   setQuickFilter: (value: string) => void
   statisticsTooltipTitle: NonNullable<TooltipProps['title']>
 }
@@ -49,22 +42,15 @@ const useModuleHeaderStyles = makeStyles({ name: 'ModuleHeader' })((theme) => ({
 
 const ModuleHeader: FC<PropsWithChildren<ModuleHeaderProps>> = ({
   children,
+  quickFilter,
   setQuickFilter,
   addTo,
   statisticsTooltipTitle,
 }) => {
   const { classes } = useModuleHeaderStyles()
-  const [search, setSearch] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
-  const debouncedQuickFilter = useMemo(
-    () => debounce(setQuickFilter, 500),
-    [setQuickFilter]
-  )
-  useEffect(() => () => debouncedQuickFilter.clear(), [debouncedQuickFilter])
 
   const clearSearch = () => {
-    debouncedQuickFilter.clear()
-    setSearch('')
     setQuickFilter('')
     inputRef.current?.focus()
   }
@@ -74,12 +60,9 @@ const ModuleHeader: FC<PropsWithChildren<ModuleHeaderProps>> = ({
       <TextField
         inputRef={inputRef}
         label="Search"
-        onChange={(event) => {
-          setSearch(event.target.value)
-          debouncedQuickFilter(event.target.value)
-        }}
+        onChange={(event) => setQuickFilter(event.target.value)}
         onKeyDown={(event) => {
-          if (event.key === 'Escape' && search) clearSearch()
+          if (event.key === 'Escape' && quickFilter) clearSearch()
         }}
         size="small"
         slotProps={{
@@ -92,7 +75,7 @@ const ModuleHeader: FC<PropsWithChildren<ModuleHeaderProps>> = ({
             endAdornment: (
               <InputAdornment
                 position="end"
-                className={search ? undefined : classes.hidden}
+                className={quickFilter ? undefined : classes.hidden}
               >
                 <IconButton
                   aria-label="Clear search"
@@ -106,7 +89,7 @@ const ModuleHeader: FC<PropsWithChildren<ModuleHeaderProps>> = ({
             ),
           },
         }}
-        value={search}
+        value={quickFilter}
         variant="outlined"
       />
       {children}

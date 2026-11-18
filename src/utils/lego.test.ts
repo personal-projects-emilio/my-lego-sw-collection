@@ -23,18 +23,30 @@ test('renames a minifig in every set that contains it', () => {
     { id: 2, content: { minifigs: [{ ...minifig, id: 'sw0002' }] } },
   ] as SetsList
 
-  const renamed = renameMinifigInSets(setsList, 'sw0001', 'sw0001a')
+  const renamed = renameMinifigInSets({
+    setsList,
+    previousId: 'sw0001',
+    newId: 'sw0001a',
+  })
 
   assert.equal(renamed[0].content.minifigs[0].id, 'sw0001a')
   assert.equal(renamed[1], setsList[1])
 })
 
-const minifig = (id: string, tags: string[] = [], appearances: string[] = []) =>
+const minifig = ({
+  id,
+  tags = [],
+  timeline = [],
+}: {
+  id: string
+  tags?: string[]
+  timeline?: string[]
+}) =>
   ({
     id,
     characterName: `Name ${id}`,
     tags,
-    appearances,
+    timeline,
   }) as unknown as Minifig
 
 const loose = (quantity: number): LooseMinifig => ({
@@ -44,19 +56,22 @@ const loose = (quantity: number): LooseMinifig => ({
   unitMarketValue: 5,
 })
 
-const setWith = (
-  id: number,
-  ownedQuantity: number,
-  {
-    tags = [],
-    appearances = [],
-  }: { tags?: string[]; appearances?: string[] } = {}
-) =>
+const setWith = ({
+  id,
+  ownedQuantity,
+  tags = [],
+  timeline = [],
+}: {
+  id: number
+  ownedQuantity: number
+  tags?: string[]
+  timeline?: string[]
+}) =>
   ({
     id,
     ownedQuantity,
     tags,
-    appearances,
+    timeline,
     content: {
       minifigs: [
         {
@@ -71,9 +86,12 @@ const setWith = (
 
 test('buildCollection adds owned set quantities to the loose total and lists every set', () => {
   const { minifigsList } = buildCollection({
-    minifigsList: [minifig('sw0001')],
+    minifigsList: [minifig({ id: 'sw0001' })],
     looseMinifigsList: [{ id: 'sw0001', ...loose(1) }],
-    setsList: [setWith(1, 1), setWith(2, 0)],
+    setsList: [
+      setWith({ id: 1, ownedQuantity: 1 }),
+      setWith({ id: 2, ownedQuantity: 0 }),
+    ],
     tagsList: [],
     timelineList: [],
   })
@@ -88,9 +106,9 @@ test('buildCollection adds owned set quantities to the loose total and lists eve
 
 test('buildCollection counts set minifigs once per owned copy of the set', () => {
   const { minifigsList } = buildCollection({
-    minifigsList: [minifig('sw0001')],
+    minifigsList: [minifig({ id: 'sw0001' })],
     looseMinifigsList: [{ id: 'sw0001', ...loose(1) }],
-    setsList: [setWith(1, 2)],
+    setsList: [setWith({ id: 1, ownedQuantity: 2 })],
     tagsList: [],
     timelineList: [],
   })
@@ -100,7 +118,7 @@ test('buildCollection counts set minifigs once per owned copy of the set', () =>
 
 test('buildCollection gives a minifig without a loose entry an empty loose', () => {
   const { minifigsList } = buildCollection({
-    minifigsList: [minifig('sw0001')],
+    minifigsList: [minifig({ id: 'sw0001' })],
     looseMinifigsList: [],
     setsList: [],
     tagsList: [],
@@ -141,16 +159,35 @@ test.for([
 ])('updateLooseMinifig $case', ({ id, quantity, expected }) => {
   const list = [{ id: 'sw0002', ...loose(1) }]
 
-  assert.deepEqual(updateLooseMinifig(list, id, { quantity }), expected)
+  assert.deepEqual(
+    updateLooseMinifig({
+      looseMinifigsList: list,
+      minifigId: id,
+      changes: { quantity },
+    }),
+    expected
+  )
 })
 
 test('renameLooseMinifig moves the entry to the new id', () => {
   const list = [{ id: 'sw0001', ...loose(1) }]
 
-  assert.deepEqual(renameLooseMinifig(list, 'sw0001', 'sw0001a'), [
-    { id: 'sw0001a', ...loose(1) },
-  ])
-  assert.equal(renameLooseMinifig(list, 'sw0002', 'sw0002a'), list)
+  assert.deepEqual(
+    renameLooseMinifig({
+      looseMinifigsList: list,
+      previousId: 'sw0001',
+      newId: 'sw0001a',
+    }),
+    [{ id: 'sw0001a', ...loose(1) }]
+  )
+  assert.equal(
+    renameLooseMinifig({
+      looseMinifigsList: list,
+      previousId: 'sw0002',
+      newId: 'sw0002a',
+    }),
+    list
+  )
 })
 
 const tagsList: TagsList = [
@@ -303,10 +340,14 @@ test.for([
   },
 ])('buildCollection: $case', ({ sets, minifigTags, expected }) => {
   const { setsList, minifigsList } = buildCollection({
-    minifigsList: [minifig('sw0001', minifigTags)],
+    minifigsList: [minifig({ id: 'sw0001', tags: minifigTags })],
     looseMinifigsList: [],
     setsList: sets.map((row) => {
-      const set = setWith(row.id, row.owned, { tags: row.tags })
+      const set = setWith({
+        id: row.id,
+        ownedQuantity: row.owned,
+        tags: row.tags,
+      })
       const copies = 'copies' in row ? row.copies : 1
       return {
         ...set,
@@ -399,8 +440,8 @@ const ot = ['age-of-rebellion', 'original-trilogy']
 test.for([
   {
     case: 'a set implies the trilogy and era of its titles',
-    sets: [{ id: 1, tags: [], appearances: ['a-new-hope'] }],
-    minifigAppearances: [],
+    sets: [{ id: 1, tags: [], timeline: ['a-new-hope'] }],
+    minifigTimeline: [],
     expected: {
       setEffective: [...ot, 'a-new-hope'],
       effective: [...ot, 'a-new-hope'],
@@ -418,7 +459,7 @@ test.for([
       {
         id: 1,
         tags: [],
-        appearances: [
+        timeline: [
           'holiday-special',
           'return-of-the-jedi',
           'a-new-hope',
@@ -428,7 +469,7 @@ test.for([
         ],
       },
     ],
-    minifigAppearances: [],
+    minifigTimeline: [],
     expected: {
       setEffective: [
         'reign-of-the-empire',
@@ -465,9 +506,9 @@ test.for([
     },
   },
   {
-    case: 'a seasonal set passes no appearances on',
-    sets: [{ id: 1, tags: ['seasonal'], appearances: ['a-new-hope'] }],
-    minifigAppearances: [],
+    case: 'a seasonal set passes no timeline on',
+    sets: [{ id: 1, tags: ['seasonal'], timeline: ['a-new-hope'] }],
+    minifigTimeline: [],
     expected: {
       setEffective: [...ot, 'a-new-hope'],
       effective: [],
@@ -478,10 +519,10 @@ test.for([
   {
     case: 'every set containing the minifig is listed as a source',
     sets: [
-      { id: 1, tags: [], appearances: ['a-new-hope'] },
-      { id: 2, tags: [], appearances: ['return-of-the-jedi'] },
+      { id: 1, tags: [], timeline: ['a-new-hope'] },
+      { id: 2, tags: [], timeline: ['return-of-the-jedi'] },
     ],
-    minifigAppearances: [],
+    minifigTimeline: [],
     expected: {
       setEffective: [...ot, 'a-new-hope'],
       effective: [...ot, 'a-new-hope', 'return-of-the-jedi'],
@@ -495,9 +536,9 @@ test.for([
     },
   },
   {
-    case: 'a hand-picked appearance a set also provides stays stored',
-    sets: [{ id: 1, tags: [], appearances: ['a-new-hope'] }],
-    minifigAppearances: ['a-new-hope', 'andor'],
+    case: 'a hand-picked entry a set also provides stays stored',
+    sets: [{ id: 1, tags: [], timeline: ['a-new-hope'] }],
+    minifigTimeline: ['a-new-hope', 'andor'],
     expected: {
       setEffective: [...ot, 'a-new-hope'],
       effective: ['reign-of-the-empire', 'andor', ...ot, 'a-new-hope'],
@@ -509,36 +550,38 @@ test.for([
       stored: ['a-new-hope', 'andor'],
     },
   },
-])(
-  'buildCollection appearances: $case',
-  ({ sets, minifigAppearances, expected }) => {
-    const { setsList, minifigsList } = buildCollection({
-      minifigsList: [minifig('sw0001', [], minifigAppearances)],
-      looseMinifigsList: [],
-      setsList: sets.map((row) =>
-        setWith(row.id, 1, { tags: row.tags, appearances: row.appearances })
-      ),
-      tagsList,
-      timelineList,
-    })
+])('buildCollection timeline: $case', ({ sets, minifigTimeline, expected }) => {
+  const { setsList, minifigsList } = buildCollection({
+    minifigsList: [minifig({ id: 'sw0001', timeline: minifigTimeline })],
+    looseMinifigsList: [],
+    setsList: sets.map((row) =>
+      setWith({
+        id: row.id,
+        ownedQuantity: 1,
+        tags: row.tags,
+        timeline: row.timeline,
+      })
+    ),
+    tagsList,
+    timelineList,
+  })
 
-    assert.deepEqual(
-      {
-        setEffective: setsList[0].effectiveAppearances,
-        effective: minifigsList[0].effectiveAppearances,
-        inherited: minifigsList[0].inheritedAppearances,
-        stored: minifigsList[0].appearances,
-      },
-      expected
-    )
-  }
-)
+  assert.deepEqual(
+    {
+      setEffective: setsList[0].effectiveTimeline,
+      effective: minifigsList[0].effectiveTimeline,
+      inherited: minifigsList[0].inheritedTimeline,
+      stored: minifigsList[0].timeline,
+    },
+    expected
+  )
+})
 
 test('buildCollection refreshes the character names on set content', () => {
   const { setsList } = buildCollection({
-    minifigsList: [minifig('sw0001')],
+    minifigsList: [minifig({ id: 'sw0001' })],
     looseMinifigsList: [],
-    setsList: [setWith(1, 0)],
+    setsList: [setWith({ id: 1, ownedQuantity: 0 })],
     tagsList: [],
     timelineList: [],
   })
@@ -554,7 +597,7 @@ test.for([
 ])(
   'exit date $exitDate with retired flag $retired is retired: $expected',
   ({ expected, ...set }) => {
-    assert.equal(isSetRetired(set, '2026-06-15'), expected)
+    assert.equal(isSetRetired({ ...set, today: '2026-06-15' }), expected)
   }
 )
 

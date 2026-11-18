@@ -53,7 +53,7 @@ const useMinifigsColDefs = () => {
           headerName: 'Character Name',
         },
         timelineColDef<CollectionMinifig>(timeline),
-        tagsColDef<CollectionMinifig>(tagsVocabulary, 'minifigs'),
+        tagsColDef<CollectionMinifig>({ tagsVocabulary, itemType: 'minifigs' }),
         {
           cellClass: agGridClasses.flexAlignCenter,
           cellRenderer: OwnedCellRenderer,

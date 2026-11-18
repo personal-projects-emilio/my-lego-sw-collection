@@ -76,7 +76,7 @@ const UpdatesGrid: FC<UpdatesGridProps> = ({
     () =>
       updates.flatMap(({ set, changes }) =>
         changes.map(({ field, from, to }): UpdateRow => ({
-          key: changeKey(set.id, field),
+          key: changeKey({ id: set.id, field }),
           id: String(set.id),
           name: set.name,
           field,

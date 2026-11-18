@@ -11,7 +11,10 @@ type IgnoreListFieldsProps = {
   ignoreList: BricksetIgnoreList | undefined
   isError: boolean
   rows: BricksetRow[] | undefined
-  onChange: (key: keyof BricksetIgnoreList, values: string[]) => void
+  onChange: (change: {
+    key: keyof BricksetIgnoreList
+    values: string[]
+  }) => void
 }
 
 const IgnoreListFields: FC<IgnoreListFieldsProps> = ({
@@ -38,11 +41,13 @@ const IgnoreListFields: FC<IgnoreListFieldsProps> = ({
       key={key}
       multiple
       freeSolo
-      options={uniqueAndSortedArray(
-        (rows ?? []).map((row) => row[column]).filter(Boolean)
-      )}
+      options={uniqueAndSortedArray({
+        array: (rows ?? []).map((row) => row[column]).filter(Boolean),
+      })}
       value={ignoreList[key]}
-      onChange={(values) => onChange(key, (values as string[] | null) ?? [])}
+      onChange={(values) =>
+        onChange({ key, values: (values as string[] | null) ?? [] })
+      }
       textFieldProps={{ label, size: 'small' }}
     />
   ))

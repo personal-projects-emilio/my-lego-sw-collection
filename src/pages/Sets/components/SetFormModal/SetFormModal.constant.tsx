@@ -2,10 +2,13 @@ import type { Set } from 'types/sets'
 
 import type { SetFormModalProps } from './SetFormModal.types'
 
-const dimensions = (
-  setData: SetFormModalProps['setData'],
+const dimensions = ({
+  setData,
+  part,
+}: {
+  setData: SetFormModalProps['setData']
   part: keyof Set['dimensions']
-) => {
+}) => {
   const values =
     setData && 'dimensions' in setData ? setData.dimensions?.[part] : undefined
   return {
@@ -26,7 +29,7 @@ export const defaultSetFormValues = (setData: SetFormModalProps['setData']) =>
     releaseYear: new Date().getFullYear(),
     subtheme: '',
     tags: [],
-    appearances: [],
+    timeline: [],
     bricksetImagePath: null,
     EAN: null,
     exitDate: null,
@@ -41,8 +44,8 @@ export const defaultSetFormValues = (setData: SetFormModalProps['setData']) =>
       ...(setData && 'content' in setData && setData.content),
     },
     dimensions: {
-      box: dimensions(setData, 'box'),
-      model: dimensions(setData, 'model'),
+      box: dimensions({ setData, part: 'box' }),
+      model: dimensions({ setData, part: 'model' }),
     },
     prices: {
       bought: 0,

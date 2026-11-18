@@ -1,7 +1,7 @@
 import { isUndefined, omitBy } from 'lodash'
 import type { VocabularyState } from 'types/common'
 import type {
-  InheritedAppearances,
+  InheritedTimeline,
   Kind,
   TimelineEntry,
   TimelineId,
@@ -32,15 +32,27 @@ const childrenByParent = (timelineList: TimelineList) => {
   return children
 }
 
-const rangesById = (timelineList: TimelineList, children: Children) => {
+const rangesById = ({
+  timelineList,
+  children,
+}: {
+  timelineList: TimelineList
+  children: Children
+}) => {
   const ranges = new Map<TimelineId, Range>()
-  const rangeOf = (entry: TimelineEntry, seen: Set<TimelineId>): Range => {
+  const rangeOf = ({
+    entry,
+    seen,
+  }: {
+    entry: TimelineEntry
+    seen: Set<TimelineId>
+  }): Range => {
     const known = ranges.get(entry.id)
     if (known) return known
     if (seen.has(entry.id)) return {}
     seen.add(entry.id)
     const inner = (children.get(entry.id) ?? []).map((child) =>
-      rangeOf(child, seen)
+      rangeOf({ entry: child, seen })
     )
     const starts = inner.flatMap(({ start }) => start ?? [])
     const ends = inner.flatMap(({ start, end }) => end ?? start ?? [])
@@ -53,19 +65,19 @@ const rangesById = (timelineList: TimelineList, children: Children) => {
     ranges.set(entry.id, range)
     return range
   }
-  timelineList.forEach((entry) => rangeOf(entry, new Set()))
+  timelineList.forEach((entry) => rangeOf({ entry, seen: new Set() }))
   return ranges
 }
 
 const createTimeline = (timelineList: TimelineList) => {
   const children = childrenByParent(timelineList)
-  const ranges = rangesById(timelineList, children)
+  const ranges = rangesById({ timelineList, children })
   const range = (id: TimelineId) => ranges.get(id) ?? {}
   const byDate = (a: TimelineEntry, b: TimelineEntry) =>
     (range(a.id).start ?? Infinity) - (range(b.id).start ?? Infinity) ||
     (range(a.id).end ?? Infinity) - (range(b.id).end ?? Infinity) ||
     byLabel(a, b)
-  const tree = buildTree(timelineList, byDate)
+  const tree = buildTree({ nodes: timelineList, compare: byDate })
   const byId = new Map(timelineList.map((entry) => [entry.id, entry]))
 
   const has = (id: TimelineId) => byId.has(id)
@@ -144,13 +156,13 @@ const createTimeline = (timelineList: TimelineList) => {
 
 export type Timeline = ReturnType<typeof createTimeline>
 
-const timelines = new WeakMap<TimelineList, Timeline>()
+const mapTimelineListsToTimelines = new WeakMap<TimelineList, Timeline>()
 
 export const buildTimeline = (timelineList: TimelineList) => {
-  const cached = timelines.get(timelineList)
+  const cached = mapTimelineListsToTimelines.get(timelineList)
   if (cached) return cached
   const timeline = createTimeline(timelineList)
-  timelines.set(timelineList, timeline)
+  mapTimelineListsToTimelines.set(timelineList, timeline)
   return timeline
 }
 
@@ -170,10 +182,13 @@ export type TimelineEdit = { state: TimelineState } | { refused: string }
 
 export type EntryDraft = Omit<TimelineEntry, 'id'> & { id?: TimelineId }
 
-export const saveEntry = (
-  state: TimelineState,
+export const saveEntry = ({
+  state,
+  draft,
+}: {
+  state: TimelineState
   draft: EntryDraft
-): TimelineEdit => {
+}): TimelineEdit => {
   const label = draft.label.trim()
   if (!label) return { refused: 'An entry needs a label' }
   const timeline = buildTimeline(state.timelineList)
@@ -206,7 +221,7 @@ export const saveEntry = (
   const entry = omitBy(
     {
       ...draft,
-      id: existing ? id : uniqueId(state.timelineList, label),
+      id: existing ? id : uniqueId({ list: state.timelineList, label }),
       label,
     },
     isUndefined
@@ -221,24 +236,30 @@ export const saveEntry = (
   }
 }
 
-type WithAppearances = { appearances?: TimelineId[] }
+type WithTimeline = { timeline?: TimelineId[] }
 
-const withoutAppearance = <T extends WithAppearances>(
-  items: T[],
+const withoutTimelineEntry = <Item extends WithTimeline>({
+  items,
+  id,
+}: {
+  items: Item[]
   id: TimelineId
-) =>
-  items.some(({ appearances }) => appearances?.includes(id))
+}) =>
+  items.some((item) => item.timeline?.includes(id))
     ? items.map((item) =>
-        item.appearances?.includes(id)
-          ? { ...item, appearances: item.appearances.filter((a) => a !== id) }
+        item.timeline?.includes(id)
+          ? { ...item, timeline: item.timeline.filter((a) => a !== id) }
           : item
       )
     : items
 
-export const deleteEntry = (
-  state: TimelineState,
+export const deleteEntry = ({
+  state,
+  id,
+}: {
+  state: TimelineState
   id: TimelineId
-): TimelineEdit => {
+}): TimelineEdit => {
   const entry = state.timelineList.find((e) => e.id === id)
   if (!entry) return { refused: `Unknown entry ${id}` }
   return {
@@ -255,8 +276,8 @@ export const deleteEntry = (
               ]
             : [e]
       ),
-      setsList: withoutAppearance(state.setsList, id),
-      minifigsList: withoutAppearance(state.minifigsList, id),
+      setsList: withoutTimelineEntry({ items: state.setsList, id }),
+      minifigsList: withoutTimelineEntry({ items: state.minifigsList, id }),
     },
   }
 }
@@ -265,47 +286,52 @@ export type PickStatus = 'none' | 'picked' | 'implied' | 'inherited'
 
 export type Picks = {
   value: TimelineId[]
-  inherited: InheritedAppearances
+  inherited: InheritedTimeline
 }
 
-const isUnder = (timeline: Timeline, id: TimelineId, ancestor: TimelineId) =>
-  timeline.ancestors(id).some((entry) => entry.id === ancestor)
+type PickTarget = { timeline: Timeline; picks: Picks; id: TimelineId }
 
-export const pickStatus = (
-  timeline: Timeline,
-  { value, inherited }: Picks,
+const isUnder = ({
+  timeline,
+  id,
+  ancestor,
+}: {
+  timeline: Timeline
   id: TimelineId
-): PickStatus =>
+  ancestor: TimelineId
+}) => timeline.ancestors(id).some((entry) => entry.id === ancestor)
+
+export const pickStatus = ({
+  timeline,
+  picks: { value, inherited },
+  id,
+}: PickTarget): PickStatus =>
   inherited[id]
     ? 'inherited'
     : value.includes(id)
       ? 'picked'
       : [...value, ...Object.keys(inherited)].some((other) =>
-            isUnder(timeline, other, id)
+            isUnder({ timeline, id: other, ancestor: id })
           )
         ? 'implied'
         : 'none'
 
-export const togglePick = (
-  timeline: Timeline,
-  picks: Picks,
-  id: TimelineId
-) => {
+export const togglePick = ({ timeline, picks, id }: PickTarget) => {
   const { value } = picks
-  const status = pickStatus(timeline, picks, id)
+  const status = pickStatus({ timeline, picks, id })
   if (value.includes(id)) return value.filter((other) => other !== id)
   return status === 'none'
     ? timeline.leaves([...value, id])
     : status === 'implied'
-      ? value.filter((other) => !isUnder(timeline, other, id))
+      ? value.filter((other) => !isUnder({ timeline, id: other, ancestor: id }))
       : value
 }
 
-export const canToggle = (timeline: Timeline, picks: Picks, id: TimelineId) => {
-  const status = pickStatus(timeline, picks, id)
+export const canToggle = ({ timeline, picks, id }: PickTarget) => {
+  const status = pickStatus({ timeline, picks, id })
   if (status === 'inherited') return picks.value.includes(id)
   return (
     status !== 'implied' ||
-    picks.value.some((other) => isUnder(timeline, other, id))
+    picks.value.some((other) => isUnder({ timeline, id: other, ancestor: id }))
   )
 }

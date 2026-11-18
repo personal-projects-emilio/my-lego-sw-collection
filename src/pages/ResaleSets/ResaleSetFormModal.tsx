@@ -118,11 +118,17 @@ const ResaleSetFormModal: FC<ResaleSetFormModalProps> = ({ resaleSet }) => {
       setError('root', { message: 'Unable to save the resale set' })
     )
 
-  const numberField = (
-    name: FieldPath<ResaleSetFormInput>,
-    label: string,
-    { nullable = false, required = false } = {}
-  ) => (
+  const numberField = ({
+    name,
+    label,
+    nullable = false,
+    required = false,
+  }: {
+    name: FieldPath<ResaleSetFormInput>
+    label: string
+    nullable?: boolean
+    required?: boolean
+  }) => (
     <Controller
       control={control}
       name={name}
@@ -143,11 +149,15 @@ const ResaleSetFormModal: FC<ResaleSetFormModalProps> = ({ resaleSet }) => {
     />
   )
 
-  const selectField = (
-    name: 'setCondition' | 'boxCondition',
-    label: string,
+  const selectField = ({
+    name,
+    label,
+    options,
+  }: {
+    name: 'setCondition' | 'boxCondition'
+    label: string
     options: readonly string[]
-  ) => (
+  }) => (
     <Controller
       control={control}
       name={name}
@@ -163,11 +173,15 @@ const ResaleSetFormModal: FC<ResaleSetFormModalProps> = ({ resaleSet }) => {
     />
   )
 
-  const textField = (
-    name: 'frenchName' | 'name' | 'location',
-    label: string,
-    required = false
-  ) => (
+  const textField = ({
+    name,
+    label,
+    required = false,
+  }: {
+    name: 'frenchName' | 'name' | 'location'
+    label: string
+    required?: boolean
+  }) => (
     <Controller
       control={control}
       name={name}
@@ -222,9 +236,13 @@ const ResaleSetFormModal: FC<ResaleSetFormModalProps> = ({ resaleSet }) => {
               />
             )}
           />
-          {textField('name', 'Name', true)}
-          {textField('frenchName', 'French name')}
-          {numberField('officialPrice', 'Official price', { nullable: true })}
+          {textField({ name: 'name', label: 'Name', required: true })}
+          {textField({ name: 'frenchName', label: 'French name' })}
+          {numberField({
+            name: 'officialPrice',
+            label: 'Official price',
+            nullable: true,
+          })}
           <Controller
             control={control}
             name="exitDate"
@@ -246,17 +264,37 @@ const ResaleSetFormModal: FC<ResaleSetFormModalProps> = ({ resaleSet }) => {
             name="retired"
             render={({ field }) => <Checkbox {...field} label="Retired" />}
           />
-          {numberField('quantityBought', 'Quantity bought', { required: true })}
-          {numberField('unitBoughtPrice', 'Unit bought price', {
+          {numberField({
+            name: 'quantityBought',
+            label: 'Quantity bought',
             required: true,
           })}
-          {numberField('quantitySold', 'Quantity sold', { required: true })}
-          {numberField('unitSellingPrice', 'Unit selling price', {
+          {numberField({
+            name: 'unitBoughtPrice',
+            label: 'Unit bought price',
+            required: true,
+          })}
+          {numberField({
+            name: 'quantitySold',
+            label: 'Quantity sold',
+            required: true,
+          })}
+          {numberField({
+            name: 'unitSellingPrice',
+            label: 'Unit selling price',
             nullable: true,
           })}
-          {selectField('setCondition', 'Set condition', setConditions)}
-          {selectField('boxCondition', 'Box condition', boxConditions)}
-          {textField('location', 'Location')}
+          {selectField({
+            name: 'setCondition',
+            label: 'Set condition',
+            options: setConditions,
+          })}
+          {selectField({
+            name: 'boxCondition',
+            label: 'Box condition',
+            options: boxConditions,
+          })}
+          {textField({ name: 'location', label: 'Location' })}
           {errors.root && (
             <Typography color="error" className={classes.fullWidth}>
               {errors.root.message}

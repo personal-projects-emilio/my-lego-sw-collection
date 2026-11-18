@@ -10,7 +10,7 @@ import {
 import type { Kind } from 'types/timeline'
 import { kindName } from 'utils/timeline'
 
-const kindIcons = {
+const mapKindsToIcons = {
   movie: MdMovie,
   show: MdTv,
   game: MdSportsEsports,
@@ -23,7 +23,7 @@ const KindIcon: FC<{ kind?: Kind; className?: string }> = ({
   className,
 }) =>
   kind
-    ? createElement(kindIcons[kind], {
+    ? createElement(mapKindsToIcons[kind], {
         className,
         role: 'img',
         'aria-label': kindName(kind),
