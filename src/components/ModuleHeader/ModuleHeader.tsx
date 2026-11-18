@@ -1,18 +1,11 @@
-import { type FC, type PropsWithChildren, useRef } from 'react'
-import { FaSearch } from 'react-icons/fa'
-import { MdBarChart, MdClose } from 'react-icons/md'
+import type { FC, PropsWithChildren } from 'react'
+import { MdBarChart } from 'react-icons/md'
 
-import {
-  Button,
-  IconButton,
-  InputAdornment,
-  TextField,
-  Tooltip,
-  type TooltipProps,
-} from '@mui/material'
+import { Button, Tooltip, type TooltipProps } from '@mui/material'
 import { Link, type LinkProps } from '@tanstack/react-router'
 import Avatar from 'components/Avatar'
 import DisplayIfAuthenticated from 'components/DisplayIfAuthenticated'
+import { SearchField } from 'components/inputs'
 import { makeStyles } from 'tss-react/mui'
 
 import ImportBricksetCsv from './ImportBricksetCsv'
@@ -37,7 +30,6 @@ const useModuleHeaderStyles = makeStyles({ name: 'ModuleHeader' })((theme) => ({
     borderBottom: '1px solid',
     borderColor: theme.palette.divider,
   },
-  hidden: { visibility: 'hidden' },
 }))
 
 const ModuleHeader: FC<PropsWithChildren<ModuleHeaderProps>> = ({
@@ -48,50 +40,9 @@ const ModuleHeader: FC<PropsWithChildren<ModuleHeaderProps>> = ({
   statisticsTooltipTitle,
 }) => {
   const { classes } = useModuleHeaderStyles()
-  const inputRef = useRef<HTMLInputElement>(null)
-
-  const clearSearch = () => {
-    setQuickFilter('')
-    inputRef.current?.focus()
-  }
-
   return (
     <header className={classes.header}>
-      <TextField
-        inputRef={inputRef}
-        label="Search"
-        onChange={(event) => setQuickFilter(event.target.value)}
-        onKeyDown={(event) => {
-          if (event.key === 'Escape' && quickFilter) clearSearch()
-        }}
-        size="small"
-        slotProps={{
-          input: {
-            startAdornment: (
-              <InputAdornment position="start">
-                <FaSearch />
-              </InputAdornment>
-            ),
-            endAdornment: (
-              <InputAdornment
-                position="end"
-                className={quickFilter ? undefined : classes.hidden}
-              >
-                <IconButton
-                  aria-label="Clear search"
-                  edge="end"
-                  onClick={clearSearch}
-                  size="small"
-                >
-                  <MdClose />
-                </IconButton>
-              </InputAdornment>
-            ),
-          },
-        }}
-        value={quickFilter}
-        variant="outlined"
-      />
+      <SearchField value={quickFilter} onChange={setQuickFilter} />
       {children}
       <DisplayIfAuthenticated>
         <Tooltip title={statisticsTooltipTitle}>
