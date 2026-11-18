@@ -4,14 +4,14 @@ import { test } from 'vitest'
 
 import {
   buildTimeline,
-  deleteEntry,
   canToggle,
+  deleteEntry,
   formatRange,
   pickStatus,
   saveEntry,
-  togglePick,
   type TimelineEdit,
   type TimelineState,
+  togglePick,
 } from './timeline.ts'
 
 const timelineList: TimelineList = [

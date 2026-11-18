@@ -221,8 +221,8 @@ const TimelineEraSections: FC<TimelineEraSectionsProps> = ({
 
   const card = (entry: TimelineEntry, side: 'left' | 'right') => (
     <Clickable
-      {...select(entry.id)}
       key={entry.id}
+      {...select(entry.id)}
       className={cx(
         classes.focusable,
         classes.card,
@@ -391,8 +391,8 @@ const TimelineEraSections: FC<TimelineEraSectionsProps> = ({
             ))}
             {brackets.map(({ trilogy, bracketSide, from, to, duplicate }) => (
               <Clickable
-                {...select(trilogy.id)}
                 key={`${trilogy.id}-${bracketSide}`}
+                {...select(trilogy.id)}
                 aria-hidden={duplicate || undefined}
                 tabIndex={duplicate ? -1 : undefined}
                 className={cx(

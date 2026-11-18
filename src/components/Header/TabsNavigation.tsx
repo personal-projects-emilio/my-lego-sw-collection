@@ -22,12 +22,7 @@ const TabsNavigation: FC = () => {
     >
       <Tab component={Link} label="Minifigs" to="/minifigs" value="/minifigs" />
       <Tab component={Link} label="Sets" to="/sets" value="/sets" />
-      <Tab
-        component={Link}
-        label="Timeline"
-        to="/timeline"
-        value="/timeline"
-      />
+      <Tab component={Link} label="Timeline" to="/timeline" value="/timeline" />
       {idToken && (
         <Tab
           component={Link}
