@@ -223,7 +223,7 @@ const useTagsDrawerStyles = makeStyles<void, 'addButton'>({
       justifyContent: 'center',
       marginRight: theme.spacing(1.5),
       minWidth: 0,
-      width: 40,
+      width: 32,
     },
   },
   label: {
@@ -995,7 +995,7 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
                       <ListItemIcon>
                         <Switch
                           checked={checked}
-                          size="small"
+                          size="xsmall"
                           slotProps={{
                             input: { tabIndex: -1, 'aria-hidden': true },
                           }}
@@ -1024,7 +1024,7 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
                   <ListItemIcon>
                     <Switch
                       checked={!!menuTag.inherited}
-                      size="small"
+                      size="xsmall"
                       slotProps={{
                         input: { tabIndex: -1, 'aria-hidden': true },
                       }}

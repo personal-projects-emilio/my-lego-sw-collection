@@ -6,6 +6,12 @@ import {
   ThemeProvider as MuiThemeProvider,
 } from '@mui/material/styles'
 
+declare module '@mui/material/Switch' {
+  interface SwitchPropsSizeOverrides {
+    xsmall: true
+  }
+}
+
 const theme = createTheme({
   cssVariables: true,
   palette: {
@@ -23,6 +29,28 @@ const theme = createTheme({
           inputLabel: {
             shrink: true,
           },
+        },
+      },
+    },
+    MuiSwitch: {
+      styleOverrides: {
+        root: {
+          variants: [
+            {
+              props: { size: 'xsmall' },
+              style: {
+                height: 20,
+                padding: 6,
+                width: 32,
+                '& .MuiSwitch-switchBase': {
+                  padding: 4,
+                  '&.Mui-checked': { transform: 'translateX(12px)' },
+                },
+                '& .MuiSwitch-thumb': { height: 12, width: 12 },
+                '& .MuiSwitch-track': { borderRadius: 4 },
+              },
+            },
+          ],
         },
       },
     },
