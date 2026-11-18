@@ -8,31 +8,17 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  TextField,
   Typography,
 } from '@mui/material'
 import { useNavigate } from '@tanstack/react-router'
-import { Autocomplete, Checkbox } from 'components/inputs'
+import { Autocomplete, Checkbox, FormTextField } from 'components/inputs'
 import { useCollection } from 'hooks'
-import { makeStyles } from 'tss-react/mui'
 import type { StoredLooseMinifig } from 'types/minifigs'
 import { z } from 'zod'
 
 import { defaultLooseMinifigFormValues } from './AddLooseMinifigFormModal.constant'
+import useAddLooseMinifigFormModalStyles from './AddLooseMinifigFormModal.styles'
 import useLooseMinifigsMutations from './useLooseMinifigsMutations'
-
-const useAddLooseMinifigFormModalStyles = makeStyles({
-  name: 'AddLooseMinifigFormModal',
-})((theme) => ({
-  container: {
-    display: 'grid',
-    gap: theme.spacing(2),
-    gridTemplateColumns: 'repeat(2, 1fr)',
-  },
-  fullWidth: {
-    gridColumn: '1 / -1',
-  },
-}))
 
 const AddLooseMinifigFormModal: FC = () => {
   const { minifigsList = [] } = useCollection()
@@ -95,27 +81,6 @@ const AddLooseMinifigFormModal: FC = () => {
       setError('root', { message: 'Unable to add the loose minifig' })
     )
 
-  const numberField = (
-    name: 'quantity' | 'unitBoughtPrice' | 'unitMarketValue',
-    label: string
-  ) => (
-    <Controller
-      control={control}
-      name={name}
-      render={({ field, fieldState }) => (
-        <TextField
-          {...field}
-          error={fieldState.invalid}
-          helperText={fieldState.error?.message}
-          label={label}
-          onChange={(event) => field.onChange(parseFloat(event.target.value))}
-          required
-          type="number"
-        />
-      )}
-    />
-  )
-
   return (
     <Dialog open onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>Add a loose minifig</DialogTitle>
@@ -150,14 +115,35 @@ const AddLooseMinifigFormModal: FC = () => {
               </div>
             )}
           />
-          {numberField('quantity', 'Quantity')}
+          <FormTextField
+            control={control}
+            name="quantity"
+            label="Quantity"
+            parse={parseFloat}
+            required
+            type="number"
+          />
           <Controller
             control={control}
             name="isInFrame"
             render={({ field }) => <Checkbox {...field} label="In frame" />}
           />
-          {numberField('unitBoughtPrice', 'Unit bought price')}
-          {numberField('unitMarketValue', 'Unit market value')}
+          <FormTextField
+            control={control}
+            name="unitBoughtPrice"
+            label="Unit bought price"
+            parse={parseFloat}
+            required
+            type="number"
+          />
+          <FormTextField
+            control={control}
+            name="unitMarketValue"
+            label="Unit market value"
+            parse={parseFloat}
+            required
+            type="number"
+          />
           {errors.root && (
             <Typography color="error" className={classes.fullWidth}>
               {errors.root.message}

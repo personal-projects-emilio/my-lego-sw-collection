@@ -54,8 +54,6 @@ const SetMinifigsCellRenderer = ({
       classes={{
         tooltip: classes.tooltip,
       }}
-      enterDelay={500}
-      enterNextDelay={500}
       title={setMinifigs.map(({ characterName, id, isInFrame, quantity }) => (
         <Paper
           className={classes.paper}

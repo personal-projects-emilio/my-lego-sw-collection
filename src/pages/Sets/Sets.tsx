@@ -1,4 +1,4 @@
-import { type FC, useState } from 'react'
+import { type FC, useDeferredValue, useState } from 'react'
 
 import { Skeleton } from '@mui/material'
 import { Outlet } from '@tanstack/react-router'
@@ -15,6 +15,7 @@ const Sets: FC = () => {
   const { setsList, isLoading } = useCollection()
   const setsColumnDefs = useSetsColDefs()
   const [quickFilter, setQuickFilter] = useState('')
+  const deferredQuickFilter = useDeferredValue(quickFilter)
   const {
     owned,
     percentageOwned,
@@ -32,13 +33,14 @@ const Sets: FC = () => {
     <>
       <ModuleHeader
         addTo="/sets/add"
+        quickFilter={quickFilter}
         setQuickFilter={setQuickFilter}
         statisticsTooltipTitle={`You owned ${owned} of the ${total} sets in our database (${formatPercentage(percentageOwned)})${idToken ? `. You have spend ${formatFrEuroCurrency(totalBought)} on your collection. The store value of your collection is ${formatFrEuroCurrency(totalStoreValue)} and the market value ${formatFrEuroCurrency(totalMarketValue)}` : ''}`}
       />
       <AgGridTable
         columnDefs={setsColumnDefs}
         defaultColDef={defaultSetsColumnDefs}
-        quickFilterText={quickFilter}
+        quickFilterText={deferredQuickFilter}
         rowData={setsList}
       />
       <Outlet />

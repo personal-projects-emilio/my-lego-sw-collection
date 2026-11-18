@@ -10,6 +10,7 @@ const emptyDimensions = { depth: null, height: null, width: null }
 const withDroppedValues = (set: Set): Set => ({
   ...set,
   tags: set.tags ?? [],
+  timeline: set.timeline ?? [],
   bricksetImagePath: set.bricksetImagePath ?? null,
   EAN: set.EAN ?? null,
   UPC: set.UPC ?? null,

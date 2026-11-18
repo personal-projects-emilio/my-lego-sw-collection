@@ -1,4 +1,5 @@
 import type { InheritedTags, TagId } from 'types/tags'
+import type { InheritedTimeline, TimelineId } from 'types/timeline'
 import { z } from 'zod'
 
 export const minifigValidationSchema = z.object({
@@ -17,6 +18,7 @@ export const minifigValidationSchema = z.object({
     message: 'Name is required',
   }),
   tags: z.array(z.string()),
+  timeline: z.array(z.string()),
 })
 
 /** A minifig as stored in the DB */
@@ -40,6 +42,8 @@ export type LooseMinifigsList = StoredLooseMinifig[]
 export type CollectionMinifig = Minifig & {
   effectiveTags: TagId[]
   inheritedTags: InheritedTags
+  effectiveTimeline: TimelineId[]
+  inheritedTimeline: InheritedTimeline
   owned: {
     loose: LooseMinifig
     total: number

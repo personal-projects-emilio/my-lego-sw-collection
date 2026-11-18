@@ -1,0 +1,293 @@
+import assert from 'node:assert/strict'
+import type { TimelineList } from 'types/timeline'
+import { test } from 'vitest'
+
+import {
+  buildTimeline,
+  canToggle,
+  deleteEntry,
+  type EntryDraft,
+  formatRange,
+  pickStatus,
+  saveEntry,
+  type TimelineEdit,
+  type TimelineState,
+  togglePick,
+} from './timeline.ts'
+
+const timelineList: TimelineList = [
+  { id: 'aor', label: 'Age of Rebellion', start: 0, end: 5 },
+  { id: 'ot', label: 'Original Trilogy', parent: 'aor' },
+  { id: 'nr', label: 'New Republic', start: 9, end: 30 },
+  {
+    id: 'anh',
+    label: 'A New Hope',
+    parent: 'ot',
+    kind: 'movie',
+    start: 0,
+  },
+  {
+    id: 'rotj',
+    label: 'Return of the Jedi',
+    parent: 'ot',
+    kind: 'movie',
+    start: 4,
+  },
+]
+
+const state: TimelineState = {
+  timelineList,
+  setsList: [
+    { id: 1, name: 'X-wing', timeline: ['anh'] },
+    { id: 2, name: 'Speeder', timeline: ['rotj'] },
+  ] as TimelineState['setsList'],
+  minifigsList: [
+    { id: 'sw0001', name: 'Luke', timeline: ['ot', 'rotj'] },
+  ] as TimelineState['minifigsList'],
+}
+
+const stateOf = (edit: TimelineEdit) => {
+  assert.ok('state' in edit, 'refused' in edit ? edit.refused : '')
+  return edit.state
+}
+
+const entryOf = ({ current, id }: { current: TimelineState; id: string }) =>
+  current.timelineList.find((entry) => entry.id === id)
+
+test.for([
+  { case: 'a blank label', entry: { id: 'anh', label: '  ' } },
+  { case: 'an unknown parent', entry: { label: 'Andor', parent: 'nope' } },
+  {
+    case: 'a move under itself',
+    entry: { id: 'ot', label: 'Original Trilogy', parent: 'ot' },
+  },
+  {
+    case: 'a move under its descendant',
+    entry: { id: 'aor', label: 'Age of Rebellion', parent: 'anh' },
+  },
+  {
+    case: 'an end without a start',
+    entry: { id: 'anh', label: 'A New Hope', end: 4 },
+  },
+  {
+    case: 'a year that is not whole',
+    entry: { id: 'anh', label: 'A New Hope', start: 0.5 },
+  },
+  {
+    case: 'an end before the start',
+    entry: { id: 'anh', label: 'A New Hope', start: 4, end: 0 },
+  },
+  {
+    case: 'a kind on an entry with children',
+    entry: {
+      id: 'ot',
+      label: 'Original Trilogy',
+      parent: 'aor',
+      kind: 'movie',
+    },
+  },
+  {
+    case: 'a title under a title',
+    entry: { label: 'Rogue One', parent: 'anh', kind: 'movie' },
+  },
+  {
+    case: 'a trilogy under a trilogy',
+    entry: { label: 'Skywalker Saga', parent: 'ot' },
+  },
+  {
+    case: 'an era holding trilogies moved under an era',
+    entry: { id: 'aor', label: 'Age of Rebellion', parent: 'nr' },
+  },
+] satisfies Array<{ case: string; entry: EntryDraft }>)(
+  'saveEntry refuses $case',
+  ({ entry }) => {
+    assert.ok('refused' in saveEntry({ state, draft: entry }))
+  }
+)
+
+test('saveEntry adds an entry with an id made from its label', () => {
+  const next = stateOf(
+    saveEntry({
+      state,
+      draft: { label: 'A New Hope', parent: 'ot', kind: 'movie' },
+    })
+  )
+  assert.deepEqual(entryOf({ current: next, id: 'a-new-hope' }), {
+    id: 'a-new-hope',
+    label: 'A New Hope',
+    parent: 'ot',
+    kind: 'movie',
+  })
+})
+
+test('saveEntry edits an entry in place and keeps its id and the items', () => {
+  const next = stateOf(
+    saveEntry({
+      state,
+      draft: {
+        id: 'anh',
+        label: ' Episode IV ',
+        parent: 'aor',
+        start: 0,
+        end: 0,
+      },
+    })
+  )
+  assert.deepEqual(entryOf({ current: next, id: 'anh' }), {
+    id: 'anh',
+    label: 'Episode IV',
+    parent: 'aor',
+    start: 0,
+    end: 0,
+  })
+  assert.equal(next.setsList, state.setsList)
+})
+
+test('deleteEntry removes it from items and moves its children up', () => {
+  const next = stateOf(deleteEntry({ state, id: 'ot' }))
+  assert.equal(entryOf({ current: next, id: 'ot' }), undefined)
+  assert.deepEqual(
+    next.timelineList
+      .filter(({ parent }) => parent === 'aor')
+      .map(({ id }) => id),
+    ['anh', 'rotj']
+  )
+  assert.deepEqual(next.minifigsList[0].timeline, ['rotj'])
+  assert.equal(next.setsList, state.setsList)
+})
+
+test('deleteEntry refuses an unknown entry', () => {
+  assert.ok('refused' in deleteEntry({ state, id: 'nope' }))
+})
+
+test('deleteEntry on an era moves its trilogies up to the top', () => {
+  const next = stateOf(deleteEntry({ state, id: 'aor' }))
+  assert.equal(entryOf({ current: next, id: 'aor' }), undefined)
+  assert.deepEqual(entryOf({ current: next, id: 'ot' }), {
+    id: 'ot',
+    label: 'Original Trilogy',
+  })
+})
+
+test.for([
+  { id: 'ot', expected: '0 BBY/ABY – 4 ABY' },
+  { id: 'aor', expected: '0 BBY/ABY – 5 ABY' },
+  { id: 'anh', expected: '0 BBY/ABY' },
+])(
+  'a range of $id spans its children when it has no dates',
+  ({ id, expected }) => {
+    assert.equal(formatRange(buildTimeline(timelineList).range(id)), expected)
+  }
+)
+
+const picks = ({
+  value,
+  inherited = {},
+}: {
+  value: string[]
+  inherited?: Record<string, string[]>
+}) => ({ value, inherited })
+
+test.for([
+  { case: 'adds a title', value: [], id: 'anh', expected: ['anh'] },
+  {
+    case: 'drops a stored ancestor when adding below it',
+    value: ['ot'],
+    id: 'rotj',
+    expected: ['rotj'],
+  },
+  {
+    case: 'removes a pick',
+    value: ['anh', 'rotj'],
+    id: 'anh',
+    expected: ['rotj'],
+  },
+  {
+    case: 'clears the picks under an implied entry',
+    value: ['anh', 'rotj'],
+    id: 'ot',
+    expected: [],
+  },
+  {
+    case: 'removes a hand pick that is also inherited',
+    value: ['anh'],
+    inherited: { anh: ['75301'] },
+    id: 'anh',
+    expected: [],
+  },
+  {
+    case: 'keeps an inherited entry',
+    value: [],
+    inherited: { anh: ['75301'] },
+    id: 'anh',
+    expected: [],
+  },
+])('togglePick $case', ({ value, inherited, id, expected }) => {
+  const timeline = buildTimeline(timelineList)
+  assert.deepEqual(
+    togglePick({ timeline, picks: picks({ value, inherited }), id }),
+    expected
+  )
+})
+
+test.for([
+  { id: 'anh', expected: 'inherited' },
+  { id: 'ot', expected: 'implied' },
+  { id: 'aor', expected: 'implied' },
+  { id: 'rotj', expected: 'picked' },
+])('pickStatus of $id is $expected', ({ id, expected }) => {
+  assert.equal(
+    pickStatus({
+      timeline: buildTimeline(timelineList),
+      picks: picks({ value: ['rotj'], inherited: { anh: ['75301'] } }),
+      id,
+    }),
+    expected
+  )
+})
+
+test.for<{
+  case: string
+  id: string
+  value: string[]
+  inherited: Record<string, string[]>
+  expected: boolean
+}>([
+  {
+    case: 'an entry implied only by inherited ones',
+    id: 'ot',
+    value: [],
+    inherited: { anh: ['75301'] },
+    expected: false,
+  },
+  {
+    case: 'an entry implied by a pick',
+    id: 'ot',
+    value: ['anh'],
+    inherited: {},
+    expected: true,
+  },
+  {
+    case: 'an inherited entry',
+    id: 'anh',
+    value: [],
+    inherited: { anh: ['75301'] },
+    expected: false,
+  },
+  {
+    case: 'an inherited entry that is also picked',
+    id: 'anh',
+    value: ['anh'],
+    inherited: { anh: ['75301'] },
+    expected: true,
+  },
+])('canToggle on $case is $expected', ({ id, value, inherited, expected }) => {
+  assert.equal(
+    canToggle({
+      timeline: buildTimeline(timelineList),
+      picks: picks({ value, inherited }),
+      id,
+    }),
+    expected
+  )
+})

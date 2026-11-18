@@ -88,6 +88,11 @@ const BurgerMenuNavigation: FC = () => {
           onClick={handleCloseMenu}
         />
         <LinkMenuItem to="/sets" label="Sets" onClick={handleCloseMenu} />
+        <LinkMenuItem
+          to="/timeline"
+          label="Timeline"
+          onClick={handleCloseMenu}
+        />
         {idToken && (
           <LinkMenuItem
             to="/loose-minifigs"

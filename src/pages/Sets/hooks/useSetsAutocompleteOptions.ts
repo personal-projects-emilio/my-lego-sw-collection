@@ -26,7 +26,7 @@ const useSetsAutocompleteOptions = () => {
     )
     return {
       ids: statistics.ids,
-      subthemes: uniqueAndSortedArray(statistics.subthemes),
+      subthemes: uniqueAndSortedArray({ array: statistics.subthemes }),
     }
   }, [setsList])
 }

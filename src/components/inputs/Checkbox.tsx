@@ -6,15 +6,13 @@ import {
   type FormControlLabelProps,
 } from '@mui/material'
 
-type CustomCheckboxProps<V extends unknown | boolean | null = unknown> = Omit<
-  FormControlLabelProps,
-  'onChange' | 'control'
-> & {
-  label: string
-  value: V
-  isIndeterminate?: boolean
-  onChange: (value: V) => void
-}
+type CustomCheckboxProps<Value extends unknown | boolean | null = unknown> =
+  Omit<FormControlLabelProps, 'onChange' | 'control'> & {
+    label: string
+    value: Value
+    isIndeterminate?: boolean
+    onChange: (value: Value) => void
+  }
 
 const Checkbox = forwardRef<HTMLButtonElement, CustomCheckboxProps>(
   ({ value, isIndeterminate = false, label, onChange, ...props }, ref) => {

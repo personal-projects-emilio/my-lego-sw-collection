@@ -11,6 +11,13 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `type(scope
 - No AI attribution anywhere: no `Co-Authored-By` trailers and no "Generated with" lines in commits, PRs or issues.
 - WIP commits on feature branches are fine in any format. No local hook enforces the convention, on purpose.
 
+## Code
+
+- **Component size**: aim for component files under ~150 lines; 150 to 200 is fine, and a stateful component (a form, a dialog) can go past that when splitting it would only pass its state down. Shrink a file by pulling out what stands on its own: styles to `Foo.styles.ts`, constants, types, utils, hooks, and small components that are reused or own their state (like `FormTextField`). Never cut a component into sections that take the parent's `control` or state as props.
+- **Map names**: lookup constants are named `mapFooToBar`, e.g. `mapKeysToActions`, `mapKindsToIcons`.
+- **Object params**: our own functions with two or more params take one object with named fields. Native and library callback signatures (comparators, `reduce`, event handlers) keep theirs. ESLint's `no-restricted-syntax` enforces it; `by*`/`compare*` comparators are exempt.
+- **No abbreviations**: spell names out, type parameters included: `Item`, `ListKey`, not `T`, `K`. A library's own type parameter name stays as the library spells it: AG Grid's `TData`. ESLint's `@typescript-eslint/naming-convention` enforces it for type parameters.
+
 ## Tests
 
 - Prefer table-driven tests with Vitest's `test.for([...])(name, fn)`: one row per case, `$field` placeholders in the name. It's the default for simple functions, and should be used elsewhere whenever the cases share a shape.

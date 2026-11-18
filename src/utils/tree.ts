@@ -2,11 +2,9 @@ export type TreeNode = {
   id: string
   label: string
   parent?: string
-  order: number
-  alphabetical?: boolean
 }
 
-const byLabel = (a: TreeNode, b: TreeNode) =>
+export const byLabel = (a: TreeNode, b: TreeNode) =>
   a.label.localeCompare(b.label, undefined, {
     numeric: true,
     sensitivity: 'base',
@@ -14,29 +12,29 @@ const byLabel = (a: TreeNode, b: TreeNode) =>
 
 type SiblingGroup = { parent: string | undefined; ids: string[] }
 
-export const buildTree = <T extends TreeNode>(nodes: T[]) => {
+export const buildTree = <Node extends TreeNode>({
+  nodes,
+  compare = byLabel,
+}: {
+  nodes: Node[]
+  compare?: (a: Node, b: Node) => number
+}) => {
   const byId = new Map(nodes.map((node) => [node.id, node]))
-  const children = new Map<string | undefined, T[]>()
+  const children = new Map<string | undefined, Node[]>()
   nodes.forEach((node) =>
     children.set(node.parent, [...(children.get(node.parent) ?? []), node])
   )
 
   const position = new Map<string, number>()
   const walk = (parent: string | undefined) =>
-    [...(children.get(parent) ?? [])]
-      .sort(
-        parent && byId.get(parent)?.alphabetical
-          ? byLabel
-          : (a, b) => a.order - b.order
-      )
-      .forEach((node) => {
-        position.set(node.id, position.size)
-        walk(node.id)
-      })
+    [...(children.get(parent) ?? [])].sort(compare).forEach((node) => {
+      position.set(node.id, position.size)
+      walk(node.id)
+    })
   walk(undefined)
 
   const ancestors = (id: string) => {
-    const result: T[] = []
+    const result: Node[] = []
     let node = byId.get(id)
     while (node?.parent && !result.some(({ id }) => id === node?.parent)) {
       node = byId.get(node.parent)
@@ -140,14 +138,17 @@ export const buildTree = <T extends TreeNode>(nodes: T[]) => {
 
 export type FlatNode = { id: string; parent?: string; depth: number }
 
-export const projectDrop = (
-  nodes: FlatNode[],
-  {
-    activeId,
-    overId,
-    depthDelta,
-  }: { activeId: string; overId: string; depthDelta: number }
-) => {
+export const projectDrop = ({
+  nodes,
+  activeId,
+  overId,
+  depthDelta,
+}: {
+  nodes: FlatNode[]
+  activeId: string
+  overId: string
+  depthDelta: number
+}) => {
   const from = nodes.findIndex(({ id }) => id === activeId)
   const to = nodes.findIndex(({ id }) => id === overId)
   const moved = [...nodes]
@@ -166,12 +167,9 @@ export const projectDrop = (
       : depth > previous.depth
         ? previous.id
         : [...before].reverse().find((node) => node.depth === depth)?.parent
-  return {
-    parent,
-    index: before.filter((node) => node.parent === parent).length,
-  }
+  return { parent }
 }
 
-export type TreeModel<T extends TreeNode = TreeNode> = ReturnType<
-  typeof buildTree<T>
+export type TreeModel<Node extends TreeNode = TreeNode> = ReturnType<
+  typeof buildTree<Node>
 >

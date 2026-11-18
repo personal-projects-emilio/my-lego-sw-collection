@@ -8,13 +8,17 @@ import type {
 } from 'types/minifigs'
 import type { CollectionSetsList, Set, SetsList } from 'types/sets'
 import type { TagsList, TagTarget } from 'types/tags'
+import type { TimelineList } from 'types/timeline'
 
 import { buildTagsVocabulary, seasonalTagId } from './tags'
+import { buildTimeline } from './timeline'
 
-export const isSetRetired = (
-  { exitDate, retired }: Pick<Set, 'exitDate' | 'retired'>,
-  today = new Date().toISOString().slice(0, 10)
-) => (exitDate ? exitDate < today : retired)
+export const isSetRetired = ({
+  exitDate,
+  retired,
+  today = new Date().toISOString().slice(0, 10),
+}: Pick<Set, 'exitDate' | 'retired'> & { today?: string }) =>
+  exitDate ? exitDate < today : retired
 
 type ResaleInputs = {
   officialPrice: number | null
@@ -98,6 +102,7 @@ interface StoredCollection {
   minifigsList: MinifigsList
   looseMinifigsList: LooseMinifigsList
   tagsList: TagsList
+  timelineList: TimelineList
 }
 
 interface Collection {
@@ -105,11 +110,13 @@ interface Collection {
   minifigsList: CollectionMinifigsList
 }
 
-export const renameMinifigInSets = (
-  setsList: SetsList,
-  previousId: Minifig['id'],
-  newId: Minifig['id']
-): SetsList =>
+type Rename = { previousId: Minifig['id']; newId: Minifig['id'] }
+
+export const renameMinifigInSets = ({
+  setsList,
+  previousId,
+  newId,
+}: Rename & { setsList: SetsList }): SetsList =>
   setsList.map((set) =>
     set.content?.minifigs?.some(({ id }) => id === previousId)
       ? {
@@ -133,22 +140,26 @@ const defaultLoose: LooseMinifig = {
 
 const byId = (a: { id: string }, b: { id: string }) => a.id.localeCompare(b.id)
 
-export const updateLooseMinifig = (
-  looseMinifigsList: LooseMinifigsList,
-  minifigId: Minifig['id'],
+export const updateLooseMinifig = ({
+  looseMinifigsList,
+  minifigId,
+  changes,
+}: {
+  looseMinifigsList: LooseMinifigsList
+  minifigId: Minifig['id']
   changes: Partial<LooseMinifig>
-): LooseMinifigsList => {
+}): LooseMinifigsList => {
   const previous = looseMinifigsList.find(({ id }) => id === minifigId)
   const others = looseMinifigsList.filter(({ id }) => id !== minifigId)
   const updated = { ...defaultLoose, ...previous, ...changes, id: minifigId }
   return updated.quantity > 0 ? [...others, updated].sort(byId) : others
 }
 
-export const renameLooseMinifig = (
-  looseMinifigsList: LooseMinifigsList,
-  previousId: Minifig['id'],
-  newId: Minifig['id']
-): LooseMinifigsList =>
+export const renameLooseMinifig = ({
+  looseMinifigsList,
+  previousId,
+  newId,
+}: Rename & { looseMinifigsList: LooseMinifigsList }): LooseMinifigsList =>
   looseMinifigsList.some(({ id }) => id === previousId)
     ? looseMinifigsList
         .map((loose) =>
@@ -163,19 +174,38 @@ export const buildCollection = ({
   minifigsList,
   looseMinifigsList,
   tagsList,
+  timelineList,
 }: StoredCollection): Collection => {
   const tagsVocabulary = buildTagsVocabulary(tagsList)
-  const ownTags = (tags: string[] | undefined, target: TagTarget) =>
-    tagsVocabulary.withImplied(
-      (tags ?? []).filter((id) => tagsVocabulary.appliesTo(id, target))
+  const timeline = buildTimeline(timelineList)
+  const withSource = ({
+    record,
+    ids,
+    source,
+  }: {
+    record: Record<string, Array<string | number>>
+    ids: string[]
+    source: string | number
+  }) =>
+    ids.reduce(
+      (result, id) =>
+        result[id]?.includes(source)
+          ? result
+          : { ...result, [id]: [...(result[id] ?? []), source] },
+      record
     )
+  const ownTags = ({ tags, target }: { tags?: string[]; target: TagTarget }) =>
+    tagsVocabulary.withImplied(
+      (tags ?? []).filter((id) => tagsVocabulary.appliesTo({ id, target }))
+    )
+  const isSeasonal = (set: Set) => !!set.tags?.includes(seasonalTagId)
   const inheritable = (set: Set) =>
-    set.tags?.includes(seasonalTagId)
+    isSeasonal(set)
       ? []
-      : ownTags(set.tags, 'sets').filter(
+      : ownTags({ tags: set.tags, target: 'sets' }).filter(
           (id) =>
             tagsVocabulary.rootOf(id)?.inherited &&
-            tagsVocabulary.appliesTo(id, 'minifigs')
+            tagsVocabulary.appliesTo({ id, target: 'minifigs' })
         )
   const looseById = new Map(looseMinifigsList.map((loose) => [loose.id, loose]))
   const cleanedMinifigsList = minifigsList.map((minifig): CollectionMinifig => {
@@ -190,6 +220,8 @@ export const buildCollection = ({
       ...minifig,
       effectiveTags: [],
       inheritedTags: {},
+      effectiveTimeline: [],
+      inheritedTimeline: {},
       owned: { total: loose.quantity, loose, inSet: [] },
     }
   })
@@ -205,16 +237,18 @@ export const buildCollection = ({
         const currentMinifig = updatedMinifigsList[index]
         updatedMinifigsList[index] = {
           ...currentMinifig,
-          inheritedTags: inheritable(currentSet).reduce(
-            (inheritedTags, id) =>
-              inheritedTags[id]?.includes(currentSet.id)
-                ? inheritedTags
-                : {
-                    ...inheritedTags,
-                    [id]: [...(inheritedTags[id] ?? []), currentSet.id],
-                  },
-            currentMinifig.inheritedTags
-          ),
+          inheritedTags: withSource({
+            record: currentMinifig.inheritedTags,
+            ids: inheritable(currentSet),
+            source: currentSet.id,
+          }),
+          inheritedTimeline: withSource({
+            record: currentMinifig.inheritedTimeline,
+            ids: isSeasonal(currentSet)
+              ? []
+              : timeline.withImplied(currentSet.timeline ?? []),
+            source: currentSet.id,
+          }),
           owned: {
             loose: currentMinifig.owned.loose,
             total:
@@ -238,7 +272,8 @@ export const buildCollection = ({
           {
             ...currentSet,
             tags: Array.from(new Set(currentSet.tags)),
-            effectiveTags: ownTags(currentSet.tags, 'sets'),
+            effectiveTags: ownTags({ tags: currentSet.tags, target: 'sets' }),
+            effectiveTimeline: timeline.withImplied(currentSet.timeline ?? []),
             ...(currentSet.content && {
               content: {
                 ...currentSet.content,
@@ -264,8 +299,12 @@ export const buildCollection = ({
     minifigsList: syncedList.minifigs.map((minifig) => ({
       ...minifig,
       effectiveTags: tagsVocabulary.sort([
-        ...ownTags(minifig.tags, 'minifigs'),
+        ...ownTags({ tags: minifig.tags, target: 'minifigs' }),
         ...Object.keys(minifig.inheritedTags),
+      ]),
+      effectiveTimeline: timeline.sort([
+        ...timeline.withImplied(minifig.timeline ?? []),
+        ...Object.keys(minifig.inheritedTimeline),
       ]),
     })),
   }

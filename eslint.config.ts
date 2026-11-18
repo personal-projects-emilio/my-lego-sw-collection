@@ -38,7 +38,35 @@ export default config(
       '@typescript-eslint/no-import-type-side-effects': 'error',
       'import-x/no-duplicates': ['error', { 'prefer-inline': true }],
       'import-x/newline-after-import': 'error',
+      '@typescript-eslint/naming-convention': [
+        'error',
+        {
+          selector: 'typeParameter',
+          format: ['PascalCase'],
+          custom: { regex: '^(TData$|[A-Z][a-z])', match: true },
+        },
+      ],
       'max-params': ['error', 3],
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'FunctionDeclaration[id.name!="assert"][params.length>1]',
+          message:
+            'Use one object param with named fields for two or more params.',
+        },
+        {
+          selector:
+            'VariableDeclarator[id.name!=/^(by|compare)[A-Z]/] > ArrowFunctionExpression[params.length>1]',
+          message:
+            'Use one object param with named fields for two or more params.',
+        },
+        {
+          selector:
+            'VariableDeclarator[id.name!=/^(by|compare)[A-Z]/] > FunctionExpression[params.length>1]',
+          message:
+            'Use one object param with named fields for two or more params.',
+        },
+      ],
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },

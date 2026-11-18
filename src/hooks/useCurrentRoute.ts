@@ -7,6 +7,7 @@ const defaultRoutesToCheck = [
   '/minifigs',
   '/resale-sets',
   '/sets',
+  '/timeline',
 ] satisfies RouterRouteIds[] as string[]
 
 const useCurrentRoute = (routes = defaultRoutesToCheck) => {

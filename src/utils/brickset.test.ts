@@ -11,7 +11,7 @@ import {
   skipChanges,
 } from './brickset.ts'
 
-const set = (id: Set['id'], overrides: Partial<Set> = {}) =>
+const set = ({ id, ...overrides }: Partial<Set> & { id: Set['id'] }) =>
   ({
     id,
     name: `Set ${id}`,
@@ -44,11 +44,11 @@ const row = (fields: Record<string, string>) => ({
 
 test('sorts rows into updates, unchanged, missing, ignored, not in CSV and conflicts', () => {
   const setsList = [
-    set(75192),
-    set('75300', { releaseYear: 2021, dimensions: undefined }),
-    set(10331),
-    set(75000),
-    set(75001),
+    set({ id: 75192 }),
+    set({ id: '75300', releaseYear: 2021, dimensions: undefined }),
+    set({ id: 10331 }),
+    set({ id: 75000 }),
+    set({ id: 75001 }),
   ]
   const report = buildBricksetReport({
     setsList,
@@ -102,9 +102,9 @@ test('sorts rows into updates, unchanged, missing, ignored, not in CSV and confl
 })
 
 test('builds a new owned set from a Brickset row', () => {
-  const base = set('')
-  const newSet = newSetFromBricksetRow(
-    row({
+  const base = set({ id: '' })
+  const newSet = newSetFromBricksetRow({
+    row: row({
       Number: '5006290',
       SetName: "Yoda's Lightsaber",
       Subtheme: 'Promotional',
@@ -113,7 +113,7 @@ test('builds a new owned set from a Brickset row', () => {
       QtyOwned: '1',
       ImageFilename: '5006290-1',
     }),
-    {
+    base: {
       ...base,
       content: {
         minifigs: [],
@@ -123,8 +123,8 @@ test('builds a new owned set from a Brickset row', () => {
         partsQuantity: 0,
       },
     },
-    5006290
-  )
+    id: 5006290,
+  })
 
   assert.equal(newSet.id, 5006290)
   assert.equal(newSet.name, "Yoda's Lightsaber")
@@ -145,9 +145,9 @@ test('only keeps the variant suffix when another variant exists', () => {
     row({ Number: 'XWING', Variant: '2' }),
     row({ Number: '7140' }),
   ]
-  const setsList = [set('7140-2')]
+  const setsList = [set({ id: '7140-2' })]
   const idOf = (index: number) =>
-    bricksetRowToSetId(rows[index], { rows, setsList })
+    bricksetRowToSetId({ row: rows[index], rows, setsList })
 
   assert.equal(idOf(0), 75466)
   assert.equal(idOf(1), 'XWING-1')
@@ -157,7 +157,7 @@ test('only keeps the variant suffix when another variant exists', () => {
 
 test('matches a set stored under its EU item number', () => {
   const report = buildBricksetReport({
-    setsList: [set(6346098)],
+    setsList: [set({ id: 6346098 })],
     ignoreList: { ids: [], themes: [], subthemes: [] },
     rows: [
       row({ Number: '5006290', EUItemNumber: '6346098', YearFrom: '2021' }),
@@ -174,7 +174,8 @@ test('matches a set stored under its EU item number', () => {
 test('reads the exit date and piece count, and puts back skipped changes', () => {
   const report = buildBricksetReport({
     setsList: [
-      set(75192, {
+      set({
+        id: 75192,
         content: {
           minifigs: [],
           bags: null,
@@ -202,9 +203,10 @@ test('reads the exit date and piece count, and puts back skipped changes', () =>
     { field: 'prices.brickLinkSoldPriceNew', from: 0, to: 800 },
   ])
 
-  const [saved] = skipChanges(report, [
-    changeKey(75192, 'content.partsQuantity'),
-  ])
+  const [saved] = skipChanges({
+    report,
+    skippedKeys: [changeKey({ id: 75192, field: 'content.partsQuantity' })],
+  })
   assert.equal(saved.content.partsQuantity, 7541)
   assert.equal(saved.exitDate, '2028-12-31')
   assert.equal(saved.prices.brickLinkSoldPriceNew, 800)

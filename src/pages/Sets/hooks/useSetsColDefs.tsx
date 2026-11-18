@@ -17,8 +17,9 @@ import {
   OverflowTypographyCellRenderer,
   type SetActionsCellRendererProps,
   tagsColDef,
+  timelineColDef,
 } from 'components/AgGrid/column'
-import { useTagsVocabulary } from 'hooks'
+import { useTagsVocabulary, useTimeline } from 'hooks'
 import { useAuth } from 'providers/AuthProvider'
 import type { CollectionSet } from 'types/sets'
 import { compareIds, spreadArrayIf } from 'utils/array'
@@ -33,6 +34,7 @@ const useSetsColDefs = () => {
   const { deleteSet, isPending } = useSetsMutations()
   const { idToken } = useAuth()
   const tagsVocabulary = useTagsVocabulary()
+  const timeline = useTimeline()
   return useMemo(
     () =>
       [
@@ -64,7 +66,8 @@ const useSetsColDefs = () => {
           flex: 1,
           minWidth: 120,
         },
-        tagsColDef<CollectionSet>(tagsVocabulary, 'sets'),
+        timelineColDef<CollectionSet>(timeline),
+        tagsColDef<CollectionSet>({ tagsVocabulary, itemType: 'sets' }),
         {
           field: 'releaseYear',
           headerName: 'Release',
@@ -121,32 +124,35 @@ const useSetsColDefs = () => {
             ),
           width: 100,
         },
-        ...spreadArrayIf<ColDef<CollectionSet>>(idToken !== undefined, [
-          {
-            field: 'prices.bought',
-            headerName: 'Bought',
-            filter: 'agNumberColumnFilter',
-            suppressFloatingFilterButton: false,
-            valueFormatter: ({ value }) => formatFrEuroCurrency(value),
-            width: 100,
-          },
-          {
-            field: 'prices.marketValue',
-            headerName: 'Market Value',
-            filter: 'agNumberColumnFilter',
-            suppressFloatingFilterButton: false,
-            valueFormatter: ({ value }) => formatFrEuroCurrency(value),
-            width: 100,
-          },
-          {
-            field: 'prices.storeValue',
-            headerName: 'Store Value',
-            filter: 'agNumberColumnFilter',
-            suppressFloatingFilterButton: false,
-            valueFormatter: ({ value }) => formatFrEuroCurrency(value),
-            width: 100,
-          },
-        ]),
+        ...spreadArrayIf<ColDef<CollectionSet>>({
+          condition: idToken !== undefined,
+          array: [
+            {
+              field: 'prices.bought',
+              headerName: 'Bought',
+              filter: 'agNumberColumnFilter',
+              suppressFloatingFilterButton: false,
+              valueFormatter: ({ value }) => formatFrEuroCurrency(value),
+              width: 100,
+            },
+            {
+              field: 'prices.marketValue',
+              headerName: 'Market Value',
+              filter: 'agNumberColumnFilter',
+              suppressFloatingFilterButton: false,
+              valueFormatter: ({ value }) => formatFrEuroCurrency(value),
+              width: 100,
+            },
+            {
+              field: 'prices.storeValue',
+              headerName: 'Store Value',
+              filter: 'agNumberColumnFilter',
+              suppressFloatingFilterButton: false,
+              valueFormatter: ({ value }) => formatFrEuroCurrency(value),
+              width: 100,
+            },
+          ],
+        }),
         {
           colId: 'externalLinks',
           field: 'id',
@@ -215,7 +221,7 @@ const useSetsColDefs = () => {
           width: 100,
         },
       ] as const satisfies Array<ColDef<CollectionSet>>,
-    [agGridClasses, deleteSet, idToken, isPending, tagsVocabulary]
+    [agGridClasses, deleteSet, idToken, isPending, tagsVocabulary, timeline]
   )
 }
 

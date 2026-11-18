@@ -10,7 +10,6 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 import type { Tag } from 'types/tags'
 import {
   deleteRoot,
@@ -22,25 +21,7 @@ import {
   tagUsage,
 } from 'utils/tags'
 
-const useDeleteTagDialogStyles = makeStyles({ name: 'DeleteTagDialog' })(
-  (theme) => ({
-    dialog: {
-      zIndex: theme.zIndex.modal + 1,
-    },
-    picker: {
-      zIndex: theme.zIndex.modal + 2,
-    },
-    content: {
-      display: 'flex',
-      flexDirection: 'column',
-      gap: theme.spacing(2),
-    },
-    items: {
-      margin: 0,
-      paddingLeft: theme.spacing(2.5),
-    },
-  })
-)
+import useDeleteTagDialogStyles from './DeleteTagDialog.styles'
 
 type DeleteTagDialogProps = {
   isPending: boolean
@@ -58,13 +39,13 @@ const DeleteTagDialog: FC<DeleteTagDialogProps> = ({
   tag,
 }) => {
   const { classes } = useDeleteTagDialogStyles()
-  const targets = rootTargets(state.tagsList, tag.id)
+  const targets = rootTargets({ tagsList: state.tagsList, id: tag.id })
   const [targetId, setTargetId] = useState(
     targets.some(({ id }) => id === otherRootId)
       ? otherRootId
       : (targets[0]?.id ?? '')
   )
-  const { sets, minifigs } = tagUsage(state, [tag.id])
+  const { sets, minifigs } = tagUsage({ state, ids: [tag.id] })
   const items = [
     ...sets.map(({ id, name }) => `Set ${id} ${name}`),
     ...minifigs.map(({ id, name }) => `Minifig ${id} ${name}`),
@@ -144,8 +125,8 @@ const DeleteTagDialog: FC<DeleteTagDialogProps> = ({
           onClick={() =>
             onConfirm(
               tag.parent
-                ? deleteTag(state, tag.id)
-                : deleteRoot(state, tag.id, targetId)
+                ? deleteTag({ state, id: tag.id })
+                : deleteRoot({ state, id: tag.id, targetId })
             )
           }
           variant="contained"

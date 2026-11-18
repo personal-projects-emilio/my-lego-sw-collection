@@ -4,7 +4,11 @@ import { useLooseMinifigsQuery } from 'api/looseMinifigs'
 import { useMinifigsQuery } from 'api/minifigs'
 import { useSetsQuery } from 'api/sets'
 import { useTagsQuery } from 'api/tags'
+import { useTimelineQuery } from 'api/timeline'
+import type { TimelineList } from 'types/timeline'
 import { buildCollection } from 'utils/lego'
+
+const noEntries: TimelineList = []
 
 type CollectionInputs = Parameters<typeof buildCollection>[0]
 
@@ -17,7 +21,8 @@ const buildSharedCollection = (inputs: CollectionInputs) => {
     lastCollection?.inputs.setsList !== inputs.setsList ||
     lastCollection.inputs.minifigsList !== inputs.minifigsList ||
     lastCollection.inputs.looseMinifigsList !== inputs.looseMinifigsList ||
-    lastCollection.inputs.tagsList !== inputs.tagsList
+    lastCollection.inputs.tagsList !== inputs.tagsList ||
+    lastCollection.inputs.timelineList !== inputs.timelineList
   ) {
     lastCollection = { inputs, collection: buildCollection(inputs) }
   }
@@ -32,18 +37,25 @@ const useCollection = () => {
   const { data: looseMinifigsList, isLoading: isLooseMinifigsLoading } =
     useLooseMinifigsQuery()
   const { data: tagsList, isLoading: isTagsLoading } = useTagsQuery()
+  const {
+    data: timelineData,
+    isError: isTimelineError,
+    isLoading: isTimelineLoading,
+  } = useTimelineQuery()
+  const timelineList = timelineData ?? (isTimelineError ? noEntries : undefined)
 
   const collection = useMemo(
     () =>
-      setsList && minifigsList && looseMinifigsList && tagsList
+      setsList && minifigsList && looseMinifigsList && tagsList && timelineList
         ? buildSharedCollection({
             setsList,
             minifigsList,
             looseMinifigsList,
             tagsList,
+            timelineList,
           })
         : undefined,
-    [setsList, minifigsList, looseMinifigsList, tagsList]
+    [setsList, minifigsList, looseMinifigsList, tagsList, timelineList]
   )
 
   return {
@@ -52,7 +64,8 @@ const useCollection = () => {
       isSetsLoading ||
       isMinifigsLoading ||
       isLooseMinifigsLoading ||
-      isTagsLoading,
+      isTagsLoading ||
+      isTimelineLoading,
   }
 }
 

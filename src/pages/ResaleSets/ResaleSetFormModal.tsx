@@ -1,10 +1,5 @@
 import { type FC, useMemo, useRef } from 'react'
-import {
-  Controller,
-  type FieldPath,
-  type SubmitHandler,
-  useForm,
-} from 'react-hook-form'
+import { Controller, type SubmitHandler, useForm } from 'react-hook-form'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
@@ -14,14 +9,12 @@ import {
   DialogContent,
   DialogTitle,
   MenuItem,
-  TextField,
   Typography,
 } from '@mui/material'
 import { useNavigate } from '@tanstack/react-router'
 import { useSetsQuery } from 'api/sets'
-import { Checkbox } from 'components/inputs'
+import { Checkbox, FormTextField } from 'components/inputs'
 import capitalize from 'lodash/capitalize'
-import { makeStyles } from 'tss-react/mui'
 import {
   boxConditions,
   type ResaleSet,
@@ -29,37 +22,11 @@ import {
   resaleSetValidationSchema,
   setConditions,
 } from 'types/resale'
+import { parseNullableNumber, parseNullableText, parseSetId } from 'utils/parse'
 
+import { defaultResaleSetFormValues } from './ResaleSetFormModal.constant'
+import useResaleSetFormModalStyles from './ResaleSetFormModal.styles'
 import useResaleSetsMutations from './useResaleSetsMutations'
-
-const useResaleSetFormModalStyles = makeStyles({ name: 'ResaleSetFormModal' })(
-  (theme) => ({
-    container: {
-      display: 'grid',
-      gap: theme.spacing(2),
-      gridTemplateColumns: 'repeat(2, 1fr)',
-    },
-    fullWidth: {
-      gridColumn: '1 / -1',
-    },
-  })
-)
-
-const defaultResaleSetFormValues: ResaleSetFormInput = {
-  id: '',
-  frenchName: '',
-  name: '',
-  officialPrice: null,
-  retired: false,
-  exitDate: null,
-  quantityBought: 1,
-  unitBoughtPrice: 0,
-  unitSellingPrice: null,
-  quantitySold: 0,
-  setCondition: 'sealed',
-  boxCondition: 'good',
-  location: '',
-}
 
 type ResaleSetFormModalProps = {
   resaleSet?: ResaleSet
@@ -118,71 +85,6 @@ const ResaleSetFormModal: FC<ResaleSetFormModalProps> = ({ resaleSet }) => {
       setError('root', { message: 'Unable to save the resale set' })
     )
 
-  const numberField = (
-    name: FieldPath<ResaleSetFormInput>,
-    label: string,
-    { nullable = false, required = false } = {}
-  ) => (
-    <Controller
-      control={control}
-      name={name}
-      render={({ field, fieldState }) => (
-        <TextField
-          {...field}
-          error={fieldState.invalid}
-          helperText={fieldState.error?.message}
-          label={label}
-          onChange={({ target: { value } }) =>
-            field.onChange(nullable && value === '' ? null : parseFloat(value))
-          }
-          required={required}
-          type="number"
-          value={field.value ?? ''}
-        />
-      )}
-    />
-  )
-
-  const selectField = (
-    name: 'setCondition' | 'boxCondition',
-    label: string,
-    options: readonly string[]
-  ) => (
-    <Controller
-      control={control}
-      name={name}
-      render={({ field }) => (
-        <TextField {...field} label={label} select>
-          {options.map((option) => (
-            <MenuItem key={option} value={option}>
-              {capitalize(option)}
-            </MenuItem>
-          ))}
-        </TextField>
-      )}
-    />
-  )
-
-  const textField = (
-    name: 'frenchName' | 'name' | 'location',
-    label: string,
-    required = false
-  ) => (
-    <Controller
-      control={control}
-      name={name}
-      render={({ field, fieldState }) => (
-        <TextField
-          {...field}
-          error={fieldState.invalid}
-          helperText={fieldState.error?.message}
-          label={label}
-          required={required}
-        />
-      )}
-    />
-  )
-
   return (
     <Dialog disableRestoreFocus open onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>
@@ -195,68 +97,102 @@ const ResaleSetFormModal: FC<ResaleSetFormModalProps> = ({ resaleSet }) => {
           onSubmit={handleSubmit(onSubmit)}
           noValidate
         >
-          <Controller
+          <FormTextField
             control={control}
             name="id"
-            render={({ field, fieldState }) => (
-              <TextField
-                {...field}
-                autoFocus={!isEdit}
-                disabled={isEdit}
-                error={fieldState.invalid}
-                helperText={
-                  fieldState.error?.message ??
-                  'Name, official price and retired are filled from your collection'
-                }
-                label="Set id"
-                placeholder="Set id (ex: 75000)"
-                onBlur={() => {
-                  field.onBlur()
-                  prefillFromCollection(field.value)
-                }}
-                onChange={({ target: { value } }) =>
-                  field.onChange(/\D/.test(value) ? value : parseInt(value, 10))
-                }
-                required
-                value={Number.isNaN(field.value) ? '' : field.value}
-              />
-            )}
+            autoFocus={!isEdit}
+            disabled={isEdit}
+            helperText="Name, official price and retired are filled from your collection"
+            label="Set id"
+            placeholder="Set id (ex: 75000)"
+            onBlur={({ target: { value } }) =>
+              prefillFromCollection(parseSetId(value))
+            }
+            parse={parseSetId}
+            required
           />
-          {textField('name', 'Name', true)}
-          {textField('frenchName', 'French name')}
-          {numberField('officialPrice', 'Official price', { nullable: true })}
-          <Controller
+          <FormTextField control={control} name="name" label="Name" required />
+          <FormTextField
+            control={control}
+            name="frenchName"
+            label="French name"
+          />
+          <FormTextField
+            control={control}
+            name="officialPrice"
+            label="Official price"
+            parse={parseNullableNumber}
+            type="number"
+          />
+          <FormTextField
             control={control}
             name="exitDate"
-            render={({ field }) => (
-              <TextField
-                {...field}
-                label="Exit date"
-                onChange={({ target: { value } }) =>
-                  field.onChange(value || null)
-                }
-                slotProps={{ inputLabel: { shrink: true } }}
-                type="date"
-                value={field.value ?? ''}
-              />
-            )}
+            label="Exit date"
+            parse={parseNullableText}
+            slotProps={{ inputLabel: { shrink: true } }}
+            type="date"
           />
           <Controller
             control={control}
             name="retired"
             render={({ field }) => <Checkbox {...field} label="Retired" />}
           />
-          {numberField('quantityBought', 'Quantity bought', { required: true })}
-          {numberField('unitBoughtPrice', 'Unit bought price', {
-            required: true,
-          })}
-          {numberField('quantitySold', 'Quantity sold', { required: true })}
-          {numberField('unitSellingPrice', 'Unit selling price', {
-            nullable: true,
-          })}
-          {selectField('setCondition', 'Set condition', setConditions)}
-          {selectField('boxCondition', 'Box condition', boxConditions)}
-          {textField('location', 'Location')}
+          <FormTextField
+            control={control}
+            name="quantityBought"
+            label="Quantity bought"
+            parse={parseFloat}
+            required
+            type="number"
+          />
+          <FormTextField
+            control={control}
+            name="unitBoughtPrice"
+            label="Unit bought price"
+            parse={parseFloat}
+            required
+            type="number"
+          />
+          <FormTextField
+            control={control}
+            name="quantitySold"
+            label="Quantity sold"
+            parse={parseFloat}
+            required
+            type="number"
+          />
+          <FormTextField
+            control={control}
+            name="unitSellingPrice"
+            label="Unit selling price"
+            parse={parseNullableNumber}
+            type="number"
+          />
+          <FormTextField
+            control={control}
+            name="setCondition"
+            label="Set condition"
+            select
+          >
+            {setConditions.map((option) => (
+              <MenuItem key={option} value={option}>
+                {capitalize(option)}
+              </MenuItem>
+            ))}
+          </FormTextField>
+          <FormTextField
+            control={control}
+            name="boxCondition"
+            label="Box condition"
+            select
+          >
+            {boxConditions.map((option) => (
+              <MenuItem key={option} value={option}>
+                {capitalize(option)}
+              </MenuItem>
+            ))}
+          </FormTextField>
+          <FormTextField control={control} name="location" label="Location" />
           {errors.root && (
             <Typography color="error" className={classes.fullWidth}>
               {errors.root.message}

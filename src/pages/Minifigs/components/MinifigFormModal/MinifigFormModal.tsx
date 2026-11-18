@@ -8,10 +8,14 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  TextField,
 } from '@mui/material'
 import { useNavigate } from '@tanstack/react-router'
-import { Autocomplete, TagsAutocomplete } from 'components/inputs'
+import {
+  Autocomplete,
+  FormTextField,
+  TagsAutocomplete,
+} from 'components/inputs'
+import { TimelineField } from 'components/Timeline'
 import { useCollection } from 'hooks'
 import {
   useMinifigsAutocompleteOptions,
@@ -33,9 +37,10 @@ const MinifigFormModal: FC<MinifigFormModalProps> = ({
 }) => {
   const { characterNames, ids } = useMinifigsAutocompleteOptions()
   const { minifigsList } = useCollection()
-  const inheritedTags = isEdit
-    ? minifigsList?.find(({ id }) => id === minifigData.id)?.inheritedTags
+  const collectionMinifig = isEdit
+    ? minifigsList?.find(({ id }) => id === minifigData.id)
     : undefined
+  const inheritedTags = collectionMinifig?.inheritedTags
   const { addMinifig, editMinifig, isPending } = useMinifigsMutations()
   const navigate = useNavigate()
   const { classes } = useMinifigFormModalStyles()
@@ -91,33 +96,19 @@ const MinifigFormModal: FC<MinifigFormModalProps> = ({
           onSubmit={handleSubmit(onSubmit)}
           noValidate
         >
-          <Controller
+          <FormTextField
             control={control}
             name="id"
-            render={({ field, fieldState }) => (
-              <TextField
-                {...field}
-                label="Id"
-                placeholder="Minifig id (ex: sw0001a)"
-                error={fieldState.invalid}
-                helperText={fieldState.error?.message}
-                required
-              />
-            )}
+            label="Id"
+            placeholder="Minifig id (ex: sw0001a)"
+            required
           />
-          <Controller
+          <FormTextField
             control={control}
             name="name"
-            render={({ field, fieldState }) => (
-              <TextField
-                {...field}
-                label="Name"
-                placeholder="Minifig name (ex: Battle Droid Tan with Back Plate)"
-                error={fieldState.invalid}
-                helperText={fieldState.error?.message}
-                required
-              />
-            )}
+            label="Name"
+            placeholder="Minifig name (ex: Battle Droid Tan with Back Plate)"
+            required
           />
           <Controller
             control={control}
@@ -137,6 +128,18 @@ const MinifigFormModal: FC<MinifigFormModalProps> = ({
                   }}
                 />
               </div>
+            )}
+          />
+          <Controller
+            control={control}
+            defaultValue={[]}
+            name="timeline"
+            render={({ field }) => (
+              <TimelineField
+                inherited={collectionMinifig?.inheritedTimeline}
+                onChange={field.onChange}
+                value={field.value}
+              />
             )}
           />
           <Controller

@@ -23,8 +23,8 @@ type MissingSetsGridProps = {
   rows: BricksetRow[]
   newSetIds: Map<BricksetRow, Set['id']>
   addedKeys: string[]
-  onToggleAdded: (keys: string[], isAdded: boolean) => void
-  onIgnore: (key: keyof BricksetIgnoreList, value: string) => void
+  onToggleAdded: (toggle: { keys: string[]; isAdded: boolean }) => void
+  onIgnore: (ignore: { key: keyof BricksetIgnoreList; value: string }) => void
 }
 
 /** The CSV rows that match no set, each can be added or ignored. */
@@ -73,7 +73,7 @@ const MissingSetsGrid: FC<MissingSetsGridProps> = ({
             <Button
               size="small"
               variant={isAdded ? 'contained' : 'text'}
-              onClick={() => onToggleAdded([data.key], isAdded)}
+              onClick={() => onToggleAdded({ keys: [data.key], isAdded })}
             >
               {isAdded ? 'Added' : 'Add'}
             </Button>
@@ -84,7 +84,7 @@ const MissingSetsGrid: FC<MissingSetsGridProps> = ({
                     key={key}
                     size="small"
                     title={data.row[column]}
-                    onClick={() => onIgnore(key, data.row[column])}
+                    onClick={() => onIgnore({ key, value: data.row[column] })}
                   >
                     {buttonLabel}
                   </Button>
@@ -102,7 +102,9 @@ const MissingSetsGrid: FC<MissingSetsGridProps> = ({
         size="small"
         variant="outlined"
         className={classes.addAll}
-        onClick={() => onToggleAdded(rows.map(bricksetRowKey), false)}
+        onClick={() =>
+          onToggleAdded({ keys: rows.map(bricksetRowKey), isAdded: false })
+        }
       >
         Add all
       </Button>

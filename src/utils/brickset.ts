@@ -34,25 +34,37 @@ const rowIds = ({
     `${EUItemNumber}-${Variant}`,
   ].filter((id) => id && !id.startsWith('-'))
 
-const ignoreReason = (
-  { Number, Theme, Subtheme }: BricksetRow,
+const ignoreReason = ({
+  row: { Number, Theme, Subtheme },
+  ignoreList,
+}: {
+  row: BricksetRow
   ignoreList: BricksetIgnoreList
-): IgnoreReason | null => {
+}): IgnoreReason | null => {
   if (ignoreList.ids.includes(Number)) return 'id'
   if (ignoreList.themes.includes(Theme)) return 'theme'
   if (ignoreList.subthemes.includes(Subtheme)) return 'subtheme'
   return null
 }
 
-const toNumber = (value: string | undefined, fallback: number) => {
+const toNumber = ({
+  value,
+  fallback,
+}: {
+  value?: string
+  fallback: number
+}) => {
   const number = Number(value)
   return value && !Number.isNaN(number) ? number : fallback
 }
 
-const toPositiveNumber = (
-  value: string | undefined,
+const toPositiveNumber = ({
+  value,
+  existing,
+}: {
+  value?: string
   existing?: number | null
-) => Number(value) || existing || null
+}) => Number(value) || existing || null
 
 const toIsoDate = (value: string | undefined) => {
   const [, day, month, year] = value?.match(/^(\d{2})\/(\d{2})\/(\d{4})/) ?? []
@@ -76,49 +88,67 @@ const trackedFields: [string, (set: Set) => FieldChange['from']][] = [
   ['dimensions.box.depth', (set) => set.dimensions?.box?.depth],
 ]
 
-export const applyBricksetRow = (set: Set, row: BricksetRow): Set => ({
+export const applyBricksetRow = ({
+  set,
+  row,
+}: {
+  set: Set
+  row: BricksetRow
+}): Set => ({
   ...set,
   bricksetImagePath: row.ImageFilename
     ? `https://images.brickset.com/sets/images/${row.ImageFilename}.jpg`
     : set.bricksetImagePath,
   EAN: row.EAN || set.EAN,
   UPC: row.UPC || set.UPC,
-  releaseYear: toNumber(row.YearFrom, set.releaseYear),
+  releaseYear: toNumber({ value: row.YearFrom, fallback: set.releaseYear }),
   exitDate: toIsoDate(row.ExitDate) ?? set.exitDate ?? null,
   content: {
     ...set.content,
-    partsQuantity: toPositiveNumber(row.Pieces, set.content?.partsQuantity),
+    partsQuantity: toPositiveNumber({
+      value: row.Pieces,
+      existing: set.content?.partsQuantity,
+    }),
   },
   prices: {
     ...set.prices,
-    brickLinkSoldPriceNew: toNumber(
-      row.BrickLinkSoldPriceNew,
-      set.prices.brickLinkSoldPriceNew ?? 0
-    ),
-    brickLinkSoldPriceUsed: toNumber(
-      row.BrickLinkSoldPriceUsed,
-      set.prices.brickLinkSoldPriceUsed ?? 0
-    ),
+    brickLinkSoldPriceNew: toNumber({
+      value: row.BrickLinkSoldPriceNew,
+      fallback: set.prices.brickLinkSoldPriceNew ?? 0,
+    }),
+    brickLinkSoldPriceUsed: toNumber({
+      value: row.BrickLinkSoldPriceUsed,
+      fallback: set.prices.brickLinkSoldPriceUsed ?? 0,
+    }),
   },
   dimensions: {
     model: {
-      width: toPositiveNumber(
-        row.ModelDimension1,
-        set.dimensions?.model?.width
-      ),
-      height: toPositiveNumber(
-        row.ModelDimension2,
-        set.dimensions?.model?.height
-      ),
-      depth: toPositiveNumber(
-        row.ModelDimension3,
-        set.dimensions?.model?.depth
-      ),
+      width: toPositiveNumber({
+        value: row.ModelDimension1,
+        existing: set.dimensions?.model?.width,
+      }),
+      height: toPositiveNumber({
+        value: row.ModelDimension2,
+        existing: set.dimensions?.model?.height,
+      }),
+      depth: toPositiveNumber({
+        value: row.ModelDimension3,
+        existing: set.dimensions?.model?.depth,
+      }),
     },
     box: {
-      width: toPositiveNumber(row.Width, set.dimensions?.box?.width),
-      height: toPositiveNumber(row.Height, set.dimensions?.box?.height),
-      depth: toPositiveNumber(row.Depth, set.dimensions?.box?.depth),
+      width: toPositiveNumber({
+        value: row.Width,
+        existing: set.dimensions?.box?.width,
+      }),
+      height: toPositiveNumber({
+        value: row.Height,
+        existing: set.dimensions?.box?.height,
+      }),
+      depth: toPositiveNumber({
+        value: row.Depth,
+        existing: set.dimensions?.box?.depth,
+      }),
     },
   },
 })
@@ -145,7 +175,7 @@ export const buildBricksetReport = ({
   }
 
   rows.forEach((row) => {
-    const reason = ignoreReason(row, ignoreList)
+    const reason = ignoreReason({ row, ignoreList })
     if (reason) {
       report.ignored.push({ row, reason })
       return
@@ -171,7 +201,7 @@ export const buildBricksetReport = ({
       report.conflicts.push(set)
       return set
     }
-    const updatedSet = applyBricksetRow(set, matchedRows[0])
+    const updatedSet = applyBricksetRow({ set, row: matchedRows[0] })
     const changes = trackedFields
       .map(([field, get]) => ({ field, from: get(set), to: get(updatedSet) }))
       .filter(({ from, to }) => (from ?? null) !== (to ?? null))
@@ -190,10 +220,15 @@ export const bricksetRowKey = ({ Number, Variant }: BricksetRow) =>
   `${Number}-${Variant}`
 
 /** The id a new set gets: the bare number, with a `-variant` suffix only when the CSV or the collection has another variant of it. */
-export const bricksetRowToSetId = (
-  row: BricksetRow,
-  { rows, setsList }: { rows: BricksetRow[]; setsList: SetsList }
-): Set['id'] => {
+export const bricksetRowToSetId = ({
+  row,
+  rows,
+  setsList,
+}: {
+  row: BricksetRow
+  rows: BricksetRow[]
+  setsList: SetsList
+}): Set['id'] => {
   const hasOtherVariant =
     rows.some(
       ({ Number, Variant }) => Number === row.Number && Variant !== row.Variant
@@ -202,50 +237,72 @@ export const bricksetRowToSetId = (
   return /^\d+$/.test(row.Number) ? Number(row.Number) : row.Number
 }
 
-export const newSetFromBricksetRow = (
-  row: BricksetRow,
-  base: Set,
+export const newSetFromBricksetRow = ({
+  row,
+  base,
+  id,
+}: {
+  row: BricksetRow
+  base: Set
   id: Set['id']
-): Set => {
-  const quantity = toNumber(row.QtyOwned, 0)
-  return applyBricksetRow(
-    {
+}): Set => {
+  const quantity = toNumber({ value: row.QtyOwned, fallback: 0 })
+  return applyBricksetRow({
+    set: {
       ...base,
       id,
       name: row.SetName,
       subtheme: row.Subtheme || row.Theme,
       ownedQuantity: quantity,
     },
-    row
-  )
+    row,
+  })
 }
 
-export const changeKey = (id: Set['id'], field: string) => `${id}|${field}`
+export const changeKey = ({ id, field }: { id: Set['id']; field: string }) =>
+  `${id}|${field}`
 
-const withValueAt = (
-  object: Record<string, unknown>,
-  [key, ...path]: string[],
+const withValueAt = ({
+  object,
+  path: [key, ...path],
+  value,
+}: {
+  object: Record<string, unknown>
+  path: string[]
   value: unknown
-): Record<string, unknown> => ({
+}): Record<string, unknown> => ({
   ...object,
   [key]: path.length
-    ? withValueAt((object[key] ?? {}) as Record<string, unknown>, path, value)
+    ? withValueAt({
+        object: (object[key] ?? {}) as Record<string, unknown>,
+        path,
+        value,
+      })
     : value,
 })
 
 /** The sets list to save, with the current value put back for every skipped change. */
-export const skipChanges = (
-  { setsList, updates }: BricksetReport,
+export const skipChanges = ({
+  report: { setsList, updates },
+  skippedKeys,
+}: {
+  report: BricksetReport
   skippedKeys: string[]
-): SetsList =>
+}): SetsList =>
   setsList.map((set) => {
     const update = updates.find((update) => update.set === set)
     if (!update) return set
     return update.changes
-      .filter(({ field }) => skippedKeys.includes(changeKey(set.id, field)))
+      .filter(({ field }) =>
+        skippedKeys.includes(changeKey({ id: set.id, field }))
+      )
       .reduce(
         (result, { field, from }) =>
-          withValueAt(result, field.split('.'), from) as Set,
+          withValueAt({
+            object: result,
+            path: field.split('.'),
+            value: from,
+          }) as Set,
         set
       )
   })

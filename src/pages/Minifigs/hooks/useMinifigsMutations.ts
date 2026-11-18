@@ -86,7 +86,11 @@ const useMinifigsMutations = () => {
         .sort((a, b) => a.id.localeCompare(b.id))
       const renamedSetsList =
         setsList && previousMinifig.id !== newMinifig.id
-          ? renameMinifigInSets(setsList, previousMinifig.id, newMinifig.id)
+          ? renameMinifigInSets({
+              setsList,
+              previousId: previousMinifig.id,
+              newId: newMinifig.id,
+            })
           : setsList
 
       if (!idToken) {
@@ -100,11 +104,11 @@ const useMinifigsMutations = () => {
         await editSetsList(renamedSetsList)
       }
       if (looseMinifigsList && previousMinifig.id !== newMinifig.id) {
-        const renamedLooseMinifigsList = renameLooseMinifig(
+        const renamedLooseMinifigsList = renameLooseMinifig({
           looseMinifigsList,
-          previousMinifig.id,
-          newMinifig.id
-        )
+          previousId: previousMinifig.id,
+          newId: newMinifig.id,
+        })
         if (renamedLooseMinifigsList !== looseMinifigsList) {
           await editLooseMinifigsList(renamedLooseMinifigsList)
         }

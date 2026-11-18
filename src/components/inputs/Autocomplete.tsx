@@ -45,7 +45,7 @@ const Autocomplete = forwardRef<HTMLInputElement, AutocompleteProps>(
       (newValue: string | string[] | null | undefined) => {
         setOptionValue(newValue)
         if (Array.isArray(newValue)) {
-          return onChange(uniqueAndSortedArray(newValue))
+          return onChange(uniqueAndSortedArray({ array: newValue }))
         }
         onChange(newValue || null)
       },

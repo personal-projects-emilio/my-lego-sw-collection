@@ -2,10 +2,13 @@ import type { Set } from 'types/sets'
 
 import type { SetFormModalProps } from './SetFormModal.types'
 
-const dimensions = (
-  setData: SetFormModalProps['setData'],
+const dimensions = ({
+  setData,
+  part,
+}: {
+  setData: SetFormModalProps['setData']
   part: keyof Set['dimensions']
-) => {
+}) => {
   const values =
     setData && 'dimensions' in setData ? setData.dimensions?.[part] : undefined
   return {
@@ -26,6 +29,7 @@ export const defaultSetFormValues = (setData: SetFormModalProps['setData']) =>
     releaseYear: new Date().getFullYear(),
     subtheme: '',
     tags: [],
+    timeline: [],
     bricksetImagePath: null,
     EAN: null,
     exitDate: null,
@@ -40,8 +44,8 @@ export const defaultSetFormValues = (setData: SetFormModalProps['setData']) =>
       ...(setData && 'content' in setData && setData.content),
     },
     dimensions: {
-      box: dimensions(setData, 'box'),
-      model: dimensions(setData, 'model'),
+      box: dimensions({ setData, part: 'box' }),
+      model: dimensions({ setData, part: 'model' }),
     },
     prices: {
       bought: 0,
@@ -52,3 +56,27 @@ export const defaultSetFormValues = (setData: SetFormModalProps['setData']) =>
       ...(setData && 'prices' in setData && setData.prices),
     },
   }) satisfies Set
+
+export const dimensionFields = (['model', 'box'] as const).flatMap((part) =>
+  (['width', 'height', 'depth'] as const).map((axis) => ({
+    name: `dimensions.${part}.${axis}` as const,
+    label: `${part === 'model' ? 'Model' : 'Box'} ${axis}`,
+  }))
+)
+
+export const mapPricesToLabels = {
+  'prices.bought': 'Bought',
+  'prices.storeValue': 'Store Value',
+  'prices.marketValue': 'Market Value',
+} as const
+
+export const mapBrickLinkPricesToLabels = {
+  'prices.brickLinkSoldPriceNew': 'BrickLink Sold Price New',
+  'prices.brickLinkSoldPriceUsed': 'BrickLink Sold Price Used',
+} as const
+
+export const mapContentToLabels = {
+  'content.box': 'Box',
+  'content.notice': 'Notice',
+  'content.bags': 'Bags',
+} as const

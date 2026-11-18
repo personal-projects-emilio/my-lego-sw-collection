@@ -1,24 +1,18 @@
 import type { FC, PropsWithChildren } from 'react'
-import { FaSearch } from 'react-icons/fa'
 import { MdBarChart } from 'react-icons/md'
 
-import {
-  Button,
-  debounce,
-  InputAdornment,
-  TextField,
-  Tooltip,
-  type TooltipProps,
-} from '@mui/material'
+import { Button, Tooltip, type TooltipProps } from '@mui/material'
 import { Link, type LinkProps } from '@tanstack/react-router'
 import Avatar from 'components/Avatar'
 import DisplayIfAuthenticated from 'components/DisplayIfAuthenticated'
+import { SearchField } from 'components/inputs'
 import { makeStyles } from 'tss-react/mui'
 
 import ImportBricksetCsv from './ImportBricksetCsv'
 
 type ModuleHeaderProps = {
   addTo: NonNullable<LinkProps['to']>
+  quickFilter: string
   setQuickFilter: (value: string) => void
   statisticsTooltipTitle: NonNullable<TooltipProps['title']>
 }
@@ -40,29 +34,15 @@ const useModuleHeaderStyles = makeStyles({ name: 'ModuleHeader' })((theme) => ({
 
 const ModuleHeader: FC<PropsWithChildren<ModuleHeaderProps>> = ({
   children,
+  quickFilter,
   setQuickFilter,
   addTo,
   statisticsTooltipTitle,
 }) => {
   const { classes } = useModuleHeaderStyles()
-
   return (
     <header className={classes.header}>
-      <TextField
-        label="Search"
-        onChange={debounce((e) => setQuickFilter(e.target.value), 500)}
-        size="small"
-        slotProps={{
-          input: {
-            startAdornment: (
-              <InputAdornment position="start">
-                <FaSearch />
-              </InputAdornment>
-            ),
-          },
-        }}
-        variant="outlined"
-      />
+      <SearchField value={quickFilter} onChange={setQuickFilter} />
       {children}
       <DisplayIfAuthenticated>
         <Tooltip title={statisticsTooltipTitle}>
