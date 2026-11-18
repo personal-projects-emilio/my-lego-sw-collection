@@ -19,14 +19,23 @@ const eraPalette = [
 
 const noEraColor = '#e0e0e0'
 
+const colorsByTimeline = new WeakMap<Timeline, Map<TimelineId, string>>()
+
+const colorsOf = (timeline: Timeline) => {
+  const known = colorsByTimeline.get(timeline)
+  if (known) return known
+  const withTitles = new Set(timeline.erasWithTitles)
+  const colors = new Map(
+    [
+      ...timeline.erasWithTitles,
+      ...timeline.eras.filter((era) => !withTitles.has(era)),
+    ].map((era, index) => [era.id, eraPalette[index % eraPalette.length]])
+  )
+  colorsByTimeline.set(timeline, colors)
+  return colors
+}
+
 export const eraColor = (timeline: Timeline, id?: TimelineId) => {
   const era = id === undefined ? undefined : timeline.eraOf(id)
-  if (!era) return noEraColor
-  const ordered = [
-    ...timeline.erasWithTitles,
-    ...timeline.eras.filter(
-      (other) => !timeline.erasWithTitles.includes(other)
-    ),
-  ]
-  return eraPalette[ordered.indexOf(era) % eraPalette.length]
+  return (era && colorsOf(timeline).get(era.id)) ?? noEraColor
 }

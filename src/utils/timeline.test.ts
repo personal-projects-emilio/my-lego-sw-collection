@@ -66,6 +66,14 @@ test.for([
     entry: { id: 'aor', label: 'Age of Rebellion', parent: 'anh' },
   },
   {
+    case: 'an end without a start',
+    entry: { id: 'anh', label: 'A New Hope', end: 4 },
+  },
+  {
+    case: 'a year that is not whole',
+    entry: { id: 'anh', label: 'A New Hope', start: 0.5 },
+  },
+  {
     case: 'an end before the start',
     entry: { id: 'anh', label: 'A New Hope', start: 4, end: 0 },
   },
@@ -142,11 +150,17 @@ test('deleteEntry removes it from items and moves its children up', () => {
   assert.equal(next.setsList, state.setsList)
 })
 
-test.for([
-  { case: 'an unknown entry', id: 'nope' },
-  { case: 'an era holding trilogies', id: 'aor' },
-])('deleteEntry refuses ', ({ id }) => {
-  assert.ok('refused' in deleteEntry(state, id))
+test('deleteEntry refuses an unknown entry', () => {
+  assert.ok('refused' in deleteEntry(state, 'nope'))
+})
+
+test('deleteEntry on an era moves its trilogies up to the top', () => {
+  const next = stateOf(deleteEntry(state, 'aor'))
+  assert.equal(entryOf(next, 'aor'), undefined)
+  assert.deepEqual(entryOf(next, 'ot'), {
+    id: 'ot',
+    label: 'Original Trilogy',
+  })
 })
 
 test.for([
@@ -186,6 +200,13 @@ test.for([
     expected: [],
   },
   {
+    case: 'removes a hand pick that is also inherited',
+    value: ['anh'],
+    inherited: { anh: ['75301'] },
+    id: 'anh',
+    expected: [],
+  },
+  {
     case: 'keeps an inherited entry',
     value: [],
     inherited: { anh: ['75301'] },
@@ -215,25 +236,42 @@ test.for([
 
 test.for<{
   case: string
+  id: string
   value: string[]
   inherited: Record<string, string[]>
   expected: boolean
 }>([
   {
     case: 'an entry implied only by inherited ones',
+    id: 'ot',
     value: [],
     inherited: { anh: ['75301'] },
     expected: false,
   },
   {
     case: 'an entry implied by a pick',
+    id: 'ot',
     value: ['anh'],
     inherited: {},
     expected: true,
   },
-])('canToggle on $case is $expected', ({ value, inherited, expected }) => {
+  {
+    case: 'an inherited entry',
+    id: 'anh',
+    value: [],
+    inherited: { anh: ['75301'] },
+    expected: false,
+  },
+  {
+    case: 'an inherited entry that is also picked',
+    id: 'anh',
+    value: ['anh'],
+    inherited: { anh: ['75301'] },
+    expected: true,
+  },
+])('canToggle on $case is $expected', ({ id, value, inherited, expected }) => {
   assert.equal(
-    canToggle(buildTimeline(timelineList), picks(value, inherited), 'ot'),
+    canToggle(buildTimeline(timelineList), picks(value, inherited), id),
     expected
   )
 })

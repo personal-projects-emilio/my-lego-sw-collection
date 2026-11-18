@@ -1,6 +1,5 @@
 import { isEqual, omit } from 'lodash'
-import type { MinifigsList } from 'types/minifigs'
-import type { SetsList } from 'types/sets'
+import type { VocabularyState } from 'types/common'
 import type { InheritedTags, Tag, TagId, TagsList, TagTarget } from 'types/tags'
 
 import { buildTree, byLabel } from './tree'
@@ -70,11 +69,7 @@ export const isProtectedTag = (id: TagId) => protectedTagIds.includes(id)
 
 type TaggedRecord = { tags?: TagId[] }
 
-export type TagsState = {
-  tagsList: TagsList
-  setsList: SetsList
-  minifigsList: MinifigsList
-}
+export type TagsState = VocabularyState<'tagsList', Tag>
 
 export type TagEdit = { state: TagsState } | { refused: string }
 

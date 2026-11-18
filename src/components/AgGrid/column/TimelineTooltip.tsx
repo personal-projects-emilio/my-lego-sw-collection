@@ -2,7 +2,7 @@ import type { CustomTooltipProps } from 'ag-grid-react'
 import TreeView from 'components/TreeView'
 import { useTimeline } from 'hooks'
 import { makeStyles } from 'tss-react/mui'
-import type { InheritedAppearances, TimelineId } from 'types/timeline'
+import type { AppearingItem } from 'types/timeline'
 import { inheritedFrom } from 'utils/tags'
 
 const useTimelineTooltipStyles = makeStyles({ name: 'TimelineTooltip' })({
@@ -16,11 +16,6 @@ const useTimelineTooltipStyles = makeStyles({ name: 'TimelineTooltip' })({
       'var(--ag-widget-container-vertical-padding) var(--ag-widget-container-horizontal-padding)',
   },
 })
-
-type AppearingItem = {
-  effectiveAppearances: TimelineId[]
-  inheritedAppearances?: InheritedAppearances
-}
 
 const TimelineTooltip = ({ data }: CustomTooltipProps<AppearingItem>) => {
   const { classes } = useTimelineTooltipStyles()

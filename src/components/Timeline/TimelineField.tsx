@@ -1,12 +1,4 @@
-import {
-  type FC,
-  type FocusEvent,
-  type KeyboardEvent,
-  type Ref,
-  useId,
-  useRef,
-  useState,
-} from 'react'
+import { type FC, type KeyboardEvent, type Ref, useId, useState } from 'react'
 import { MdArrowDropDown, MdLock } from 'react-icons/md'
 
 import {
@@ -86,11 +78,18 @@ type TimelineFieldProps = {
   inputRef?: Ref<HTMLInputElement>
   label?: string
   onChange: (value: TimelineId[]) => void
-  openOnFocus?: boolean
+  defaultOpen?: boolean
   value: TimelineId[]
 }
 
 const noInherited: InheritedAppearances = {}
+
+const keyActions: Record<string, (open: boolean) => boolean> = {
+  ArrowDown: () => true,
+  Enter: (open) => !open,
+  ' ': (open) => !open,
+  Escape: () => false,
+}
 
 const TimelineField: FC<TimelineFieldProps> = ({
   className,
@@ -98,14 +97,12 @@ const TimelineField: FC<TimelineFieldProps> = ({
   inputRef,
   label = 'Timeline',
   onChange,
-  openOnFocus = false,
+  defaultOpen = false,
   value,
 }) => {
   const { classes, cx } = useTimelineFieldStyles()
   const timeline = useTimeline()
-  const [open, setOpen] = useState(false)
-  const openedByFocus = useRef(false)
-  const pointerDown = useRef(false)
+  const [open, setOpen] = useState(defaultOpen)
   const inputId = useId()
   const panelId = useId()
   const picks = { value, inherited }
@@ -124,15 +121,7 @@ const TimelineField: FC<TimelineFieldProps> = ({
   return (
     <div className={className}>
       <div
-        onMouseDown={() => {
-          pointerDown.current = true
-        }}
         onClick={(event) => {
-          pointerDown.current = false
-          if (openedByFocus.current) {
-            openedByFocus.current = false
-            return
-          }
           if (!(event.target as HTMLElement).closest('.MuiChip-deleteIcon'))
             setOpen(!open)
         }}
@@ -171,27 +160,11 @@ const TimelineField: FC<TimelineFieldProps> = ({
                   ...params.slotProps.htmlInput,
                   'aria-expanded': open,
                   'aria-controls': panelId,
-                  onFocus: (event: FocusEvent<HTMLInputElement>) => {
-                    params.slotProps.htmlInput.onFocus?.(event)
-                    if (!openOnFocus || open) return
-                    openedByFocus.current = pointerDown.current
-                    setOpen(true)
-                  },
-                  onBlur: (event: FocusEvent<HTMLInputElement>) => {
-                    params.slotProps.htmlInput.onBlur?.(event)
-                    openedByFocus.current = false
-                  },
+                  'aria-autocomplete': 'none',
+                  readOnly: true,
                   onKeyDown: (event: KeyboardEvent<HTMLInputElement>) => {
-                    openedByFocus.current = false
-                    const next =
-                      event.key === 'Escape'
-                        ? false
-                        : event.key === 'ArrowDown'
-                          ? true
-                          : event.key === 'Enter' || event.key === ' '
-                            ? !open
-                            : open
-                    if (next === open) return
+                    const next = keyActions[event.key]?.(open)
+                    if (next === undefined || next === open) return
                     event.preventDefault()
                     setOpen(next)
                   },

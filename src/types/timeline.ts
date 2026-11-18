@@ -14,3 +14,8 @@ export type TimelineEntry = {
 export type TimelineList = TimelineEntry[]
 
 export type InheritedAppearances = Record<TimelineId, Array<string | number>>
+
+export type AppearingItem = {
+  effectiveAppearances: TimelineId[]
+  inheritedAppearances?: InheritedAppearances
+}

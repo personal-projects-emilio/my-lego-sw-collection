@@ -1,6 +1,5 @@
 import { isUndefined, omitBy } from 'lodash'
-import type { MinifigsList } from 'types/minifigs'
-import type { SetsList } from 'types/sets'
+import type { VocabularyState } from 'types/common'
 import type {
   InheritedAppearances,
   Kind,
@@ -18,11 +17,22 @@ export const kindName = (kind: Kind) => kind[0].toUpperCase() + kind.slice(1)
 
 type Range = { start?: number; end?: number }
 
-const spans = (timelineList: TimelineList) => {
-  const children = new Map<TimelineId | undefined, TimelineEntry[]>()
+export type Role = 'era' | 'trilogy' | 'title'
+
+export const roleOf = ({ parent, kind }: TimelineEntry): Role =>
+  kind ? 'title' : parent ? 'trilogy' : 'era'
+
+type Children = Map<TimelineId | undefined, TimelineEntry[]>
+
+const childrenByParent = (timelineList: TimelineList) => {
+  const children: Children = new Map()
   timelineList.forEach((entry) =>
     children.set(entry.parent, [...(children.get(entry.parent) ?? []), entry])
   )
+  return children
+}
+
+const rangesById = (timelineList: TimelineList, children: Children) => {
   const ranges = new Map<TimelineId, Range>()
   const rangeOf = (entry: TimelineEntry, seen: Set<TimelineId>): Range => {
     const known = ranges.get(entry.id)
@@ -48,7 +58,8 @@ const spans = (timelineList: TimelineList) => {
 }
 
 const createTimeline = (timelineList: TimelineList) => {
-  const ranges = spans(timelineList)
+  const children = childrenByParent(timelineList)
+  const ranges = rangesById(timelineList, children)
   const range = (id: TimelineId) => ranges.get(id) ?? {}
   const byDate = (a: TimelineEntry, b: TimelineEntry) =>
     (range(a.id).start ?? Infinity) - (range(b.id).start ?? Infinity) ||
@@ -76,11 +87,10 @@ const createTimeline = (timelineList: TimelineList) => {
     ].join(' › ')
 
   const childrenOf = (id: TimelineId | undefined) =>
-    tree.sort(
-      timelineList
-        .filter(({ parent }) => parent === id)
-        .map((entry) => entry.id)
-    )
+    tree.sort((children.get(id) ?? []).map((entry) => entry.id))
+
+  const holdsTrilogies = (id: TimelineId) =>
+    (children.get(id) ?? []).some((child) => roleOf(child) === 'trilogy')
 
   const sorted = tree
     .sort(timelineList.map(({ id }) => id))
@@ -88,7 +98,7 @@ const createTimeline = (timelineList: TimelineList) => {
 
   const eraOf = (id: TimelineId) => {
     const root = tree.rootOf(id)
-    return root && !root.kind ? root : undefined
+    return root && roleOf(root) === 'era' ? root : undefined
   }
 
   const groupedLabel = (ids: TimelineId[]) => {
@@ -106,8 +116,10 @@ const createTimeline = (timelineList: TimelineList) => {
       .join(' | ')
   }
 
-  const eras = sorted.filter(({ parent, kind }) => !parent && !kind)
-  const titles = sorted.filter(({ kind }) => kind)
+  const withRole = (role: Role) =>
+    sorted.filter((entry) => roleOf(entry) === role)
+  const eras = withRole('era')
+  const titles = withRole('title')
 
   return {
     ...tree,
@@ -118,13 +130,14 @@ const createTimeline = (timelineList: TimelineList) => {
     pathLabel,
     groupedLabel,
     childrenOf,
+    holdsTrilogies,
     eraOf,
     entries: sorted,
     eras,
     erasWithTitles: eras.filter((era) =>
       titles.some(({ id }) => eraOf(id) === era)
     ),
-    trilogies: sorted.filter(({ parent, kind }) => parent && !kind),
+    trilogies: withRole('trilogy'),
     titles,
   }
 }
@@ -151,11 +164,7 @@ export const formatRange = ({ start, end }: Range) =>
       ? formatYear(start)
       : `${formatYear(start)} – ${formatYear(end)}`
 
-export type TimelineState = {
-  timelineList: TimelineList
-  setsList: SetsList
-  minifigsList: MinifigsList
-}
+export type TimelineState = VocabularyState<'timelineList', TimelineEntry>
 
 export type TimelineEdit = { state: TimelineState } | { refused: string }
 
@@ -175,9 +184,7 @@ export const saveEntry = (
     return { refused: `${parentEntry.label} is a title and can't hold entries` }
   if (!kind && parentEntry?.parent)
     return { refused: 'A trilogy goes directly under an era' }
-  const holdsTrilogies = (entryId: TimelineId) =>
-    timeline.childrenOf(entryId).some((child) => !timeline.entry(child)?.kind)
-  if (!kind && parentEntry && id && holdsTrilogies(id))
+  if (!kind && parentEntry && id && timeline.holdsTrilogies(id))
     return { refused: `${label} holds trilogies, so it must stay an era` }
   if (kind && id && timeline.childrenOf(id).length)
     return { refused: `${label} has entries under it, so it can't be a title` }
@@ -187,6 +194,12 @@ export const saveEntry = (
     (parent === id || timeline.ancestors(parent).some((a) => a.id === id))
   )
     return { refused: `${label} can't move under itself` }
+  if (
+    [start, end].some((year) => year !== undefined && !Number.isInteger(year))
+  )
+    return { refused: 'Years are whole numbers' }
+  if (start === undefined && end !== undefined)
+    return { refused: 'An end needs a start' }
   if (start !== undefined && end !== undefined && end < start)
     return { refused: 'The end comes before the start' }
   const existing = id !== undefined && timeline.has(id)
@@ -228,13 +241,6 @@ export const deleteEntry = (
 ): TimelineEdit => {
   const entry = state.timelineList.find((e) => e.id === id)
   if (!entry) return { refused: `Unknown entry ${id}` }
-  if (
-    !entry.parent &&
-    state.timelineList.some((e) => e.parent === id && !e.kind)
-  )
-    return {
-      refused: `Move or delete the trilogies of ${entry.label} first`,
-    }
   return {
     state: {
       timelineList: state.timelineList.flatMap((e) =>
@@ -287,20 +293,19 @@ export const togglePick = (
 ) => {
   const { value } = picks
   const status = pickStatus(timeline, picks, id)
+  if (value.includes(id)) return value.filter((other) => other !== id)
   return status === 'none'
     ? timeline.leaves([...value, id])
-    : status === 'picked'
-      ? value.filter((other) => other !== id)
-      : status === 'implied'
-        ? value.filter((other) => !isUnder(timeline, other, id))
-        : value
+    : status === 'implied'
+      ? value.filter((other) => !isUnder(timeline, other, id))
+      : value
 }
 
 export const canToggle = (timeline: Timeline, picks: Picks, id: TimelineId) => {
   const status = pickStatus(timeline, picks, id)
+  if (status === 'inherited') return picks.value.includes(id)
   return (
-    status !== 'inherited' &&
-    (status !== 'implied' ||
-      picks.value.some((other) => isUnder(timeline, other, id)))
+    status !== 'implied' ||
+    picks.value.some((other) => isUnder(timeline, other, id))
   )
 }

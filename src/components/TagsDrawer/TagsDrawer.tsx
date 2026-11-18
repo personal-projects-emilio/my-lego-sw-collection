@@ -510,7 +510,7 @@ const TagRow: FC<TagRowProps> = ({ depth, isDropTarget, ...content }) => {
 const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
   const { classes } = useTagsDrawerStyles()
   const tagsVocabulary = useTagsVocabulary()
-  const { state, applyTagsState, isPending } = useTagsMutations()
+  const { state, apply, isPending } = useTagsMutations()
   const { width, handleProps } = useDrawerWidth()
   const [error, setError] = useState<string>()
   const [editing, setEditing] = useState<Editing>()
@@ -662,7 +662,7 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
       )
         return
       const before = state
-      applyTagsState(edit.state)
+      apply(edit.state)
         .then(() =>
           setHistory((entries) => [
             ...entries,
@@ -673,7 +673,7 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
           setError(saveError('The change could not be saved')(err))
         )
     },
-    [state, isPending, applyTagsState]
+    [state, isPending, apply]
   )
 
   const rowActions = useMemo(
@@ -758,7 +758,7 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
   const undo = () => {
     if (!state || !lastEdit || isPending) return
     setError(undefined)
-    applyTagsState(undoTagEdit(state, lastEdit))
+    apply(undoTagEdit(state, lastEdit))
       .then(() => setHistory((entries) => entries.slice(0, -1)))
       .catch((err) => setError(saveError('The undo could not be saved')(err)))
   }

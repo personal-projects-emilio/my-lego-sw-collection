@@ -66,7 +66,7 @@ const EntryForm: FC<EntryPanelProps & { draft: EntryDraft }> = ({
 }) => {
   const { classes } = useEntryPanelStyles()
   const titleId = useId()
-  const { state, applyTimelineState, isPending } = useTimelineMutations()
+  const { state, apply, isPending } = useTimelineMutations()
   const [draft, setDraft] = useState(initial)
   const [error, setError] = useState<string>()
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -76,11 +76,15 @@ const EntryForm: FC<EntryPanelProps & { draft: EntryDraft }> = ({
   const pickedBySets = picking(state?.setsList)
   const pickedByMinifigs = picking(state?.minifigsList)
   const isEdit = id !== undefined && timeline.has(id)
-  const parents = [...timeline.eras, ...timeline.trilogies].filter(
+  const holdsTrilogies = !!id && timeline.holdsTrilogies(id)
+  const parents = (
+    draft.kind ? [...timeline.eras, ...timeline.trilogies] : timeline.eras
+  ).filter(
     (candidate) =>
-      !id ||
-      (candidate.id !== id &&
-        !timeline.ancestors(candidate.id).some((a) => a.id === id))
+      !holdsTrilogies &&
+      (!id ||
+        (candidate.id !== id &&
+          !timeline.ancestors(candidate.id).some((a) => a.id === id)))
   )
 
   const run = (edit: (current: NonNullable<typeof state>) => TimelineEdit) => {
@@ -91,7 +95,7 @@ const EntryForm: FC<EntryPanelProps & { draft: EntryDraft }> = ({
       return
     }
     setError(undefined)
-    applyTimelineState(result.state)
+    apply(result.state)
       .then(onClose)
       .catch((err) => setError(saveError(err)))
   }
@@ -129,6 +133,9 @@ const EntryForm: FC<EntryPanelProps & { draft: EntryDraft }> = ({
           setDraft({
             ...draft,
             kind: (event.target.value || undefined) as Kind | undefined,
+            ...(!event.target.value &&
+              draft.parent &&
+              timeline.entry(draft.parent)?.parent && { parent: undefined }),
           })
         }
         helperText="No kind for an era or a trilogy"
@@ -180,6 +187,7 @@ const EntryForm: FC<EntryPanelProps & { draft: EntryDraft }> = ({
               color="error"
               variant="contained"
               loading={isPending}
+              disabled={!state}
               onClick={() => run((current) => deleteEntry(current, id))}
             >
               Confirm delete
@@ -201,9 +209,15 @@ const EntryForm: FC<EntryPanelProps & { draft: EntryDraft }> = ({
       </div>
       {confirmDelete && (
         <Typography variant="caption" className={classes.warning} role="alert">
-          {pickedBySets || pickedByMinifigs
-            ? `Its children move up and it is removed from ${plural(pickedBySets, 'set')} · ${plural(pickedByMinifigs, 'minifig')}.`
-            : 'Its children move up.'}
+          {[
+            holdsTrilogies
+              ? 'Its trilogies become eras.'
+              : 'Its children move up.',
+            (pickedBySets || pickedByMinifigs) &&
+              `It is removed from ${plural(pickedBySets, 'set')} · ${plural(pickedByMinifigs, 'minifig')}.`,
+          ]
+            .filter(Boolean)
+            .join(' ')}
         </Typography>
       )}
     </form>

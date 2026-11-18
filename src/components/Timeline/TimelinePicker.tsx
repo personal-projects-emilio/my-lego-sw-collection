@@ -186,6 +186,7 @@ const toggleProps = (props: TimelinePickerProps, entry: TimelineEntry) => {
             entry.kind && kindName(entry.kind),
             entry.label,
             noteOf(props, entry),
+            picks.value.includes(entry.id) && 'also picked',
           ]
             .filter(Boolean)
             .join(', ')

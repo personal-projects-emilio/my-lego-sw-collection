@@ -85,6 +85,7 @@ const useStyles = makeStyles({ name: 'TimelineEraSections' })((theme) => ({
     opacity: 0.9,
   },
   axis: {
+    gridColumn: 3,
     position: 'relative',
     display: 'flex',
     alignItems: 'center',
@@ -370,7 +371,7 @@ const TimelineEraSections: FC<TimelineEraSectionsProps> = ({
                     classes.axis,
                     row.compressed && classes.compressed
                   )}
-                  style={{ gridColumn: 3, gridRow: index + 2 }}
+                  style={{ gridRow: index + 2 }}
                 >
                   {row.gap === undefined && (
                     <span className={classes.year}>

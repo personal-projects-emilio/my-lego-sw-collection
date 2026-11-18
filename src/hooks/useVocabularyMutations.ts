@@ -7,31 +7,26 @@ import { useSetsQuery } from 'api/sets'
 import { useMinifigsMutations } from 'pages/Minifigs/hooks'
 import { useSetsMutations } from 'pages/Sets/hooks'
 import { useAuth } from 'providers/AuthProvider'
-import type { MinifigsList } from 'types/minifigs'
-import type { SetsList } from 'types/sets'
+import type { VocabularyState } from 'types/common'
 import { assert, isNotNullOrUndefined } from 'utils/typescript'
 
 export class PartlySavedError extends Error {}
 
-export type VocabularyState<T> = {
-  list: T[]
-  setsList: SetsList
-  minifigsList: MinifigsList
-}
-
-type Vocabulary<T> = {
+type Vocabulary<K extends string, T> = {
   key: string
+  listKey: K
   list: T[] | undefined
   setQueryData: (list: T[]) => unknown
   save: (list: T[]) => Promise<unknown>
 }
 
-const useVocabularyMutations = <T>({
+const useVocabularyMutations = <K extends string, T>({
   key,
+  listKey,
   list,
   setQueryData,
   save,
-}: Vocabulary<T>) => {
+}: Vocabulary<K, T>) => {
   const { data: setsList } = useSetsQuery()
   const { data: minifigsList } = useMinifigsQuery()
   const { idToken } = useAuth()
@@ -41,15 +36,15 @@ const useVocabularyMutations = <T>({
   const pending = useRef(false)
 
   const state = useMemo(
-    (): VocabularyState<T> | undefined =>
+    (): VocabularyState<K, T> | undefined =>
       list && setsList && minifigsList
-        ? { list, setsList, minifigsList }
+        ? ({ [listKey]: list, setsList, minifigsList } as VocabularyState<K, T>)
         : undefined,
-    [list, setsList, minifigsList]
+    [listKey, list, setsList, minifigsList]
   )
 
   const apply = useCallback(
-    async (next: VocabularyState<T>) => {
+    async (next: VocabularyState<K, T>) => {
       assert(isNotNullOrUndefined(state))
       if (pending.current) throw new Error('A change is already being saved')
       pending.current = true
@@ -68,11 +63,11 @@ const useVocabularyMutations = <T>({
           await editMinifigsList(next.minifigsList)
           restores.push(() => editMinifigsList(state.minifigsList))
         }
-        setQueryData(next.list)
-        if (idToken) await save(next.list)
+        setQueryData(next[listKey])
+        if (idToken) await save(next[listKey])
       } catch (err) {
         console.error(`Unable to edit ${key}`, err)
-        setQueryData(state.list)
+        setQueryData(state[listKey])
         const restored = await Promise.allSettled(
           restores.map((restore) => restore())
         )
@@ -92,7 +87,16 @@ const useVocabularyMutations = <T>({
         setIsPending(false)
       }
     },
-    [state, idToken, key, save, setQueryData, editSetsList, editMinifigsList]
+    [
+      state,
+      idToken,
+      key,
+      listKey,
+      save,
+      setQueryData,
+      editSetsList,
+      editMinifigsList,
+    ]
   )
 
   return { state, apply, isPending }
