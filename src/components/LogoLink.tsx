@@ -73,7 +73,7 @@ const LogoLink: FC<LogoLinkProps> = ({
     variant === 'minifig'
   )
   return (
-    <Tooltip enterDelay={500} enterNextDelay={500} title={tooltip}>
+    <Tooltip title={tooltip}>
       <IconButton className={classes[size]} href={url} size={size}>
         <img alt={alt} src={src} />
       </IconButton>

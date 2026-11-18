@@ -39,8 +39,6 @@ const OwnedCellRenderer = ({
       classes={{
         tooltip: classes.tooltip,
       }}
-      enterDelay={300}
-      enterNextDelay={300}
       placement="left-start"
       title={
         <TableContainer>

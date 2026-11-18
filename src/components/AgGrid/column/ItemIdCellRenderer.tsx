@@ -49,8 +49,6 @@ const ItemIdCellRenderer = ({
       classes={{
         tooltip: classes.tooltip,
       }}
-      enterDelay={300}
-      enterNextDelay={300}
       placement="right-start"
       title={
         <img

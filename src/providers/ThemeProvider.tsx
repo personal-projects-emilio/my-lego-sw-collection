@@ -55,6 +55,10 @@ const theme = createTheme({
       },
     },
     MuiTooltip: {
+      defaultProps: {
+        enterDelay: 500,
+        enterNextDelay: 500,
+      },
       styleOverrides: {
         tooltip: ({ theme }) => ({
           backgroundColor: theme.palette.grey[800],

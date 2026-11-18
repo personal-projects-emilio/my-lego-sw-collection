@@ -86,19 +86,19 @@ const ItemActionsCellRenderer = ({
 
   return (
     <>
-      <Tooltip enterDelay={300} enterNextDelay={300} title={`Edit ${itemId}`}>
+      <Tooltip title={`Edit ${itemId}`}>
         <IconButton size="small" onClick={() => navigate(editTo)}>
           <MdEdit fontSize="inherit" />
         </IconButton>
       </Tooltip>
       {addTo && (
-        <Tooltip enterDelay={300} enterNextDelay={300} title={duplicateTooltip}>
+        <Tooltip title={duplicateTooltip}>
           <IconButton size="small" onClick={() => navigate(addTo)}>
             <MdContentCopy fontSize="inherit" />
           </IconButton>
         </Tooltip>
       )}
-      <Tooltip enterDelay={300} enterNextDelay={300} title={`Delete ${itemId}`}>
+      <Tooltip title={`Delete ${itemId}`}>
         <IconButton size="small" onClick={() => setIsDeleteModalOpen(true)}>
           <MdDelete fontSize="inherit" />
         </IconButton>

@@ -33,7 +33,7 @@ const TagsDrawerButton: FC<{ className?: string }> = ({ className }) => {
   }, [openTagsDrawer])
 
   return (
-    <Tooltip enterDelay={300} title={tagsDrawerButtonLabel}>
+    <Tooltip title={tagsDrawerButtonLabel}>
       <IconButton
         ref={ref}
         aria-label={tagsDrawerButtonLabel}
