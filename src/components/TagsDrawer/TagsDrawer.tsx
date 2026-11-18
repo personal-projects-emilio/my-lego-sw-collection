@@ -11,9 +11,11 @@ import {
   MdCheck,
   MdChevronRight,
   MdClose,
+  MdDelete,
   MdDragIndicator,
   MdExpandMore,
   MdMoreVert,
+  MdTextFields,
   MdUndo,
   MdUnfoldLess,
   MdUnfoldMore,
@@ -43,6 +45,7 @@ import {
   Drawer,
   IconButton,
   InputAdornment,
+  ListItemIcon,
   Menu,
   MenuItem,
   Switch,
@@ -938,6 +941,9 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
               setEditing({ id: menuTag.id })
             }}
           >
+            <ListItemIcon>
+              <MdTextFields aria-hidden />
+            </ListItemIcon>
             Rename
           </MenuItem>,
           <MenuItem
@@ -948,6 +954,9 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
               rowActions.add(menuTag.id)
             }}
           >
+            <ListItemIcon>
+              <MdAdd aria-hidden />
+            </ListItemIcon>
             Add a tag inside
           </MenuItem>,
           ...(menuTag.parent
@@ -1020,6 +1029,9 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
               setDeleting(menuTag)
             }}
           >
+            <ListItemIcon>
+              <MdDelete aria-hidden />
+            </ListItemIcon>
             Delete
           </MenuItem>,
         ]}

@@ -72,8 +72,10 @@ const useStyles = makeStyles({ name: 'TimelineEraSections' })((theme) => ({
     textTransform: 'uppercase',
     letterSpacing: 1.5,
     boxShadow: theme.shadows[2],
-    transition: 'box-shadow 150ms, filter 150ms',
-    '&:hover': { boxShadow: theme.shadows[6], filter: 'brightness(0.95)' },
+    transition: 'box-shadow 150ms',
+    '&:hover': {
+      boxShadow: `0 0 0 3px ${theme.palette.text.primary}, ${theme.shadows[2]}`,
+    },
   },
   headerRange: {
     fontSize: 11,
@@ -138,7 +140,10 @@ const useStyles = makeStyles({ name: 'TimelineEraSections' })((theme) => ({
     border: `1px solid ${theme.palette.divider}`,
     background: theme.palette.background.paper,
     '& > svg': { flexShrink: 0, fontSize: 18, color: 'var(--era-color)' },
-    '&:hover': { borderColor: 'var(--era-color)' },
+    '&:hover': {
+      borderColor: 'var(--era-color)',
+      boxShadow: '0 0 0 2px var(--era-color)',
+    },
   },
   leftCard: {
     flexDirection: 'row-reverse',
@@ -174,7 +179,9 @@ const useStyles = makeStyles({ name: 'TimelineEraSections' })((theme) => ({
     justifyContent: 'center',
     margin: theme.spacing(0.5, 0),
     border: '2px solid var(--era-color)',
-    '&:hover': { background: theme.palette.action.hover },
+    '&:hover': {
+      background: 'color-mix(in srgb, var(--era-color) 35%, transparent)',
+    },
   },
   leftBracket: { borderRight: 'none', borderRadius: '8px 0 0 8px' },
   rightBracket: { borderLeft: 'none', borderRadius: '0 8px 8px 0' },

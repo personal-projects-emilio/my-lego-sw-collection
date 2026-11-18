@@ -80,7 +80,7 @@ const useTimelinePickerStyles = makeStyles({ name: 'TimelinePicker' })(
       cursor: 'pointer',
       '&:hover:not([aria-disabled="true"])': {
         background: theme.palette.action.hover,
-        filter: 'brightness(0.92)',
+        boxShadow: 'inset 0 0 0 2px currentColor',
       },
     },
     eraRange: {
@@ -136,7 +136,7 @@ const useTimelinePickerStyles = makeStyles({ name: 'TimelinePicker' })(
       '& svg': { flexShrink: 0 },
       '&:hover:not([aria-disabled="true"])': {
         background: theme.palette.action.hover,
-        filter: 'brightness(0.92)',
+        boxShadow: 'inset 0 0 0 2px currentColor',
       },
     },
     groupNode: {
