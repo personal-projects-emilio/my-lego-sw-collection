@@ -76,13 +76,12 @@ const useTreeViewStyles = makeStyles({ name: 'TreeView' })((theme) => ({
 }))
 
 type TreeViewProps = {
-  className?: string
   ids: string[]
   notes?: Record<string, string>
   tree: TreeModel
 }
 
-const TreeView: FC<TreeViewProps> = ({ className, ids, notes = {}, tree }) => {
+const TreeView: FC<TreeViewProps> = ({ ids, notes = {}, tree }) => {
   const { classes } = useTreeViewStyles()
   const nodes = tree.outline(ids)
   const leaves = new Set(tree.leaves(ids))
@@ -108,7 +107,7 @@ const TreeView: FC<TreeViewProps> = ({ className, ids, notes = {}, tree }) => {
   }
 
   return (
-    <ul className={`${classes.tree} ${className ?? ''}`}>
+    <ul className={classes.tree}>
       {nodes
         .filter((node) => !node.parent)
         .map(({ id, label }) => (
