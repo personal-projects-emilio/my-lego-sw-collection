@@ -223,19 +223,8 @@ const useTagsDrawerStyles = makeStyles<void, 'addButton'>({
       justifyContent: 'center',
       marginRight: theme.spacing(1.5),
       minWidth: 0,
-      width: 28,
+      width: 40,
     },
-  },
-  menuSwitch: {
-    height: 16,
-    padding: 0,
-    width: 28,
-    '& .MuiSwitch-switchBase': {
-      padding: 2,
-      '&.Mui-checked': { transform: 'translateX(12px)' },
-    },
-    '& .MuiSwitch-thumb': { boxShadow: 'none', height: 12, width: 12 },
-    '& .MuiSwitch-track': { borderRadius: 8, opacity: 1 },
   },
   label: {
     flex: 1,
@@ -1006,7 +995,7 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
                       <ListItemIcon>
                         <Switch
                           checked={checked}
-                          className={classes.menuSwitch}
+                          size="small"
                           slotProps={{
                             input: { tabIndex: -1, 'aria-hidden': true },
                           }}
@@ -1035,7 +1024,7 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
                   <ListItemIcon>
                     <Switch
                       checked={!!menuTag.inherited}
-                      className={classes.menuSwitch}
+                      size="small"
                       slotProps={{
                         input: { tabIndex: -1, 'aria-hidden': true },
                       }}

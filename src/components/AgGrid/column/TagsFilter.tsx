@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useRef } from 'react'
 
 import type { IDoesFilterPassParams } from 'ag-grid-community'
 import { type CustomFilterProps, useGridFilter } from 'ag-grid-react'
@@ -23,6 +23,7 @@ const TagsFilter = ({
 }: CustomFilterProps<TaggedItem, unknown, TagId[]> & TagsFilterProps) => {
   const { classes } = useTagsFilterStyles()
   const tagsVocabulary = useTagsVocabulary()
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const doesFilterPass = useCallback(
     ({ data }: IDoesFilterPassParams<TaggedItem>) =>
@@ -37,7 +38,8 @@ const TagsFilter = ({
         .join(', '),
     [tagsVocabulary]
   )
-  useGridFilter({ doesFilterPass, getModelAsString })
+  const afterGuiAttached = useCallback(() => inputRef.current?.focus(), [])
+  useGridFilter({ afterGuiAttached, doesFilterPass, getModelAsString })
 
   return (
     <TagsAutocomplete
@@ -46,7 +48,7 @@ const TagsFilter = ({
       itemType={itemType}
       mode="filter"
       onChange={(ids) => onModelChange(ids.length ? ids : null)}
-      textFieldProps={{ label: 'Filter tags', size: 'small' }}
+      textFieldProps={{ inputRef, label: 'Filter tags', size: 'small' }}
       value={model ?? []}
     />
   )

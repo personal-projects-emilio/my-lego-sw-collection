@@ -43,6 +43,7 @@ const useModuleHeaderStyles = makeStyles({ name: 'ModuleHeader' })((theme) => ({
     borderBottom: '1px solid',
     borderColor: theme.palette.divider,
   },
+  hidden: { visibility: 'hidden' },
 }))
 
 const ModuleHeader: FC<PropsWithChildren<ModuleHeaderProps>> = ({
@@ -86,8 +87,11 @@ const ModuleHeader: FC<PropsWithChildren<ModuleHeaderProps>> = ({
                 <FaSearch />
               </InputAdornment>
             ),
-            endAdornment: search ? (
-              <InputAdornment position="end">
+            endAdornment: (
+              <InputAdornment
+                position="end"
+                className={search ? undefined : classes.hidden}
+              >
                 <IconButton
                   aria-label="Clear search"
                   edge="end"
@@ -97,7 +101,7 @@ const ModuleHeader: FC<PropsWithChildren<ModuleHeaderProps>> = ({
                   <MdClose />
                 </IconButton>
               </InputAdornment>
-            ) : undefined,
+            ),
           },
         }}
         value={search}

@@ -1,4 +1,12 @@
-import { type FC, type KeyboardEvent, useId, useState } from 'react'
+import {
+  type FC,
+  type FocusEvent,
+  type KeyboardEvent,
+  type Ref,
+  useId,
+  useRef,
+  useState,
+} from 'react'
 import { MdArrowDropDown, MdLock } from 'react-icons/md'
 
 import {
@@ -71,8 +79,10 @@ const useTimelineFieldStyles = makeStyles({ name: 'TimelineField' })(
 type TimelineFieldProps = {
   className?: string
   inherited?: InheritedAppearances
+  inputRef?: Ref<HTMLInputElement>
   label?: string
   onChange: (value: TimelineId[]) => void
+  openOnFocus?: boolean
   value: TimelineId[]
 }
 
@@ -81,13 +91,16 @@ const noInherited: InheritedAppearances = {}
 const TimelineField: FC<TimelineFieldProps> = ({
   className,
   inherited = noInherited,
+  inputRef,
   label = 'Timeline',
   onChange,
+  openOnFocus = false,
   value,
 }) => {
   const { classes, cx } = useTimelineFieldStyles()
   const timeline = useTimeline()
   const [open, setOpen] = useState(false)
+  const openedByFocus = useRef(false)
   const inputId = useId()
   const panelId = useId()
   const picks = { value, inherited }
@@ -106,10 +119,14 @@ const TimelineField: FC<TimelineFieldProps> = ({
   return (
     <div className={className}>
       <div
-        onClick={(event) =>
-          !(event.target as HTMLElement).closest('.MuiChip-deleteIcon') &&
-          setOpen(!open)
-        }
+        onClick={(event) => {
+          if (openedByFocus.current) {
+            openedByFocus.current = false
+            return
+          }
+          if (!(event.target as HTMLElement).closest('.MuiChip-deleteIcon'))
+            setOpen(!open)
+        }}
       >
         <Autocomplete
           id={inputId}
@@ -134,6 +151,7 @@ const TimelineField: FC<TimelineFieldProps> = ({
           renderInput={(params) => (
             <TextField
               {...params}
+              inputRef={inputRef}
               label={label}
               placeholder={
                 shown.length ? undefined : 'Pick eras, trilogies or titles'
@@ -144,7 +162,18 @@ const TimelineField: FC<TimelineFieldProps> = ({
                   ...params.slotProps.htmlInput,
                   'aria-expanded': open,
                   'aria-controls': panelId,
+                  onFocus: (event: FocusEvent<HTMLInputElement>) => {
+                    params.slotProps.htmlInput.onFocus?.(event)
+                    if (!openOnFocus || open) return
+                    openedByFocus.current = true
+                    setOpen(true)
+                  },
+                  onBlur: (event: FocusEvent<HTMLInputElement>) => {
+                    params.slotProps.htmlInput.onBlur?.(event)
+                    openedByFocus.current = false
+                  },
                   onKeyDown: (event: KeyboardEvent<HTMLInputElement>) => {
+                    openedByFocus.current = false
                     const next =
                       event.key === 'Escape'
                         ? false

@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useRef } from 'react'
 
 import type { IDoesFilterPassParams } from 'ag-grid-community'
 import { type CustomFilterProps, useGridFilter } from 'ag-grid-react'
@@ -26,6 +26,7 @@ const TimelineFilter = ({
 }: CustomFilterProps<AppearingItem, unknown, TimelineId[]>) => {
   const { classes } = useTimelineFilterStyles()
   const timeline = useTimeline()
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const doesFilterPass = useCallback(
     ({ data }: IDoesFilterPassParams<AppearingItem>) =>
@@ -37,13 +38,16 @@ const TimelineFilter = ({
       (current ?? []).map(timeline.pathLabel).join(', '),
     [timeline]
   )
-  useGridFilter({ doesFilterPass, getModelAsString })
+  const afterGuiAttached = useCallback(() => inputRef.current?.focus(), [])
+  useGridFilter({ afterGuiAttached, doesFilterPass, getModelAsString })
 
   return (
     <TimelineField
       className={classes.filter}
+      inputRef={inputRef}
       label="Filter timeline"
       onChange={(ids) => onModelChange(ids.length ? ids : null)}
+      openOnFocus
       value={model ?? []}
     />
   )
