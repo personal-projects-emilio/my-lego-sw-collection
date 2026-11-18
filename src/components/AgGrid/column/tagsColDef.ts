@@ -3,9 +3,9 @@ import { tagsDrawerButtonLabel } from 'components/TagsDrawer'
 import type { TaggedItem, TagId, TagTarget } from 'types/tags'
 import type { TagsVocabulary } from 'utils/tags'
 
+import TagsCellRenderer from './TagsCellRenderer'
 import TagsFilter, { type TagsFilterProps } from './TagsFilter'
 import TagsHeader from './TagsHeader'
-import TagsTooltip from './TagsTooltip'
 
 export const tagsColDef = <TData extends TaggedItem>({
   tagsVocabulary,
@@ -14,6 +14,7 @@ export const tagsColDef = <TData extends TaggedItem>({
   tagsVocabulary: TagsVocabulary
   itemType: TagTarget
 }): ColDef<TData, TagId[]> => ({
+  cellRenderer: TagsCellRenderer,
   colId: 'tags',
   comparator: (a, b) =>
     tagsVocabulary
@@ -34,7 +35,5 @@ export const tagsColDef = <TData extends TaggedItem>({
     (value ?? []).map(tagsVocabulary.label).join(', '),
   minWidth: 160,
   suppressFloatingFilterButton: false,
-  tooltip: ({ value }) => (value?.length ? value : undefined),
-  tooltipComponent: TagsTooltip,
   valueFormatter: ({ value }) => tagsVocabulary.groupedLabel(value ?? []),
 })

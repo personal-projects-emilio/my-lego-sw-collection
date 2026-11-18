@@ -2,8 +2,8 @@ import type { ColDef } from 'ag-grid-community'
 import type { TimelineId, TimelineItem } from 'types/timeline'
 import type { Timeline } from 'utils/timeline'
 
+import TimelineCellRenderer from './TimelineCellRenderer'
 import TimelineFilter from './TimelineFilter'
-import TimelineTooltip from './TimelineTooltip'
 
 export const timelineColDef = <TData extends TimelineItem>(
   timeline: Timeline
@@ -24,6 +24,7 @@ export const timelineColDef = <TData extends TimelineItem>(
     return computed
   }
   return {
+    cellRenderer: TimelineCellRenderer,
     colId: 'timeline',
     comparator: (a, b) => {
       const left = rank(a)
@@ -41,8 +42,6 @@ export const timelineColDef = <TData extends TimelineItem>(
       (value ?? []).map(timeline.label).join(', '),
     minWidth: 160,
     suppressFloatingFilterButton: false,
-    tooltip: ({ value }) => (value?.length ? value : undefined),
-    tooltipComponent: TimelineTooltip,
     valueFormatter: ({ value }) => timeline.groupedLabel(value ?? []),
   }
 }
