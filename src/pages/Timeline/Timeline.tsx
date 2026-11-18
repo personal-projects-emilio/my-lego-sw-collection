@@ -28,7 +28,11 @@ const useTimelineStyles = makeStyles({ name: 'Timeline' })((theme) => ({
     whiteSpace: 'nowrap',
     width: 1,
   },
-  empty: { padding: theme.spacing(4), textAlign: 'center' },
+  empty: {
+    color: theme.palette.text.secondary,
+    padding: theme.spacing(4),
+    textAlign: 'center',
+  },
   fab: { position: 'fixed', right: theme.spacing(3), bottom: theme.spacing(3) },
 }))
 
@@ -54,7 +58,7 @@ const Timeline: FC = () => {
         Timeline
       </Typography>
       {isEmpty ? (
-        <Typography className={classes.empty} color="text.secondary">
+        <Typography className={classes.empty}>
           The timeline is empty.
         </Typography>
       ) : (

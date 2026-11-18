@@ -106,6 +106,9 @@ const createTimeline = (timelineList: TimelineList) => {
       .join(' | ')
   }
 
+  const eras = sorted.filter(({ parent, kind }) => !parent && !kind)
+  const titles = sorted.filter(({ kind }) => kind)
+
   return {
     ...tree,
     entry: (id: TimelineId) => byId.get(id),
@@ -116,9 +119,12 @@ const createTimeline = (timelineList: TimelineList) => {
     groupedLabel,
     childrenOf,
     eraOf,
-    eras: sorted.filter(({ parent, kind }) => !parent && !kind),
+    eras,
+    erasWithTitles: eras.filter((era) =>
+      titles.some(({ id }) => eraOf(id) === era)
+    ),
     trilogies: sorted.filter(({ parent, kind }) => parent && !kind),
-    titles: sorted.filter(({ kind }) => kind),
+    titles,
   }
 }
 
@@ -161,9 +167,15 @@ export const saveEntry = (
   const label = draft.label.trim()
   if (!label) return { refused: 'An entry needs a label' }
   const timeline = buildTimeline(state.timelineList)
-  const { id, parent, start, end } = draft
-  if (parent && !timeline.has(parent))
-    return { refused: `Unknown parent ${parent}` }
+  const { id, parent, kind, start, end } = draft
+  const parentEntry = parent ? timeline.entry(parent) : undefined
+  if (parent && !parentEntry) return { refused: `Unknown parent ${parent}` }
+  if (parentEntry?.kind)
+    return { refused: `${parentEntry.label} is a title and can't hold entries` }
+  if (!kind && parentEntry?.parent)
+    return { refused: 'A trilogy goes directly under an era' }
+  if (kind && id && timeline.childrenOf(id).length)
+    return { refused: `${label} has entries under it, so it can't be a title` }
   if (
     id &&
     parent &&

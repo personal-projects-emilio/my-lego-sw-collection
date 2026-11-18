@@ -139,11 +139,7 @@ const useTimelinePickerStyles = makeStyles({ name: 'TimelinePicker' })(
       textTransform: 'uppercase',
       letterSpacing: 0.5,
     },
-    empty: {
-      marginLeft: theme.spacing(2),
-      fontSize: 12,
-      color: theme.palette.text.disabled,
-    },
+    eraLabel: { display: 'inline-flex', alignItems: 'center', gap: 4 },
   })
 )
 
@@ -246,7 +242,10 @@ const TimelinePicker: FC<TimelinePickerProps> = (props) => {
     .childrenOf(undefined)
     .filter((id) => timeline.entry(id)?.kind)
   const sections = [
-    ...timeline.eras.map((era) => ({ era, ids: timeline.childrenOf(era.id) })),
+    ...timeline.erasWithTitles.map((era) => ({
+      era,
+      ids: timeline.childrenOf(era.id),
+    })),
     ...(looseTitles.length ? [{ era: undefined, ids: looseTitles }] : []),
   ]
 
@@ -290,7 +289,10 @@ const TimelinePicker: FC<TimelinePickerProps> = (props) => {
                   style={pickStyle(props, era)}
                   {...toggleProps(props, era)}
                 >
-                  {era.label}
+                  <span className={classes.eraLabel}>
+                    {era.label}
+                    {picks.inherited[era.id] && <MdLock aria-hidden />}
+                  </span>
                   <span className={classes.eraRange}>
                     {formatRange(timeline.range(era.id))}
                   </span>
@@ -299,11 +301,7 @@ const TimelinePicker: FC<TimelinePickerProps> = (props) => {
             ) : (
               <span className={classes.eraName}>No era</span>
             )}
-            {ids.length ? (
-              <Branch props={props} ids={ids} />
-            ) : (
-              <div className={classes.empty}>No titles yet</div>
-            )}
+            <Branch props={props} ids={ids} />
           </div>
         )
       })}

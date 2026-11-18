@@ -6,6 +6,7 @@ import {
   buildTimeline,
   canToggle,
   deleteEntry,
+  type EntryDraft,
   formatRange,
   pickStatus,
   saveEntry,
@@ -67,9 +68,29 @@ test.for([
     case: 'an end before the start',
     entry: { id: 'anh', label: 'A New Hope', start: 4, end: 0 },
   },
-])('saveEntry refuses $case', ({ entry }) => {
-  assert.ok('refused' in saveEntry(state, entry))
-})
+  {
+    case: 'a kind on an entry with children',
+    entry: {
+      id: 'ot',
+      label: 'Original Trilogy',
+      parent: 'aor',
+      kind: 'movie',
+    },
+  },
+  {
+    case: 'a title under a title',
+    entry: { label: 'Rogue One', parent: 'anh', kind: 'movie' },
+  },
+  {
+    case: 'a trilogy under a trilogy',
+    entry: { label: 'Skywalker Saga', parent: 'ot' },
+  },
+] satisfies Array<{ case: string; entry: EntryDraft }>)(
+  'saveEntry refuses $case',
+  ({ entry }) => {
+    assert.ok('refused' in saveEntry(state, entry))
+  }
+)
 
 test('saveEntry adds an entry with an id made from its label', () => {
   const next = stateOf(
@@ -184,8 +205,22 @@ test.for([
   )
 })
 
-test('canToggle is false for an entry implied only by inherited ones', () => {
-  const timeline = buildTimeline(timelineList)
-  assert.equal(canToggle(timeline, picks([], { anh: ['75301'] }), 'ot'), false)
-  assert.equal(canToggle(timeline, picks(['anh']), 'ot'), true)
+test.for([
+  {
+    case: 'an entry implied only by inherited ones',
+    value: [],
+    inherited: { anh: ['75301'] },
+    expected: false,
+  },
+  {
+    case: 'an entry implied by a pick',
+    value: ['anh'],
+    inherited: {},
+    expected: true,
+  },
+])('canToggle on $case is $expected', ({ value, inherited, expected }) => {
+  assert.equal(
+    canToggle(buildTimeline(timelineList), picks(value, inherited), 'ot'),
+    expected
+  )
 })

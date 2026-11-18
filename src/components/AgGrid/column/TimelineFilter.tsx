@@ -2,26 +2,23 @@ import { useCallback } from 'react'
 
 import type { IDoesFilterPassParams } from 'ag-grid-community'
 import { type CustomFilterProps, useGridFilter } from 'ag-grid-react'
-import { TimelinePicker } from 'components/Timeline'
+import { TimelineField } from 'components/Timeline'
 import { useTimeline } from 'hooks'
 import { makeStyles } from 'tss-react/mui'
 import type { TimelineId } from 'types/timeline'
-import { togglePick } from 'utils/timeline'
 
 const useTimelineFilterStyles = makeStyles({ name: 'TimelineFilter' })(
   (theme) => ({
     filter: {
       maxHeight: 480,
       overflow: 'auto',
-      padding: theme.spacing(1.5),
+      padding: theme.spacing(1),
       width: 480,
     },
   })
 )
 
 type AppearingItem = { effectiveAppearances: TimelineId[] }
-
-const noInherited = {}
 
 const TimelineFilter = ({
   model,
@@ -42,23 +39,13 @@ const TimelineFilter = ({
   )
   useGridFilter({ doesFilterPass, getModelAsString })
 
-  const picks = { value: model ?? [], inherited: noInherited }
-
   return (
-    <div
+    <TimelineField
       className={classes.filter}
-      role="group"
-      aria-label="Filter by timeline"
-    >
-      <TimelinePicker
-        timeline={timeline}
-        picks={picks}
-        onToggle={(id) => {
-          const next = togglePick(timeline, picks, id)
-          onModelChange(next.length ? next : null)
-        }}
-      />
-    </div>
+      label="Filter timeline"
+      onChange={(ids) => onModelChange(ids.length ? ids : null)}
+      value={model ?? []}
+    />
   )
 }
 

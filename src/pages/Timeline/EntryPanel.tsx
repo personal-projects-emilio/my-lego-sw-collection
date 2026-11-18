@@ -34,6 +34,8 @@ const useEntryPanelStyles = makeStyles({ name: 'EntryPanel' })((theme) => ({
     flexDirection: 'column',
     gap: theme.spacing(2),
   },
+  muted: { color: theme.palette.text.secondary },
+  warning: { color: theme.palette.error.main },
   actions: {
     display: 'flex',
     flexWrap: 'wrap',
@@ -103,7 +105,7 @@ const EntryForm: FC<EntryPanelProps & { draft: EntryDraft }> = ({
         {isEdit ? 'Edit timeline entry' : 'New timeline entry'}
       </Typography>
       {isEdit && (
-        <Typography variant="caption" color="text.secondary">
+        <Typography variant="caption" className={classes.muted}>
           {countLabel(counts, id)}
         </Typography>
       )}
@@ -194,7 +196,7 @@ const EntryForm: FC<EntryPanelProps & { draft: EntryDraft }> = ({
         </Button>
       </div>
       {confirmDelete && (
-        <Typography variant="caption" color="error" role="status">
+        <Typography variant="caption" className={classes.warning} role="alert">
           {id && counts.has(id)
             ? `Its children move up and it is removed from ${countLabel(counts, id)}.`
             : 'Its children move up.'}

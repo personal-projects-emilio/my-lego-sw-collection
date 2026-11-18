@@ -71,6 +71,7 @@ const useTimelineFieldStyles = makeStyles({ name: 'TimelineField' })(
 type TimelineFieldProps = {
   className?: string
   inherited?: InheritedAppearances
+  label?: string
   onChange: (value: TimelineId[]) => void
   value: TimelineId[]
 }
@@ -80,6 +81,7 @@ const noInherited: InheritedAppearances = {}
 const TimelineField: FC<TimelineFieldProps> = ({
   className,
   inherited = noInherited,
+  label = 'Timeline',
   onChange,
   value,
 }) => {
@@ -132,7 +134,7 @@ const TimelineField: FC<TimelineFieldProps> = ({
           renderInput={(params) => (
             <TextField
               {...params}
-              label="Timeline"
+              label={label}
               placeholder={
                 shown.length ? undefined : 'Pick eras, trilogies or titles'
               }
