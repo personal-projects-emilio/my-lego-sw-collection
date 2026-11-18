@@ -5,6 +5,7 @@ interface ImportMetaEnv {
   readonly VITE_API_BASE_URL: string
   readonly VITE_APP_AUTH_BASE_URL: string
   readonly VITE_APP_REFRESH_AUTH_BASE_URL: string
+  readonly VITE_DATA_SUFFIX?: string
 }
 
 interface ImportMeta {

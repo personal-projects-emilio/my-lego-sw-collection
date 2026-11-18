@@ -4,15 +4,15 @@ import { test } from 'vitest'
 import { buildTree, type FlatNode, projectDrop, type TreeNode } from './tree.ts'
 
 const nodes: TreeNode[] = [
-  { id: 'timeline', label: 'Timeline', order: 0 },
-  { id: 'aor', label: 'Age of Rebellion', parent: 'timeline', order: 0 },
-  { id: 'ot', label: 'Original Trilogy', parent: 'aor', order: 0 },
-  { id: 'anh', label: 'A New Hope', parent: 'ot', order: 0 },
-  { id: 'esb', label: 'The Empire Strikes Back', parent: 'ot', order: 1 },
-  { id: 'place', label: 'Place', order: 1 },
-  { id: 'tatooine', label: 'Tatooine', parent: 'place', order: 0 },
-  { id: 'bespin', label: 'Bespin', parent: 'place', order: 1 },
-  { id: 'carbonite', label: 'Carbonite Chamber', parent: 'bespin', order: 0 },
+  { id: 'timeline', label: 'Timeline' },
+  { id: 'aor', label: 'Age of Rebellion', parent: 'timeline' },
+  { id: 'ot', label: 'Original Trilogy', parent: 'aor' },
+  { id: 'anh', label: 'A New Hope', parent: 'ot' },
+  { id: 'esb', label: 'The Empire Strikes Back', parent: 'ot' },
+  { id: 'place', label: 'Place' },
+  { id: 'tatooine', label: 'Tatooine', parent: 'place' },
+  { id: 'bespin', label: 'Bespin', parent: 'place' },
+  { id: 'carbonite', label: 'Carbonite Chamber', parent: 'bespin' },
 ]
 
 const tree = buildTree(nodes)
@@ -22,8 +22,8 @@ test.for([
   { ids: ['esb', 'anh'], leaves: ['anh', 'esb'], tops: ['anh', 'esb'] },
   {
     ids: ['carbonite', 'aor'],
-    leaves: ['aor', 'carbonite'],
-    tops: ['aor', 'carbonite'],
+    leaves: ['carbonite', 'aor'],
+    tops: ['carbonite', 'aor'],
   },
 ])('leaves and tops of $ids', ({ ids, leaves, tops }) => {
   assert.deepEqual(tree.leaves(ids), leaves)
@@ -34,7 +34,7 @@ test.for([
   { ids: ['anh'], expected: ['aor', 'ot', 'anh'] },
   {
     ids: ['carbonite', 'esb'],
-    expected: ['aor', 'ot', 'esb', 'bespin', 'carbonite'],
+    expected: ['bespin', 'carbonite', 'aor', 'ot', 'esb'],
   },
 ])(
   'withImplied adds every ancestor except the root for $ids',
@@ -53,15 +53,15 @@ test.for([
 
 test.for([
   {
-    case: 'groups siblings and keeps tree order',
+    case: 'groups siblings and sorts A–Z',
     ids: ['carbonite', 'esb', 'tatooine', 'anh'],
     expected:
-      'Age of Rebellion › Original Trilogy › A New Hope, The Empire Strikes Back | Tatooine | Bespin › Carbonite Chamber',
+      'Bespin › Carbonite Chamber | Tatooine | Age of Rebellion › Original Trilogy › A New Hope, The Empire Strikes Back',
   },
   {
     case: 'collapses implied parents first',
     ids: ['ot', 'anh', 'bespin'],
-    expected: 'Age of Rebellion › Original Trilogy › A New Hope | Bespin',
+    expected: 'Bespin | Age of Rebellion › Original Trilogy › A New Hope',
   },
 ])('groupedLabel $case', ({ ids, expected }) => {
   assert.equal(tree.groupedLabel(ids), expected)
@@ -87,50 +87,59 @@ const flat: FlatNode[] = [
 
 test.for([
   {
-    case: 'reorders among siblings',
+    case: 'stays with its siblings',
     active: 'esb',
     over: 'anh',
     delta: 0,
-    expected: { parent: 'ot', index: 0 },
+    expected: { parent: 'ot' },
   },
   {
     case: 'drops under another root',
     active: 'tatooine',
     over: 'esb',
     delta: 0,
-    expected: { parent: 'ot', index: 1 },
+    expected: { parent: 'ot' },
   },
   {
     case: 'nests under the row above when dragged right',
     active: 'esb',
     over: 'esb',
     delta: 1,
-    expected: { parent: 'anh', index: 0 },
+    expected: { parent: 'anh' },
   },
   {
     case: 'moves up a level when dragged left',
     active: 'esb',
     over: 'esb',
     delta: -1,
-    expected: { parent: 'aor', index: 1 },
+    expected: { parent: 'aor' },
   },
   {
     case: 'becomes a root when dragged fully left at the end',
     active: 'tatooine',
     over: 'tatooine',
     delta: -3,
-    expected: { parent: undefined, index: 2 },
+    expected: { parent: undefined },
   },
   {
     case: 'keeps the depth of the next row',
     active: 'place',
     over: 'esb',
     delta: -5,
-    expected: { parent: 'ot', index: 1 },
+    expected: { parent: 'ot' },
   },
 ])('projectDrop $case', ({ active, over, delta, expected }) => {
   assert.deepEqual(
     projectDrop(flat, { activeId: active, overId: over, depthDelta: delta }),
     expected
   )
+})
+
+test('buildTree sorts siblings with the given comparator', () => {
+  const byLabelDesc = (a: TreeNode, b: TreeNode) =>
+    b.label.localeCompare(a.label)
+  assert.deepEqual(buildTree(nodes, byLabelDesc).sort(['anh', 'esb']), [
+    'esb',
+    'anh',
+  ])
 })

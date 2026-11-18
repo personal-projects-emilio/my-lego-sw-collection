@@ -34,7 +34,6 @@ import {
   sortableKeyboardCoordinates,
   type SortingStrategy,
   useSortable,
-  verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import {
@@ -60,10 +59,8 @@ import {
   editTag,
   isProtectedTag,
   moveTag,
-  sortAlphabetically,
   type TagEdit,
   type TagsState,
-  timelineRootId,
   undoTagEdit,
 } from 'utils/tags'
 import { type FlatNode, projectDrop } from 'utils/tree'
@@ -78,8 +75,6 @@ const saveError = (fallback: string) => (err: unknown) =>
 const indent = 24
 
 const keepInPlace: SortingStrategy = () => null
-
-const kinds: Array<Tag['kind']> = ['movie', 'show', 'game', 'other']
 
 type Target = 'sets' | 'minifigs'
 
@@ -620,13 +615,9 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
   const projectSortedDrop = useCallback(
     (drop: { activeId: TagId; overId: TagId; depthDelta: number }) => {
       const target = projectDrop(nodes, drop)
-      const alphabetical =
-        !!target.parent && !!tagsById.get(target.parent)?.alphabetical
       return {
         ...target,
-        alphabetical,
-        stays:
-          alphabetical && target.parent === tagsById.get(drop.activeId)?.parent,
+        stays: target.parent === tagsById.get(drop.activeId)?.parent,
       }
     },
     [nodes, tagsById]
@@ -747,7 +738,7 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
         }}
         placeholder={
           adding.parent
-            ? `New tag in ${tagsVocabulary.label(adding.parent)}${tagsById.get(adding.parent)?.alphabetical ? ', sorted A–Z' : ''}`
+            ? `New tag in ${tagsVocabulary.label(adding.parent)}`
             : 'New root'
         }
         siblingLabels={labelsUnder(adding.parent)}
@@ -790,9 +781,7 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
     if ('state' in edit) expand(target.parent)
     run(
       edit,
-      target.parent === tagsById.get(id)?.parent
-        ? `Reordered ${tagsVocabulary.label(id)}`
-        : `Moved ${tagsVocabulary.label(id)} into ${target.parent ? fullPath(target.parent) : 'the top level'}`
+      `Moved ${tagsVocabulary.label(id)} into ${target.parent ? fullPath(target.parent) : 'the top level'}`
     )
   }
 
@@ -805,12 +794,11 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
   const details = (tag: Tag) =>
     [
       ...(tag.parent
-        ? [tag.kind]
+        ? []
         : [
             tag.appliesTo === 'both' ? 'sets & minifigs' : tag.appliesTo,
             tag.inherited && 'inherited',
           ]),
-      tag.alphabetical && 'A–Z',
       descendants.has(tag.id) && `${descendants.get(tag.id)} tags`,
       ...usageLabel(tag),
     ]
@@ -819,8 +807,6 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
 
   const closeMenu = () => setMenu(undefined)
   const menuTag = menu && tagsById.get(menu.id)
-  const isTimelineTag = (tag: Tag) =>
-    tagsVocabulary.rootOf(tag.id)?.id === timelineRootId
 
   return (
     <Drawer
@@ -890,12 +876,7 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
         }
         sensors={sensors}
       >
-        <SortableContext
-          items={sortableItems}
-          strategy={
-            drop?.alphabetical ? keepInPlace : verticalListSortingStrategy
-          }
-        >
+        <SortableContext items={sortableItems} strategy={keepInPlace}>
           <ul aria-label="Tag tree" className={classes.list}>
             {nodes.map(({ id, depth }) => {
               const tag = tagsById.get(id)
@@ -916,8 +897,8 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
                           text:
                             drop.refused ??
                             (drop.stays
-                              ? `Stays in ${tagsById.get(drop.parent ?? '')?.label}, sorted A–Z`
-                              : `Into ${drop.parent ? fullPath(drop.parent) : 'the top level'}${drop.alphabetical ? ', sorted A–Z' : ''}`),
+                              ? `Stays in ${drop.parent ? fullPath(drop.parent) : 'the top level'}`
+                              : `Into ${drop.parent ? fullPath(drop.parent) : 'the top level'}`),
                         }
                       : undefined
                   }
@@ -969,62 +950,10 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
           >
             Add a tag inside
           </MenuItem>,
-          ...(menuTag.parent &&
-          !isTimelineTag(menuTag) &&
-          !parents.has(menuTag.id) &&
-          !menuTag.alphabetical
-            ? []
-            : [<Divider key="settings" />]),
-          ...(parents.has(menuTag.id) || menuTag.alphabetical
-            ? [
-                <MenuItem
-                  key="alphabetical"
-                  className={classes.switchItem}
-                  dense
-                  disabled={isPending}
-                  onClick={() =>
-                    run(
-                      state &&
-                        sortAlphabetically(
-                          state,
-                          menuTag.id,
-                          !menuTag.alphabetical
-                        ),
-                      `${menuTag.alphabetical ? 'Stopped sorting' : 'Sorted'} the tags of ${menuTag.label} A–Z`
-                    )
-                  }
-                >
-                  Sort A–Z, with all tags inside
-                  <Switch
-                    checked={!!menuTag.alphabetical}
-                    edge="end"
-                    size="small"
-                    slotProps={{ input: { tabIndex: -1 } }}
-                  />
-                </MenuItem>,
-              ]
-            : []),
           ...(menuTag.parent
-            ? (isTimelineTag(menuTag) ? [undefined, ...kinds] : []).map(
-                (kind) => (
-                  <MenuItem
-                    key={`kind-${kind}`}
-                    dense
-                    disabled={isPending}
-                    onClick={() => {
-                      closeMenu()
-                      run(
-                        state && editTag(state, menuTag.id, { kind }),
-                        `Set ${menuTag.label} as ${kind ? `a ${kind}` : 'not a title'}`
-                      )
-                    }}
-                    selected={menuTag.kind === kind}
-                  >
-                    {kind ? `Title: ${kind}` : 'Not a title'}
-                  </MenuItem>
-                )
-              )
+            ? []
             : [
+                <Divider key="settings" />,
                 ...targets.map((target) => {
                   const checked = appliesToTarget(menuTag.appliesTo, target)
                   return (

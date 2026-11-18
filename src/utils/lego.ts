@@ -8,8 +8,10 @@ import type {
 } from 'types/minifigs'
 import type { CollectionSetsList, Set, SetsList } from 'types/sets'
 import type { TagsList, TagTarget } from 'types/tags'
+import type { TimelineList } from 'types/timeline'
 
 import { buildTagsVocabulary, seasonalTagId } from './tags'
+import { buildTimeline } from './timeline'
 
 export const isSetRetired = (
   { exitDate, retired }: Pick<Set, 'exitDate' | 'retired'>,
@@ -98,6 +100,7 @@ interface StoredCollection {
   minifigsList: MinifigsList
   looseMinifigsList: LooseMinifigsList
   tagsList: TagsList
+  timelineList: TimelineList
 }
 
 interface Collection {
@@ -163,14 +166,29 @@ export const buildCollection = ({
   minifigsList,
   looseMinifigsList,
   tagsList,
+  timelineList,
 }: StoredCollection): Collection => {
   const tagsVocabulary = buildTagsVocabulary(tagsList)
+  const timeline = buildTimeline(timelineList)
+  const withSource = (
+    record: Record<string, Array<string | number>>,
+    ids: string[],
+    source: string | number
+  ) =>
+    ids.reduce(
+      (result, id) =>
+        result[id]?.includes(source)
+          ? result
+          : { ...result, [id]: [...(result[id] ?? []), source] },
+      record
+    )
   const ownTags = (tags: string[] | undefined, target: TagTarget) =>
     tagsVocabulary.withImplied(
       (tags ?? []).filter((id) => tagsVocabulary.appliesTo(id, target))
     )
+  const isSeasonal = (set: Set) => !!set.tags?.includes(seasonalTagId)
   const inheritable = (set: Set) =>
-    set.tags?.includes(seasonalTagId)
+    isSeasonal(set)
       ? []
       : ownTags(set.tags, 'sets').filter(
           (id) =>
@@ -190,6 +208,8 @@ export const buildCollection = ({
       ...minifig,
       effectiveTags: [],
       inheritedTags: {},
+      effectiveAppearances: [],
+      inheritedAppearances: {},
       owned: { total: loose.quantity, loose, inSet: [] },
     }
   })
@@ -205,15 +225,17 @@ export const buildCollection = ({
         const currentMinifig = updatedMinifigsList[index]
         updatedMinifigsList[index] = {
           ...currentMinifig,
-          inheritedTags: inheritable(currentSet).reduce(
-            (inheritedTags, id) =>
-              inheritedTags[id]?.includes(currentSet.id)
-                ? inheritedTags
-                : {
-                    ...inheritedTags,
-                    [id]: [...(inheritedTags[id] ?? []), currentSet.id],
-                  },
-            currentMinifig.inheritedTags
+          inheritedTags: withSource(
+            currentMinifig.inheritedTags,
+            inheritable(currentSet),
+            currentSet.id
+          ),
+          inheritedAppearances: withSource(
+            currentMinifig.inheritedAppearances,
+            isSeasonal(currentSet)
+              ? []
+              : timeline.withImplied(currentSet.appearances ?? []),
+            currentSet.id
           ),
           owned: {
             loose: currentMinifig.owned.loose,
@@ -239,6 +261,9 @@ export const buildCollection = ({
             ...currentSet,
             tags: Array.from(new Set(currentSet.tags)),
             effectiveTags: ownTags(currentSet.tags, 'sets'),
+            effectiveAppearances: timeline.withImplied(
+              currentSet.appearances ?? []
+            ),
             ...(currentSet.content && {
               content: {
                 ...currentSet.content,
@@ -266,6 +291,10 @@ export const buildCollection = ({
       effectiveTags: tagsVocabulary.sort([
         ...ownTags(minifig.tags, 'minifigs'),
         ...Object.keys(minifig.inheritedTags),
+      ]),
+      effectiveAppearances: timeline.sort([
+        ...timeline.withImplied(minifig.appearances ?? []),
+        ...Object.keys(minifig.inheritedAppearances),
       ]),
     })),
   }

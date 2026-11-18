@@ -26,6 +26,7 @@ export const defaultSetFormValues = (setData: SetFormModalProps['setData']) =>
     releaseYear: new Date().getFullYear(),
     subtheme: '',
     tags: [],
+    appearances: [],
     bricksetImagePath: null,
     EAN: null,
     exitDate: null,

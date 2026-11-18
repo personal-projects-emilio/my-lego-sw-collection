@@ -2,11 +2,9 @@ export type TreeNode = {
   id: string
   label: string
   parent?: string
-  order: number
-  alphabetical?: boolean
 }
 
-const byLabel = (a: TreeNode, b: TreeNode) =>
+export const byLabel = (a: TreeNode, b: TreeNode) =>
   a.label.localeCompare(b.label, undefined, {
     numeric: true,
     sensitivity: 'base',
@@ -14,7 +12,10 @@ const byLabel = (a: TreeNode, b: TreeNode) =>
 
 type SiblingGroup = { parent: string | undefined; ids: string[] }
 
-export const buildTree = <T extends TreeNode>(nodes: T[]) => {
+export const buildTree = <T extends TreeNode>(
+  nodes: T[],
+  compare: (a: T, b: T) => number = byLabel
+) => {
   const byId = new Map(nodes.map((node) => [node.id, node]))
   const children = new Map<string | undefined, T[]>()
   nodes.forEach((node) =>
@@ -23,16 +24,10 @@ export const buildTree = <T extends TreeNode>(nodes: T[]) => {
 
   const position = new Map<string, number>()
   const walk = (parent: string | undefined) =>
-    [...(children.get(parent) ?? [])]
-      .sort(
-        parent && byId.get(parent)?.alphabetical
-          ? byLabel
-          : (a, b) => a.order - b.order
-      )
-      .forEach((node) => {
-        position.set(node.id, position.size)
-        walk(node.id)
-      })
+    [...(children.get(parent) ?? [])].sort(compare).forEach((node) => {
+      position.set(node.id, position.size)
+      walk(node.id)
+    })
   walk(undefined)
 
   const ancestors = (id: string) => {
@@ -166,10 +161,7 @@ export const projectDrop = (
       : depth > previous.depth
         ? previous.id
         : [...before].reverse().find((node) => node.depth === depth)?.parent
-  return {
-    parent,
-    index: before.filter((node) => node.parent === parent).length,
-  }
+  return { parent }
 }
 
 export type TreeModel<T extends TreeNode = TreeNode> = ReturnType<

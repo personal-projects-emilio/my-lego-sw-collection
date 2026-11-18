@@ -3,7 +3,7 @@ import type { MinifigsList } from 'types/minifigs'
 import type { SetsList } from 'types/sets'
 import type { InheritedTags, Tag, TagId, TagsList, TagTarget } from 'types/tags'
 
-import { buildTree } from './tree'
+import { buildTree, byLabel } from './tree'
 
 export const seasonalTagId = 'seasonal'
 
@@ -64,11 +64,7 @@ export const filterTagsAfterPick = (
 
 export const otherRootId = 'other'
 
-export const timelineRootId = 'timeline'
-
-const fixedRootIds = [otherRootId, timelineRootId]
-
-const protectedTagIds = [seasonalTagId, ...fixedRootIds]
+const protectedTagIds = [seasonalTagId, otherRootId]
 
 export const isProtectedTag = (id: TagId) => protectedTagIds.includes(id)
 
@@ -140,12 +136,6 @@ const refusesAppliesTo = (
   return undefined
 }
 
-const sortedChildren = (tagsList: TagsList, parent: TagId | undefined) =>
-  tagsList
-    .filter((tag) => tag.parent === parent)
-    .sort((a, b) => a.order - b.order)
-    .map(({ id }) => id)
-
 const withParent = (tag: Tag, parent: TagId | undefined): Tag =>
   parent
     ? { ...omit(tag, ['appliesTo', 'inherited']), parent }
@@ -155,32 +145,13 @@ const withParent = (tag: Tag, parent: TagId | undefined): Tag =>
         inherited: tag.inherited ?? false,
       }
 
-const reparent = (
+const reparentChildren = (
   tagsList: TagsList,
-  parent: TagId | undefined,
-  ids: TagId[]
-) => {
-  const order = new Map(ids.map((id, index) => [id, index]))
-  return tagsList.map((tag) => {
-    const position = order.get(tag.id)
-    if (position === undefined) return tag
-    if (tag.parent === parent && tag.order === position) return tag
-    return { ...withParent(tag, parent), order: position }
-  })
-}
+  from: TagId,
+  to: TagId | undefined
+) => tagsList.map((tag) => (tag.parent === from ? withParent(tag, to) : tag))
 
-const placeAt = (tagsList: TagsList, moved: Tag, index: number) => {
-  const siblings = sortedChildren(tagsList, moved.parent).filter(
-    (id) => id !== moved.id
-  )
-  siblings.splice(index, 0, moved.id)
-  const list = findTag(tagsList, moved.id)
-    ? tagsList.map((tag) => (tag.id === moved.id ? moved : tag))
-    : [...tagsList, moved]
-  return reparent(list, moved.parent, siblings)
-}
-
-const uniqueId = (tagsList: TagsList, label: string) => {
+export const uniqueId = (tagsList: Array<{ id: string }>, label: string) => {
   const base =
     label
       .toLowerCase()
@@ -204,32 +175,21 @@ export const addTag = (
   if (parent && !findTag(state.tagsList, parent))
     return { refused: `Unknown parent ${parent}` }
   const tag = withParent(
-    { id: uniqueId(state.tagsList, trimmed), label: trimmed, order: 0 },
+    { id: uniqueId(state.tagsList, trimmed), label: trimmed },
     parent
   )
-  const index = sortedChildren(state.tagsList, parent).length
-  return {
-    state: {
-      ...state,
-      tagsList: placeAt(state.tagsList, tag, index),
-    },
-  }
+  return { state: { ...state, tagsList: [...state.tagsList, tag] } }
 }
 
 export const editTag = (
   state: TagsState,
   id: TagId,
-  changes: Partial<Pick<Tag, 'label' | 'kind' | 'appliesTo' | 'inherited'>>
+  changes: Partial<Pick<Tag, 'label' | 'appliesTo' | 'inherited'>>
 ): TagEdit => {
   const tag = findTag(state.tagsList, id)
   if (!tag) return { refused: `Unknown tag ${id}` }
   const label = changes.label?.trim() ?? tag.label
   if (!label) return { refused: 'A tag needs a label' }
-  if (
-    changes.kind &&
-    buildTree(state.tagsList).rootOf(id)?.id !== timelineRootId
-  )
-    return { refused: `Only timeline tags can be titles` }
   if (tag.parent && ('appliesTo' in changes || 'inherited' in changes))
     return { refused: `Only roots apply to items or are inherited` }
   if (changes.appliesTo) {
@@ -247,40 +207,17 @@ export const editTag = (
   }
 }
 
-export const sortAlphabetically = (
-  state: TagsState,
-  id: TagId,
-  alphabetical: boolean
-): TagEdit => {
-  const tag = findTag(state.tagsList, id)
-  if (!tag) return { refused: `Unknown tag ${id}` }
-  const ids = subtree(state.tagsList, id)
-  const parents = new Set(state.tagsList.map(({ parent }) => parent))
-  return {
-    state: {
-      ...state,
-      tagsList: state.tagsList.map((t) =>
-        ids.includes(t.id) && (parents.has(t.id) || t.alphabetical)
-          ? alphabetical
-            ? { ...t, alphabetical }
-            : omit(t, ['alphabetical'])
-          : t
-      ),
-    },
-  }
-}
-
 export const moveTag = (
   state: TagsState,
   id: TagId,
-  { parent, index }: { parent?: TagId; index: number }
+  { parent }: { parent?: TagId }
 ): TagEdit => {
   const { tagsList } = state
   const tag = findTag(tagsList, id)
   if (!tag) return { refused: `Unknown tag ${id}` }
   if (parent && !findTag(tagsList, parent))
     return { refused: `Unknown parent ${parent}` }
-  if (fixedRootIds.includes(id) && parent)
+  if (id === otherRootId && parent)
     return { refused: `${tag.label} must stay a root` }
   const tree = buildTree(tagsList)
   if (
@@ -291,25 +228,13 @@ export const moveTag = (
   const root = parent ? tree.rootOf(parent) : withParent(tag, undefined)
   const refused = refusesAppliesTo(state, id, root?.appliesTo)
   if (refused) return { refused: `${root?.label} doesn't apply: ${refused}` }
-  const target = findTag(tagsList, parent)
-  if (target?.alphabetical && tag.parent === parent)
-    return { refused: `${target.label} sorts its tags A–Z` }
-  const placed = placeAt(tagsList, withParent(tag, parent), index)
   return {
     state: {
       ...state,
-      tagsList:
-        root?.id === timelineRootId
-          ? placed
-          : withoutKinds(placed, subtree(tagsList, id)),
+      tagsList: tagsList.map((t) => (t.id === id ? withParent(t, parent) : t)),
     },
   }
 }
-
-const withoutKinds = (tagsList: TagsList, ids: TagId[]) =>
-  tagsList.map((tag) =>
-    tag.kind && ids.includes(tag.id) ? omit(tag, ['kind']) : tag
-  )
 
 const withoutTag = <T extends TaggedRecord>(items: T[], id: TagId) =>
   items.some(({ tags }) => tags?.includes(id))
@@ -326,15 +251,12 @@ export const deleteTag = (state: TagsState, id: TagId): TagEdit => {
   if (isProtectedTag(id)) return { refused: `${tag.label} can't be deleted` }
   if (!tag.parent)
     return { refused: `Pick a root to move the tags of ${tag.label} to` }
-  const siblings = sortedChildren(state.tagsList, tag.parent).flatMap((s) =>
-    s === id ? sortedChildren(state.tagsList, id) : [s]
-  )
   return {
     state: {
-      tagsList: reparent(
+      tagsList: reparentChildren(
         state.tagsList.filter((t) => t.id !== id),
-        tag.parent,
-        siblings
+        id,
+        tag.parent
       ),
       setsList: withoutTag(state.setsList, id),
       minifigsList: withoutTag(state.minifigsList, id),
@@ -420,7 +342,7 @@ export const rootTargets = (tagsList: TagsList, id: TagId) => {
     .filter(
       (tag) => !tag.parent && tag.id !== id && covers(tag.appliesTo, appliesTo)
     )
-    .sort((a, b) => a.order - b.order)
+    .sort(byLabel)
 }
 
 export const deleteRoot = (
@@ -435,20 +357,13 @@ export const deleteRoot = (
     return {
       refused: `${targetId} must be another root that applies to the same items`,
     }
-  const tagsList = reparent(
-    state.tagsList.filter((t) => t.id !== id),
-    targetId,
-    [
-      ...sortedChildren(state.tagsList, targetId),
-      ...sortedChildren(state.tagsList, id),
-    ]
-  )
   return {
     state: {
-      tagsList:
-        targetId === timelineRootId
-          ? tagsList
-          : withoutKinds(tagsList, subtree(state.tagsList, id)),
+      tagsList: reparentChildren(
+        state.tagsList.filter((t) => t.id !== id),
+        id,
+        targetId
+      ),
       setsList: withoutTag(state.setsList, id),
       minifigsList: withoutTag(state.minifigsList, id),
     },

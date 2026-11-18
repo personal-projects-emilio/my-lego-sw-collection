@@ -5,13 +5,18 @@ export const queryKeys = {
   resaleSets: 'resaleSets',
   sets: 'sets',
   tags: 'tags',
+  timeline: 'timeline',
 } as const
 
+const node = (name: string) =>
+  `/${name}${import.meta.env.VITE_DATA_SUFFIX ?? ''}.json`
+
 export const endPoints = {
-  bricksetIgnoreList: '/bricksetIgnoreList.json',
-  looseMinifigs: '/looseMinifigs.json',
-  minifigs: '/minifigs.json',
-  resaleSets: '/resaleSets.json',
-  sets: '/sets.json',
-  tags: '/tags.json',
+  bricksetIgnoreList: node('bricksetIgnoreList'),
+  looseMinifigs: node('looseMinifigs'),
+  minifigs: node('minifigs'),
+  resaleSets: node('resaleSets'),
+  sets: node('sets'),
+  tags: node('tags'),
+  timeline: node('timeline'),
 } as const
