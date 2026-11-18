@@ -1,10 +1,17 @@
-import type { FC, PropsWithChildren } from 'react'
+import {
+  type FC,
+  type PropsWithChildren,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { FaSearch } from 'react-icons/fa'
-import { MdBarChart } from 'react-icons/md'
+import { MdBarChart, MdClose } from 'react-icons/md'
 
 import {
   Button,
   debounce,
+  IconButton,
   InputAdornment,
   TextField,
   Tooltip,
@@ -45,12 +52,32 @@ const ModuleHeader: FC<PropsWithChildren<ModuleHeaderProps>> = ({
   statisticsTooltipTitle,
 }) => {
   const { classes } = useModuleHeaderStyles()
+  const [search, setSearch] = useState('')
+  const inputRef = useRef<HTMLInputElement>(null)
+  const debouncedQuickFilter = useMemo(
+    () => debounce(setQuickFilter, 500),
+    [setQuickFilter]
+  )
+
+  const clearSearch = () => {
+    debouncedQuickFilter.clear()
+    setSearch('')
+    setQuickFilter('')
+    inputRef.current?.focus()
+  }
 
   return (
     <header className={classes.header}>
       <TextField
+        inputRef={inputRef}
         label="Search"
-        onChange={debounce((e) => setQuickFilter(e.target.value), 500)}
+        onChange={(event) => {
+          setSearch(event.target.value)
+          debouncedQuickFilter(event.target.value)
+        }}
+        onKeyDown={(event) => {
+          if (event.key === 'Escape' && search) clearSearch()
+        }}
         size="small"
         slotProps={{
           input: {
@@ -59,8 +86,21 @@ const ModuleHeader: FC<PropsWithChildren<ModuleHeaderProps>> = ({
                 <FaSearch />
               </InputAdornment>
             ),
+            endAdornment: search ? (
+              <InputAdornment position="end">
+                <IconButton
+                  aria-label="Clear search"
+                  edge="end"
+                  onClick={clearSearch}
+                  size="small"
+                >
+                  <MdClose />
+                </IconButton>
+              </InputAdornment>
+            ) : undefined,
           },
         }}
+        value={search}
         variant="outlined"
       />
       {children}
