@@ -10,8 +10,6 @@ import type { TimelineId, TimelineItem } from 'types/timeline'
 const useTimelineFilterStyles = makeStyles({ name: 'TimelineFilter' })(
   (theme) => ({
     filter: {
-      maxHeight: 480,
-      overflow: 'auto',
       padding: theme.spacing(1),
       width: `min(680px, calc(100vw - ${theme.spacing(4)}))`,
     },
@@ -45,7 +43,7 @@ const TimelineFilter = ({
       inputRef={inputRef}
       label="Filter timeline"
       onChange={(ids) => onModelChange(ids.length ? ids : null)}
-      defaultOpen
+      popoverClassName="ag-custom-component-popup"
       value={model ?? []}
     />
   )

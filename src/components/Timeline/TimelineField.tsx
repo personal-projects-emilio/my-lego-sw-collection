@@ -1,7 +1,14 @@
-import { type FC, type KeyboardEvent, type Ref, useId, useState } from 'react'
+import {
+  type FC,
+  type KeyboardEvent,
+  type Ref,
+  useId,
+  useRef,
+  useState,
+} from 'react'
 import { MdArrowDropDown } from 'react-icons/md'
 
-import { Autocomplete, Collapse, TextField } from '@mui/material'
+import { Autocomplete, Popover, TextField } from '@mui/material'
 import { useTimeline } from 'hooks'
 import type { InheritedTimeline, TimelineId } from 'types/timeline'
 import { togglePick } from 'utils/timeline'
@@ -16,18 +23,13 @@ type TimelineFieldProps = {
   inputRef?: Ref<HTMLInputElement>
   label?: string
   onChange: (value: TimelineId[]) => void
-  defaultOpen?: boolean
+  popoverClassName?: string
   value: TimelineId[]
 }
 
 const noInherited: InheritedTimeline = {}
 
-const mapKeysToActions: Record<string, (open: boolean) => boolean> = {
-  ArrowDown: () => true,
-  Enter: (open) => !open,
-  ' ': (open) => !open,
-  Escape: () => false,
-}
+const openKeys = new Set(['ArrowDown', 'Enter', ' '])
 
 const TimelineField: FC<TimelineFieldProps> = ({
   className,
@@ -35,13 +37,14 @@ const TimelineField: FC<TimelineFieldProps> = ({
   inputRef,
   label = 'Timeline',
   onChange,
-  defaultOpen = false,
+  popoverClassName,
   value,
 }) => {
   const { classes } = useTimelineFieldStyles()
   const timeline = useTimeline()
-  const [open, setOpen] = useState(defaultOpen)
-  const inputId = useId()
+  const anchorRef = useRef<HTMLDivElement>(null)
+  const [anchor, setAnchor] = useState<HTMLDivElement | null>(null)
+  const open = Boolean(anchor)
   const panelId = useId()
   const picks = { value, inherited }
   const shown = timeline.leaves([...value, ...Object.keys(inherited)])
@@ -51,13 +54,13 @@ const TimelineField: FC<TimelineFieldProps> = ({
   return (
     <div className={className}>
       <div
+        ref={anchorRef}
         onClick={(event) => {
           if (!(event.target as HTMLElement).closest('.MuiChip-deleteIcon'))
-            setOpen(!open)
+            setAnchor(anchorRef.current)
         }}
       >
         <Autocomplete
-          id={inputId}
           multiple
           className={classes.select}
           data-filled={shown.length > 0 || undefined}
@@ -92,13 +95,13 @@ const TimelineField: FC<TimelineFieldProps> = ({
                   ...params.slotProps.htmlInput,
                   'aria-expanded': open,
                   'aria-controls': panelId,
+                  'aria-haspopup': 'dialog',
                   'aria-autocomplete': 'none',
                   readOnly: true,
                   onKeyDown: (event: KeyboardEvent<HTMLInputElement>) => {
-                    const next = mapKeysToActions[event.key]?.(open)
-                    if (next === undefined || next === open) return
+                    if (!openKeys.has(event.key)) return
                     event.preventDefault()
-                    setOpen(next)
+                    setAnchor(anchorRef.current)
                   },
                 },
               }}
@@ -113,22 +116,23 @@ const TimelineField: FC<TimelineFieldProps> = ({
           )}
         />
       </div>
-      <Collapse in={open}>
-        <div
-          id={panelId}
-          role="group"
-          aria-label="Timeline options"
-          className={classes.panel}
-          onKeyDown={(event) => {
-            if (event.key !== 'Escape') return
-            event.stopPropagation()
-            setOpen(false)
-            document.getElementById(inputId)?.focus()
-          }}
-        >
+      <Popover
+        anchorEl={anchor}
+        anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
+        className={popoverClassName}
+        onClose={() => setAnchor(null)}
+        open={open}
+        slotProps={{
+          paper: {
+            className: classes.panel,
+            style: { width: anchor?.clientWidth },
+          },
+        }}
+      >
+        <div id={panelId} role="group" aria-label="Timeline options">
           <TimelinePicker timeline={timeline} picks={picks} onToggle={toggle} />
         </div>
-      </Collapse>
+      </Popover>
     </div>
   )
 }
