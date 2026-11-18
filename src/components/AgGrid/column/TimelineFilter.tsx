@@ -13,7 +13,7 @@ const useTimelineFilterStyles = makeStyles({ name: 'TimelineFilter' })(
       maxHeight: 480,
       overflow: 'auto',
       padding: theme.spacing(1),
-      width: 480,
+      width: 680,
     },
   })
 )

@@ -3,7 +3,6 @@ import { MdAdd } from 'react-icons/md'
 
 import { Fab, Skeleton, Typography } from '@mui/material'
 import { useCollection, useTimeline } from 'hooks'
-import { useAuth } from 'providers/AuthProvider'
 import { makeStyles } from 'tss-react/mui'
 import type { EntryDraft } from 'utils/timeline'
 
@@ -40,7 +39,6 @@ const Timeline: FC = () => {
   const { classes } = useTimelineStyles()
   const { setsList, minifigsList, isLoading } = useCollection()
   const timeline = useTimeline()
-  const { idToken } = useAuth()
   const [draft, setDraft] = useState<EntryDraft>()
   const counts = useMemo(
     () => countItems(setsList, minifigsList),
@@ -65,26 +63,20 @@ const Timeline: FC = () => {
         <TimelineEraSections
           timeline={timeline}
           counts={counts}
-          onSelect={
-            idToken
-              ? (id) => {
-                  const entry = timeline.entry(id)
-                  if (entry) setDraft(entry)
-                }
-              : undefined
-          }
+          onSelect={(id) => {
+            const entry = timeline.entry(id)
+            if (entry) setDraft(entry)
+          }}
         />
       )}
-      {idToken && (
-        <Fab
-          aria-label="New timeline entry"
-          className={classes.fab}
-          color="primary"
-          onClick={() => setDraft({ label: '', kind: 'movie' })}
-        >
-          <MdAdd />
-        </Fab>
-      )}
+      <Fab
+        aria-label="New timeline entry"
+        className={classes.fab}
+        color="primary"
+        onClick={() => setDraft({ label: '', kind: 'movie' })}
+      >
+        <MdAdd />
+      </Fab>
       <EntryPanel
         counts={counts}
         draft={draft}

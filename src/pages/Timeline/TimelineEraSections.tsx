@@ -192,7 +192,7 @@ type Row = { year?: number; gap?: number; compressed?: boolean }
 type TimelineEraSectionsProps = {
   timeline: Timeline
   counts: Counts
-  onSelect?: (id: TimelineId) => void
+  onSelect: (id: TimelineId) => void
 }
 
 const TimelineEraSections: FC<TimelineEraSectionsProps> = ({
@@ -215,18 +215,15 @@ const TimelineEraSections: FC<TimelineEraSectionsProps> = ({
     }))
     .filter(({ era, titles }) => era || titles.length)
 
-  const Clickable = onSelect ? 'button' : 'div'
-  const select = (id: TimelineId) =>
-    onSelect && { type: 'button' as const, onClick: () => onSelect(id) }
-
   const card = (entry: TimelineEntry, side: 'left' | 'right') => (
-    <Clickable
+    <button
       key={entry.id}
-      {...select(entry.id)}
+      type="button"
+      onClick={() => onSelect(entry.id)}
       className={cx(
         classes.focusable,
         classes.card,
-        onSelect && classes.clickable,
+        classes.clickable,
         side === 'left' ? classes.leftCard : classes.rightCard
       )}
     >
@@ -240,7 +237,7 @@ const TimelineEraSections: FC<TimelineEraSectionsProps> = ({
           {countLabel(counts, entry.id)}
         </span>
       </span>
-    </Clickable>
+    </button>
   )
 
   return (
@@ -322,12 +319,13 @@ const TimelineEraSections: FC<TimelineEraSectionsProps> = ({
               id={`${headingId}-${era?.id ?? 'none'}`}
             >
               {era ? (
-                <Clickable
-                  {...select(era.id)}
+                <button
+                  type="button"
+                  onClick={() => onSelect(era.id)}
                   className={cx(
                     classes.focusable,
                     classes.headerPill,
-                    onSelect && classes.clickable
+                    classes.clickable
                   )}
                   style={{ background: color }}
                 >
@@ -335,7 +333,7 @@ const TimelineEraSections: FC<TimelineEraSectionsProps> = ({
                   <span className={classes.headerRange}>
                     {formatRange(timeline.range(era.id))}
                   </span>
-                </Clickable>
+                </button>
               ) : (
                 <span
                   className={classes.headerPill}
@@ -390,15 +388,16 @@ const TimelineEraSections: FC<TimelineEraSectionsProps> = ({
               </Fragment>
             ))}
             {brackets.map(({ trilogy, bracketSide, from, to, duplicate }) => (
-              <Clickable
+              <button
                 key={`${trilogy.id}-${bracketSide}`}
-                {...select(trilogy.id)}
+                type="button"
+                onClick={() => onSelect(trilogy.id)}
                 aria-hidden={duplicate || undefined}
                 tabIndex={duplicate ? -1 : undefined}
                 className={cx(
                   classes.focusable,
                   classes.bracket,
-                  onSelect && classes.clickable,
+                  classes.clickable,
                   bracketSide === 'left'
                     ? classes.leftBracket
                     : classes.rightBracket
@@ -410,7 +409,7 @@ const TimelineEraSections: FC<TimelineEraSectionsProps> = ({
                 title={formatRange(timeline.range(trilogy.id))}
               >
                 <span className={classes.bracketLabel}>{trilogy.label}</span>
-              </Clickable>
+              </button>
             ))}
           </section>
         )
