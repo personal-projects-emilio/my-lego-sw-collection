@@ -15,3 +15,4 @@ export {
 } from './ItemIdCellRenderer'
 export { default as OverflowTypographyCellRenderer } from './OverflowTypographyCellRenderer'
 export { tagsColDef } from './tagsColDef'
+export { timelineColDef } from './timelineColDef'

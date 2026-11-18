@@ -2,6 +2,7 @@ import { isUndefined, omitBy } from 'lodash'
 import type { MinifigsList } from 'types/minifigs'
 import type { SetsList } from 'types/sets'
 import type {
+  InheritedAppearances,
   Kind,
   TimelineEntry,
   TimelineId,
@@ -81,6 +82,30 @@ const createTimeline = (timelineList: TimelineList) => {
         .map((entry) => entry.id)
     )
 
+  const sorted = tree
+    .sort(timelineList.map(({ id }) => id))
+    .flatMap((id) => byId.get(id) ?? [])
+
+  const eraOf = (id: TimelineId) => {
+    const root = tree.rootOf(id)
+    return root && !root.kind ? root : undefined
+  }
+
+  const groupedLabel = (ids: TimelineId[]) => {
+    const groups = new Map<TimelineId, TimelineId[]>()
+    tree.leaves(ids.filter(has)).forEach((id) => {
+      const key = byId.get(id)?.parent ?? id
+      groups.set(key, [...(groups.get(key) ?? []), id])
+    })
+    return [...groups]
+      .map(([key, members]) =>
+        members.length > 1
+          ? `${pathLabel(key)} › ${members.map(tree.label).join(', ')}`
+          : pathLabel(members[0])
+      )
+      .join(' | ')
+  }
+
   return {
     ...tree,
     entry: (id: TimelineId) => byId.get(id),
@@ -88,8 +113,12 @@ const createTimeline = (timelineList: TimelineList) => {
     range,
     withImplied,
     pathLabel,
+    groupedLabel,
     childrenOf,
-    eraOf: (id: TimelineId) => tree.rootOf(id),
+    eraOf,
+    eras: sorted.filter(({ parent, kind }) => !parent && !kind),
+    trilogies: sorted.filter(({ parent, kind }) => parent && !kind),
+    titles: sorted.filter(({ kind }) => kind),
   }
 }
 
@@ -200,4 +229,54 @@ export const deleteEntry = (
       minifigsList: withoutAppearance(state.minifigsList, id),
     },
   }
+}
+
+export type PickStatus = 'none' | 'picked' | 'implied' | 'inherited'
+
+export type Picks = {
+  value: TimelineId[]
+  inherited: InheritedAppearances
+}
+
+const isUnder = (timeline: Timeline, id: TimelineId, ancestor: TimelineId) =>
+  timeline.ancestors(id).some((entry) => entry.id === ancestor)
+
+export const pickStatus = (
+  timeline: Timeline,
+  { value, inherited }: Picks,
+  id: TimelineId
+): PickStatus =>
+  inherited[id]
+    ? 'inherited'
+    : value.includes(id)
+      ? 'picked'
+      : [...value, ...Object.keys(inherited)].some((other) =>
+            isUnder(timeline, other, id)
+          )
+        ? 'implied'
+        : 'none'
+
+export const togglePick = (
+  timeline: Timeline,
+  picks: Picks,
+  id: TimelineId
+) => {
+  const { value } = picks
+  const status = pickStatus(timeline, picks, id)
+  return status === 'none'
+    ? timeline.leaves([...value, id])
+    : status === 'picked'
+      ? value.filter((other) => other !== id)
+      : status === 'implied'
+        ? value.filter((other) => !isUnder(timeline, other, id))
+        : value
+}
+
+export const canToggle = (timeline: Timeline, picks: Picks, id: TimelineId) => {
+  const status = pickStatus(timeline, picks, id)
+  return (
+    status !== 'inherited' &&
+    (status !== 'implied' ||
+      picks.value.some((other) => isUnder(timeline, other, id)))
+  )
 }

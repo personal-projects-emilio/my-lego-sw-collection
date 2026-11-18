@@ -12,8 +12,9 @@ import {
   type MinifigActionsCellRendererProps,
   OverflowTypographyCellRenderer,
   tagsColDef,
+  timelineColDef,
 } from 'components/AgGrid/column'
-import { useTagsVocabulary } from 'hooks'
+import { useTagsVocabulary, useTimeline } from 'hooks'
 import type { CollectionMinifig } from 'types/minifigs'
 
 import { OwnedCellRenderer } from '../components'
@@ -23,6 +24,7 @@ const useMinifigsColDefs = () => {
   const { classes: agGridClasses } = useAgGridStyles()
   const { deleteMinifig, isPending } = useMinifigsMutations()
   const tagsVocabulary = useTagsVocabulary()
+  const timeline = useTimeline()
 
   return useMemo(
     () =>
@@ -50,6 +52,7 @@ const useMinifigsColDefs = () => {
           field: 'characterName',
           headerName: 'Character Name',
         },
+        timelineColDef<CollectionMinifig>(timeline),
         tagsColDef<CollectionMinifig>(tagsVocabulary, 'minifigs'),
         {
           cellClass: agGridClasses.flexAlignCenter,
@@ -103,7 +106,7 @@ const useMinifigsColDefs = () => {
           width: 140,
         },
       ] as const satisfies Array<ColDef<CollectionMinifig>>,
-    [agGridClasses, deleteMinifig, isPending, tagsVocabulary]
+    [agGridClasses, deleteMinifig, isPending, tagsVocabulary, timeline]
   )
 }
 

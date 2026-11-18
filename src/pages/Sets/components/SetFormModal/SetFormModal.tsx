@@ -14,6 +14,7 @@ import {
 import { useNavigate } from '@tanstack/react-router'
 import DisplayIfAuthenticated from 'components/DisplayIfAuthenticated'
 import { Autocomplete, Checkbox, TagsAutocomplete } from 'components/inputs'
+import { TimelineField } from 'components/Timeline'
 import { useSetsAutocompleteOptions, useSetsMutations } from 'pages/Sets/hooks'
 import { type SetFormInput, setValidationSchema } from 'types/sets'
 import { formatFrDate } from 'utils/format'
@@ -138,6 +139,18 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
                   helperText: fieldState.error?.message,
                   required: true,
                 }}
+              />
+            )}
+          />
+          <Controller
+            control={control}
+            defaultValue={[]}
+            name="appearances"
+            render={({ field }) => (
+              <TimelineField
+                className={classes.gridSpan12}
+                onChange={field.onChange}
+                value={field.value}
               />
             )}
           />

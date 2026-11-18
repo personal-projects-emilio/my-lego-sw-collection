@@ -22,6 +22,7 @@ import EditResaleSetFormModal from 'pages/ResaleSets/EditResaleSetFormModal'
 import ResaleSetFormModal from 'pages/ResaleSets/ResaleSetFormModal'
 import Sets from 'pages/Sets'
 import { AddSetFormModal, EditSetFormModal } from 'pages/Sets/components'
+import Timeline from 'pages/Timeline'
 import { looseObject } from 'zod'
 
 const basePath = import.meta.env.BASE_URL
@@ -87,6 +88,12 @@ const setAddRoute = createRoute({
   validateSearch: addSetSearchSchema,
 })
 
+const timelineRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/timeline',
+  component: Timeline,
+})
+
 const looseMinifigsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/loose-minifigs',
@@ -143,6 +150,7 @@ const authRoute = createRoute({
 const routeTree = rootRoute.addChildren([
   minifigsRoute.addChildren([minifigAddRoute, minifigEditRoute]),
   setsRoute.addChildren([setAddRoute, setEditRoute]),
+  timelineRoute,
   looseMinifigsRoute.addChildren([looseMinifigAddRoute]),
   resaleSetsRoute.addChildren([resaleSetAddRoute, resaleSetEditRoute]),
   authRoute,

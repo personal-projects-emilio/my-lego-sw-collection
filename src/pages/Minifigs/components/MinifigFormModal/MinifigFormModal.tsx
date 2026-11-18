@@ -12,6 +12,7 @@ import {
 } from '@mui/material'
 import { useNavigate } from '@tanstack/react-router'
 import { Autocomplete, TagsAutocomplete } from 'components/inputs'
+import { TimelineField } from 'components/Timeline'
 import { useCollection } from 'hooks'
 import {
   useMinifigsAutocompleteOptions,
@@ -33,9 +34,10 @@ const MinifigFormModal: FC<MinifigFormModalProps> = ({
 }) => {
   const { characterNames, ids } = useMinifigsAutocompleteOptions()
   const { minifigsList } = useCollection()
-  const inheritedTags = isEdit
-    ? minifigsList?.find(({ id }) => id === minifigData.id)?.inheritedTags
+  const collectionMinifig = isEdit
+    ? minifigsList?.find(({ id }) => id === minifigData.id)
     : undefined
+  const inheritedTags = collectionMinifig?.inheritedTags
   const { addMinifig, editMinifig, isPending } = useMinifigsMutations()
   const navigate = useNavigate()
   const { classes } = useMinifigFormModalStyles()
@@ -137,6 +139,18 @@ const MinifigFormModal: FC<MinifigFormModalProps> = ({
                   }}
                 />
               </div>
+            )}
+          />
+          <Controller
+            control={control}
+            defaultValue={[]}
+            name="appearances"
+            render={({ field }) => (
+              <TimelineField
+                inherited={collectionMinifig?.inheritedAppearances}
+                onChange={field.onChange}
+                value={field.value}
+              />
             )}
           />
           <Controller

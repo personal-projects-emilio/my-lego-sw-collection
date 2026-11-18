@@ -5,8 +5,11 @@ import { test } from 'vitest'
 import {
   buildTimeline,
   deleteEntry,
+  canToggle,
   formatRange,
+  pickStatus,
   saveEntry,
+  togglePick,
   type TimelineEdit,
   type TimelineState,
 } from './timeline.ts'
@@ -127,3 +130,62 @@ test.for([
     assert.equal(formatRange(buildTimeline(timelineList).range(id)), expected)
   }
 )
+
+const picks = (value: string[], inherited: Record<string, string[]> = {}) => ({
+  value,
+  inherited,
+})
+
+test.for([
+  { case: 'adds a title', value: [], id: 'anh', expected: ['anh'] },
+  {
+    case: 'drops a stored ancestor when adding below it',
+    value: ['ot'],
+    id: 'rotj',
+    expected: ['rotj'],
+  },
+  {
+    case: 'removes a pick',
+    value: ['anh', 'rotj'],
+    id: 'anh',
+    expected: ['rotj'],
+  },
+  {
+    case: 'clears the picks under an implied entry',
+    value: ['anh', 'rotj'],
+    id: 'ot',
+    expected: [],
+  },
+  {
+    case: 'keeps an inherited entry',
+    value: [],
+    inherited: { anh: ['75301'] },
+    id: 'anh',
+    expected: [],
+  },
+])('togglePick $case', ({ value, inherited, id, expected }) => {
+  const timeline = buildTimeline(timelineList)
+  assert.deepEqual(togglePick(timeline, picks(value, inherited), id), expected)
+})
+
+test.for([
+  { id: 'anh', expected: 'inherited' },
+  { id: 'ot', expected: 'implied' },
+  { id: 'aor', expected: 'implied' },
+  { id: 'rotj', expected: 'picked' },
+])('pickStatus of $id is $expected', ({ id, expected }) => {
+  assert.equal(
+    pickStatus(
+      buildTimeline(timelineList),
+      picks(['rotj'], { anh: ['75301'] }),
+      id
+    ),
+    expected
+  )
+})
+
+test('canToggle is false for an entry implied only by inherited ones', () => {
+  const timeline = buildTimeline(timelineList)
+  assert.equal(canToggle(timeline, picks([], { anh: ['75301'] }), 'ot'), false)
+  assert.equal(canToggle(timeline, picks(['anh']), 'ot'), true)
+})
