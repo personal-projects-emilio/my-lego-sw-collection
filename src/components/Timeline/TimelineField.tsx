@@ -9,7 +9,13 @@ import {
 } from 'react'
 import { MdArrowDropDown } from 'react-icons/md'
 
-import { Autocomplete, Paper, Popper, TextField } from '@mui/material'
+import {
+  Autocomplete,
+  ClickAwayListener,
+  Paper,
+  Popper,
+  TextField,
+} from '@mui/material'
 import { useTimeline } from 'hooks'
 import type { InheritedTimeline, TimelineId } from 'types/timeline'
 import { togglePick } from 'utils/timeline'
@@ -160,23 +166,34 @@ const TimelineField: FC<TimelineFieldProps> = ({
         placement="bottom-start"
         style={{ zIndex: theme.zIndex.modal }}
       >
-        <Paper
-          ref={paperRef}
-          id={panelId}
-          role="group"
-          aria-label="Timeline options"
-          className={classes.panel}
-          elevation={8}
-          onKeyDown={(event) => {
-            if (event.key !== 'Escape') return
-            event.stopPropagation()
-            close({ refocus: true })
+        <ClickAwayListener
+          onClickAway={(event) => {
+            if (!anchorRef.current?.contains(event.target as Node))
+              setAnchor(null)
           }}
-          style={{ width: anchor?.clientWidth }}
-          tabIndex={-1}
         >
-          <TimelinePicker timeline={timeline} picks={picks} onToggle={toggle} />
-        </Paper>
+          <Paper
+            ref={paperRef}
+            id={panelId}
+            role="group"
+            aria-label="Timeline options"
+            className={classes.panel}
+            elevation={8}
+            onKeyDown={(event) => {
+              if (event.key !== 'Escape') return
+              event.stopPropagation()
+              close({ refocus: true })
+            }}
+            style={{ width: anchor?.clientWidth }}
+            tabIndex={-1}
+          >
+            <TimelinePicker
+              timeline={timeline}
+              picks={picks}
+              onToggle={toggle}
+            />
+          </Paper>
+        </ClickAwayListener>
       </Popper>
     </div>
   )
