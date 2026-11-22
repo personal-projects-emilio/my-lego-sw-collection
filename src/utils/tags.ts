@@ -153,7 +153,7 @@ const getAppliesToRefusal = ({
   return undefined
 }
 
-const setParent = ({ tag, parent }: { tag: Tag; parent?: TagId }): Tag =>
+const toTagWithParent = ({ tag, parent }: { tag: Tag; parent?: TagId }): Tag =>
   parent
     ? { ...omit(tag, ['appliesTo', 'inherited']), parent }
     : {
@@ -172,7 +172,7 @@ const reparentChildren = ({
   to?: TagId
 }) =>
   tagsList.map((tag) =>
-    tag.parent === from ? setParent({ tag, parent: to }) : tag
+    tag.parent === from ? toTagWithParent({ tag, parent: to }) : tag
   )
 
 export const createUniqueId = ({
@@ -209,7 +209,7 @@ export const addTag = ({
   if (!trimmed) return { refused: 'A tag needs a label' }
   if (parent && !findTag({ tagsList: state.tagsList, id: parent }))
     return { refused: `Unknown parent ${parent}` }
-  const tag = setParent({
+  const tag = toTagWithParent({
     tag: {
       id: createUniqueId({ list: state.tagsList, label: trimmed }),
       label: trimmed,
@@ -276,14 +276,14 @@ export const moveTag = ({
       tree.getAncestors(parent).some((ancestor) => ancestor.id === id))
   )
     return { refused: `${tag.label} can't move under itself` }
-  const root = parent ? tree.getRoot(parent) : setParent({ tag })
+  const root = parent ? tree.getRoot(parent) : toTagWithParent({ tag })
   const refused = getAppliesToRefusal({ state, id, appliesTo: root?.appliesTo })
   if (refused) return { refused: `${root?.label} doesn't apply: ${refused}` }
   return {
     state: {
       ...state,
       tagsList: tagsList.map((other) =>
-        other.id === id ? setParent({ tag: other, parent }) : other
+        other.id === id ? toTagWithParent({ tag: other, parent }) : other
       ),
     },
   }

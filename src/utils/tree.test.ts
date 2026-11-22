@@ -30,7 +30,7 @@ test.for([
     leaves: ['carbonite', 'aor'],
     tops: ['carbonite', 'aor'],
   },
-])('leaves and tops of $ids', ({ ids, leaves, tops }) => {
+])('getLeaves and getTops of $ids', ({ ids, leaves, tops }) => {
   assert.deepEqual(tree.getLeaves(ids), leaves)
   assert.deepEqual(tree.getTops(ids), tops)
 })
@@ -52,7 +52,7 @@ test.for([
   { id: 'anh', expected: 'Age of Rebellion › Original Trilogy › A New Hope' },
   { id: 'tatooine', expected: 'Tatooine' },
   { id: 'unknown', expected: 'unknown' },
-])('pathLabel of $id', ({ id, expected }) => {
+])('getPathLabel of $id', ({ id, expected }) => {
   assert.equal(tree.getPathLabel(id), expected)
 })
 
@@ -68,11 +68,11 @@ test.for([
     ids: ['ot', 'anh', 'bespin'],
     expected: 'Bespin | Age of Rebellion › Original Trilogy › A New Hope',
   },
-])('groupedLabel $case', ({ ids, expected }) => {
+])('getGroupedLabel $case', ({ ids, expected }) => {
   assert.equal(tree.getGroupedLabel(ids), expected)
 })
 
-test('outline lists every ancestor with its parent in tree order', () => {
+test('getOutline lists every ancestor with its parent in tree order', () => {
   assert.deepEqual(tree.getOutline(['carbonite']), [
     { id: 'place', label: 'Place', parent: undefined },
     { id: 'bespin', label: 'Bespin', parent: 'place' },
@@ -133,7 +133,7 @@ test.for([
     delta: -5,
     expected: { parent: 'ot' },
   },
-])('projectDrop $case', ({ active, over, delta, expected }) => {
+])('getDropProjection $case', ({ active, over, delta, expected }) => {
   assert.deepEqual(
     getDropProjection({
       nodes: flat,

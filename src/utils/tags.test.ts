@@ -111,7 +111,7 @@ test.for([
   }
 )
 
-test('inheritedFrom lists the source sets', () => {
+test('formatInheritedFrom lists the source sets', () => {
   assert.equal(
     formatInheritedFrom([75301, '75315']),
     'Inherited from 75301, 75315'
@@ -365,36 +365,39 @@ test('addTag never uses a prototype key as id', () => {
 test.for([
   { case: 'inherited root', id: 'anh', expected: ['sw0001', 'sw0002'] },
   { case: 'root that is not inherited', id: 'x-wing', expected: ['sw0001'] },
-])('tagUsage counts minifigs inheriting from a $case', ({ id, expected }) => {
-  const state: TagsState = {
-    ...editState,
-    setsList: [
-      setFixture({
-        id: 1,
-        name: 'X-wing',
-        tags: ['x-wing', 'anh'],
-        content: { minifigs: [setMinifigFixture({ id: 'sw0002' })] },
-      }),
-    ],
-    minifigsList: [
-      buildMinifigFixture({
-        id: 'sw0001',
-        name: 'Luke',
-        tags: ['anh', 'x-wing'],
-      }),
-      buildMinifigFixture({ id: 'sw0002', name: 'Biggs' }),
-    ],
+])(
+  'getTagUsage counts minifigs inheriting from a $case',
+  ({ id, expected }) => {
+    const state: TagsState = {
+      ...editState,
+      setsList: [
+        setFixture({
+          id: 1,
+          name: 'X-wing',
+          tags: ['x-wing', 'anh'],
+          content: { minifigs: [setMinifigFixture({ id: 'sw0002' })] },
+        }),
+      ],
+      minifigsList: [
+        buildMinifigFixture({
+          id: 'sw0001',
+          name: 'Luke',
+          tags: ['anh', 'x-wing'],
+        }),
+        buildMinifigFixture({ id: 'sw0002', name: 'Biggs' }),
+      ],
+    }
+    assert.deepEqual(
+      getTagUsage({ state, ids: [id] }).minifigs.map(({ id }) => id),
+      expected
+    )
   }
-  assert.deepEqual(
-    getTagUsage({ state, ids: [id] }).minifigs.map(({ id }) => id),
-    expected
-  )
-})
+)
 
 test.for([
   { id: 'vehicle', expected: ['other', 'saga'] },
   { id: 'saga', expected: ['other'] },
-])('rootTargets of $id', ({ id, expected }) => {
+])('getRootTargets of $id', ({ id, expected }) => {
   assert.deepEqual(
     getRootTargets({ tagsList: editState.tagsList, id }).map(({ id }) => id),
     expected
