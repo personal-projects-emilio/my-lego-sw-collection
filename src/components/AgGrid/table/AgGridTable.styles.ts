@@ -16,7 +16,8 @@ export default makeStyles({ name: 'AgGridTable' })((theme) => ({
     borderRadius: theme.shape.borderRadius,
     boxSizing: 'border-box',
     display: 'flex',
-    height: '100%',
+    height: `calc(100vh - 48px - 57px - ${theme.spacing(2)})`,
+    margin: theme.spacing(1),
     overflow: 'hidden',
   },
   grid: {

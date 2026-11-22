@@ -1,14 +1,7 @@
 import { useState } from 'react'
 import { MdClose, MdRestartAlt } from 'react-icons/md'
 
-import {
-  Alert,
-  Button,
-  Checkbox,
-  Divider,
-  IconButton,
-  Typography,
-} from '@mui/material'
+import { Alert, Button, Checkbox, IconButton, Typography } from '@mui/material'
 import type { GridApi } from 'ag-grid-community'
 import SearchField from 'components/inputs/SearchField'
 import { toggleableColIds, toShowAllState } from 'utils/columnLayout'
@@ -67,35 +60,33 @@ const ColumnChooser = <TData,>({
           {saveError}
         </Alert>
       )}
-      <div className={classes.toolbar}>
-        <Checkbox
-          checked={showAll === 'checked'}
-          indeterminate={showAll === 'indeterminate'}
-          onChange={() =>
-            api.setColumnsVisible(
-              toggleableColIds(columns),
-              showAll !== 'checked'
-            )
-          }
-          size="small"
-          slotProps={{
-            input: {
-              'aria-label': 'Show all columns',
-              ref: (input: HTMLInputElement | null) => {
-                if (input) input.indeterminate = showAll === 'indeterminate'
-              },
+      <Checkbox
+        className={classes.showAll}
+        checked={showAll === 'checked'}
+        indeterminate={showAll === 'indeterminate'}
+        onChange={() =>
+          api.setColumnsVisible(
+            toggleableColIds(columns),
+            showAll !== 'checked'
+          )
+        }
+        size="small"
+        slotProps={{
+          input: {
+            'aria-label': 'Show all columns',
+            ref: (input: HTMLInputElement | null) => {
+              if (input) input.indeterminate = showAll === 'indeterminate'
             },
-          }}
+          },
+        }}
+      />
+      <search className={classes.search}>
+        <SearchField
+          label="Search columns"
+          onChange={setSearch}
+          value={search}
         />
-        <search className={classes.search}>
-          <SearchField
-            label="Search columns"
-            onChange={setSearch}
-            value={search}
-          />
-        </search>
-      </div>
-      <Divider />
+      </search>
       <ColumnChooserList api={api} columns={columns} search={search} />
       <footer className={classes.footer}>
         <Button color="error" onClick={onReset} startIcon={<MdRestartAlt />}>

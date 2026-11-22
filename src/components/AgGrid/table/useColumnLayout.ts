@@ -46,6 +46,7 @@ const useColumnLayout = <TData>({
   } = useColumnLayoutQuery(columnLayoutId)
   const [api, setApi] = useState<GridApi<TData>>()
   const [saveError, setSaveError] = useState<string>()
+  const [dismissedLoadError, setDismissedLoadError] = useState<Error>()
   const [isResetting, setIsResetting] = useState(false)
   const [resetCount, setResetCount] = useState(0)
   const lastSaved = useRef<string>(undefined)
@@ -102,7 +103,11 @@ const useColumnLayout = <TData>({
 
   return {
     api,
-    clearSaveError: () => setSaveError(undefined),
+    canSave: !!userId && !!idToken,
+    clearSaveError: () => {
+      setSaveError(undefined)
+      setDismissedLoadError(error ?? undefined)
+    },
     columnDefs: useMemo(() => hideExcluded(columnDefs), [columnDefs]),
     excludedColIds,
     gridKey: resetCount,
@@ -115,7 +120,11 @@ const useColumnLayout = <TData>({
     onGridReady: ({ api: readyApi }: GridReadyEvent<TData>) => setApi(readyApi),
     onStateUpdated,
     reset,
-    saveError,
+    saveError:
+      saveError ??
+      (error && error !== dismissedLoadError
+        ? 'Unable to load your column layout, so column changes are not saved'
+        : undefined),
   }
 }
 

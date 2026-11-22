@@ -22,6 +22,7 @@ const ColumnChooserDrawer = <TData,>({
     storageKey: 'columnChooserWidth',
     defaultWidth: 320,
     minWidth: 240,
+    maxWidth: isWide ? window.innerWidth / 2 : undefined,
   })
   const content = (
     <>

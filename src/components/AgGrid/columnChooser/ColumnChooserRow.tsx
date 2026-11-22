@@ -43,14 +43,12 @@ const ColumnChooserRow: FC<ColumnChooserRowProps> = ({
       }}
     >
       {isLockedPosition ? (
-        <span
+        <MdLock
           aria-label={`${headerName} is locked`}
           className={classes.handle}
           data-disabled
           role="img"
-        >
-          <MdLock />
-        </span>
+        />
       ) : (
         <span
           ref={setActivatorNodeRef}

@@ -6,24 +6,26 @@ type DrawerWidthOptions = {
   storageKey: string
   defaultWidth: number
   minWidth: number
+  maxWidth?: number
 }
 
 const useDrawerWidth = ({
   storageKey,
   defaultWidth,
   minWidth,
+  maxWidth = window.innerWidth,
 }: DrawerWidthOptions) => {
   const clamp = (width: number) =>
-    Math.round(Math.min(Math.max(width, minWidth), window.innerWidth))
+    Math.round(Math.min(Math.max(width, minWidth), maxWidth))
 
-  const [width, setWidth] = useState(() => {
+  const [storedWidth, setStoredWidth] = useState(() => {
     try {
-      const stored = Number(localStorage.getItem(storageKey))
-      return stored ? clamp(stored) : defaultWidth
+      return Number(localStorage.getItem(storageKey)) || defaultWidth
     } catch {
       return defaultWidth
     }
   })
+  const width = clamp(storedWidth)
 
   const store = (next: number) => {
     try {
@@ -35,14 +37,14 @@ const useDrawerWidth = ({
 
   const resize = (next: number) => {
     const clamped = clamp(next)
-    setWidth(clamped)
+    setStoredWidth(clamped)
     return clamped
   }
 
   const handleProps = {
     'aria-label': 'Resize the drawer',
     'aria-orientation': 'vertical' as const,
-    'aria-valuemax': window.innerWidth,
+    'aria-valuemax': Math.round(maxWidth),
     'aria-valuemin': minWidth,
     'aria-valuenow': width,
     role: 'separator',

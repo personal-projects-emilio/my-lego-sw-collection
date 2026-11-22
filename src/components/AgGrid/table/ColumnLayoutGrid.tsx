@@ -53,50 +53,51 @@ const ColumnLayoutGrid = <TData,>({
   return (
     <ColumnLayoutContext.Provider value={actions}>
       <div className={className}>
-        <div className={classes.layout}>
-          <div className={classes.grid}>
-            <AgGridReact
-              key={layout.gridKey}
-              {...props}
-              columnDefs={layout.columnDefs}
-              defaultColDef={columnLayoutDefaultColDef}
-              initialState={layout.initialState}
-              onGridReady={(event) => {
-                layout.onGridReady(event)
-                props.onGridReady?.(event)
-              }}
-              onStateUpdated={(event) => {
-                layout.onStateUpdated(event)
-                props.onStateUpdated?.(event)
-              }}
-            />
-          </div>
-          {isChooserOpen && layout.api && (
-            <ColumnChooserDrawer
-              api={layout.api}
-              id={chooserId}
-              onClearSaveError={layout.clearSaveError}
-              onClose={() => setIsChooserOpen(false)}
-              onReset={actions.requestReset}
-              saveError={layout.saveError}
-            />
-          )}
-          <Button
-            aria-controls={isChooserOpen ? chooserId : undefined}
-            aria-expanded={isChooserOpen}
-            className={classes.columnsTab}
-            onClick={() => setIsChooserOpen((isOpen) => !isOpen)}
-            size="small"
-            startIcon={<MdViewColumn />}
-          >
-            Columns
-          </Button>
-        </div>
+        <AgGridReact
+          key={layout.gridKey}
+          {...props}
+          className={classes.grid}
+          columnDefs={layout.columnDefs}
+          defaultColDef={columnLayoutDefaultColDef}
+          initialState={layout.initialState}
+          onGridReady={(event) => {
+            layout.onGridReady(event)
+            props.onGridReady?.(event)
+          }}
+          onStateUpdated={(event) => {
+            layout.onStateUpdated(event)
+            props.onStateUpdated?.(event)
+          }}
+        />
+        {isChooserOpen && layout.api && (
+          <ColumnChooserDrawer
+            api={layout.api}
+            id={chooserId}
+            onClearSaveError={layout.clearSaveError}
+            onClose={() => setIsChooserOpen(false)}
+            onReset={actions.requestReset}
+            saveError={layout.saveError}
+          />
+        )}
+        <Button
+          aria-controls={isChooserOpen ? chooserId : undefined}
+          aria-expanded={isChooserOpen}
+          className={classes.columnsTab}
+          onClick={() => setIsChooserOpen((isOpen) => !isOpen)}
+          size="small"
+          startIcon={<MdViewColumn />}
+        >
+          Columns
+        </Button>
       </div>
       <ConfirmDialog
         confirmLabel="Reset"
         isPending={layout.isResetting}
-        message="Column order, visibility, widths, pinning and sorting go back to their defaults, and your saved layout for this table is deleted."
+        message={
+          layout.canSave
+            ? 'Column order, visibility, widths, pinning and sorting go back to their defaults, and your saved layout for this table is deleted.'
+            : 'Column order, visibility, widths, pinning and sorting go back to their defaults.'
+        }
         onClose={() => setIsResetOpen(false)}
         onConfirm={async () => {
           await layout.reset()

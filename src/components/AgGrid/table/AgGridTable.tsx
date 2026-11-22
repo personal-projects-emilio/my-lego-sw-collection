@@ -31,13 +31,13 @@ const AgGridTable = <TData,>({
   ...props
 }: AgGridTableProps<TData>) => {
   const { classes } = useAgGridTableStyles(undefined, {
-    props: { classes: { container: className } },
+    props: { classes: { container: className, layout: className } },
   })
 
   if (columnLayoutId)
     return (
       <ColumnLayoutGrid
-        className={classes.container}
+        className={classes.layout}
         columnLayoutId={columnLayoutId}
         theme={theme}
         {...props}

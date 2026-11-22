@@ -83,12 +83,11 @@ export const RadioMenuItem: FC<ItemProps<RadioItem>> = ({
     >
       <MenuItemContent
         trailing={
-          <span
+          <MdCheck
+            aria-hidden
             className={classes.check}
             data-checked={item.checked || undefined}
-          >
-            <MdCheck aria-hidden />
-          </span>
+          />
         }
         icon={item.icon}
         label={item.label}
