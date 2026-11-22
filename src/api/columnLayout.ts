@@ -4,9 +4,8 @@ import type {
   ColumnLayout,
   ColumnLayoutId,
   ColumnLayoutTarget,
-  SavedColumnLayout,
 } from 'types/columnLayout'
-import { toColumnLayout } from 'utils/columnLayout'
+import { parseColumnLayout } from 'utils/columnLayout'
 
 import { getColumnLayoutEndPoint, queryKeys } from './api.constants'
 import { api, queryClient } from './index'
@@ -24,10 +23,10 @@ const getColumnLayoutQueryKey = ({
 
 const fetchColumnLayout = ({ idToken, ...target }: AuthenticatedTarget) =>
   api
-    .get<SavedColumnLayout | null>(getColumnLayoutEndPoint(target), {
+    .get<Partial<ColumnLayout> | null>(getColumnLayoutEndPoint(target), {
       params: { auth: idToken },
     })
-    .then(({ data }) => (data ? toColumnLayout({ state: data }) : null))
+    .then(({ data }) => parseColumnLayout(data))
 
 export const useColumnLayoutQuery = (columnLayoutId?: ColumnLayoutId) => {
   const { idToken, userId } = useAuth()

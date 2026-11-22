@@ -2,16 +2,14 @@ import { type FC, useDeferredValue, useMemo, useState } from 'react'
 
 import { Alert, FormControlLabel, Skeleton, Switch } from '@mui/material'
 import { Navigate, Outlet } from '@tanstack/react-router'
-import type { ModelUpdatedEvent } from 'ag-grid-community'
 import { useResaleSetsQuery } from 'api/resaleSets'
 import { AgGridTable } from 'components/AgGrid/table'
 import ModuleHeader from 'components/ModuleHeader/ModuleHeader'
-import isEqual from 'lodash/isEqual'
 import { defaultSetsColumnDefs } from 'pages/Sets/Sets.constants'
 import { useAuth } from 'providers/AuthProvider'
 import { getResaleTotals, getResaleValues } from 'utils/lego'
 
-import useResaleSetsColDefs, { type ResaleSetRow } from './useResaleSetsColDefs'
+import useResaleSetsColDefs from './useResaleSetsColDefs'
 
 const ResaleSets: FC = () => {
   const { idToken } = useAuth()
@@ -20,7 +18,6 @@ const ResaleSets: FC = () => {
   const [quickFilter, setQuickFilter] = useState('')
   const deferredQuickFilter = useDeferredValue(quickFilter)
   const [inStockOnly, setInStockOnly] = useState(true)
-  const [totals, setTotals] = useState(() => getResaleTotals([]))
 
   const rows = useMemo(
     () =>
@@ -32,20 +29,6 @@ const ResaleSets: FC = () => {
         .map((resaleSet) => ({ ...resaleSet, ...getResaleValues(resaleSet) })),
     [inStockOnly, resaleSetsList]
   )
-
-  const pinnedBottomRowData = useMemo(
-    () => [{ id: 'Total', ...totals }],
-    [totals]
-  )
-
-  const onModelUpdated = ({ api }: ModelUpdatedEvent<ResaleSetRow>) => {
-    const visibleRows: ResaleSetRow[] = []
-    api.forEachNodeAfterFilter(({ data }) => data && visibleRows.push(data))
-    const visibleTotals = getResaleTotals(visibleRows)
-    setTotals((previous) =>
-      isEqual(previous, visibleTotals) ? previous : visibleTotals
-    )
-  }
 
   if (!idToken) return <Navigate to="/sets" />
 
@@ -61,7 +44,6 @@ const ResaleSets: FC = () => {
         addTo="/resale-sets/add"
         quickFilter={quickFilter}
         setQuickFilter={setQuickFilter}
-        statisticsTooltipTitle={`You have ${resaleSetsList?.length ?? 0} sets in your resale table`}
       >
         <FormControlLabel
           control={
@@ -78,8 +60,10 @@ const ResaleSets: FC = () => {
         columnDefs={columnDefs}
         defaultColDef={defaultSetsColumnDefs}
         getRowId={({ data }) => String(data.id)}
-        onModelUpdated={onModelUpdated}
-        pinnedBottomRowData={pinnedBottomRowData}
+        getTotalRow={({ rows: visibleRows }) => ({
+          id: 'Total',
+          ...getResaleTotals(visibleRows),
+        })}
         quickFilterText={deferredQuickFilter}
         rowData={rows}
       />

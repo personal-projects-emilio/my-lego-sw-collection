@@ -5,9 +5,8 @@ import { Outlet } from '@tanstack/react-router'
 import { AgGridTable } from 'components/AgGrid/table'
 import ModuleHeader from 'components/ModuleHeader/ModuleHeader'
 import { useCollection } from 'hooks'
-import { formatPercentage } from 'utils/format'
 
-import { useMinifigsColDefs, useMinifigsStatistics } from './hooks'
+import { useMinifigsColDefs } from './hooks'
 import { defaultMinifigsColumnDefs } from './Minifigs.constants'
 
 const Minifigs: FC = () => {
@@ -15,8 +14,6 @@ const Minifigs: FC = () => {
   const minifigsColumnDefs = useMinifigsColDefs()
   const [quickFilter, setQuickFilter] = useState('')
   const deferredQuickFilter = useDeferredValue(quickFilter)
-  const { percentageVariantsOwned, totalOwned, totalVariants, variantsOwned } =
-    useMinifigsStatistics()
 
   if (isLoading)
     return <Skeleton variant="rectangular" height="calc(100vh - 48px)" />
@@ -27,7 +24,6 @@ const Minifigs: FC = () => {
         addTo="/minifigs/add"
         quickFilter={quickFilter}
         setQuickFilter={setQuickFilter}
-        statisticsTooltipTitle={`You owned ${variantsOwned} of the ${totalVariants} minifig variants in our database (${formatPercentage(percentageVariantsOwned)}). The total of minifigs you owned is ${totalOwned}`}
       />
       <AgGridTable
         columnLayoutId="minifigs"

@@ -5,6 +5,10 @@ export const formatFrEuroCurrency = new Intl.NumberFormat('fr-Fr', {
   minimumFractionDigits: 0,
 }).format
 
+export const formatFrNumber = new Intl.NumberFormat('fr-Fr', {
+  maximumFractionDigits: 2,
+}).format
+
 export const formatPercentage = new Intl.NumberFormat('fr-Fr', {
   style: 'percent',
   maximumFractionDigits: 2,

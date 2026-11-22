@@ -8,6 +8,7 @@ import {
   ItemActionsCellRenderer,
   ItemIdCellRenderer,
   type ItemIdCellRenderProps,
+  numberColDef,
   OverflowTypographyCellRenderer,
   type ResaleSetActionsCellRendererProps,
 } from 'components/AgGrid/column'
@@ -42,10 +43,8 @@ const percentColDef = {
   width: 120,
 } as const satisfies ColDef<ResaleSetRow>
 
-const numberColDef = {
-  cellDataType: 'number',
-  filter: 'agNumberColumnFilter',
-  suppressFloatingFilterButton: false,
+const quantityColDef = {
+  ...numberColDef,
   width: 110,
 } as const satisfies ColDef<ResaleSetRow>
 
@@ -59,16 +58,11 @@ const useResaleSetsColDefs = () => {
         {
           cellClass: [agGridClasses.flexAlignCenter, agGridClasses.gap1],
           cellDataType: false,
-          cellRendererSelector: ({ node }) =>
-            node.rowPinned
-              ? undefined
-              : {
-                  component: ItemIdCellRenderer,
-                  params: {
-                    icon: <PiLego />,
-                    variant: 'set',
-                  } satisfies ItemIdCellRenderProps,
-                },
+          cellRenderer: ItemIdCellRenderer,
+          cellRendererParams: {
+            icon: <PiLego />,
+            variant: 'set',
+          } satisfies ItemIdCellRenderProps,
           field: 'id',
           headerName: 'Id',
           initialPinned: 'left',
@@ -91,39 +85,33 @@ const useResaleSetsColDefs = () => {
         buildActionsColDef<ResaleSetRow>({
           cellClass: [agGridClasses.flexAlignCenter, agGridClasses.gap1],
           cellDataType: false,
-          cellRendererSelector: ({ node }) =>
-            node.rowPinned
-              ? undefined
-              : {
-                  component: ItemActionsCellRenderer,
-                  params: {
-                    deleteItem: deleteResaleSet,
-                    isPending,
-                    variant: 'resale',
-                  } satisfies ResaleSetActionsCellRendererProps,
-                },
-          valueGetter: ({ data, node }) => (node?.rowPinned ? null : data?.id),
+          cellRenderer: ItemActionsCellRenderer,
+          cellRendererParams: {
+            deleteItem: deleteResaleSet,
+            isPending,
+            variant: 'resale',
+          } satisfies ResaleSetActionsCellRendererProps,
+          field: 'id',
           width: 110,
         }),
         {
           cellDataType: 'boolean',
-          cellRendererSelector: ({ node }) =>
-            node.rowPinned
-              ? { component: OverflowTypographyCellRenderer }
-              : undefined,
           colId: 'retired',
           headerName: 'Retired',
           suppressFloatingFilterButton: false,
-          valueGetter: ({ data, node }) =>
-            node?.rowPinned || !data ? null : isSetRetired(data),
+          valueGetter: ({ data }) => (data ? isSetRetired(data) : null),
           width: 110,
         },
-        { ...numberColDef, field: 'quantityBought', headerName: 'Qty bought' },
+        {
+          ...quantityColDef,
+          field: 'quantityBought',
+          headerName: 'Qty bought',
+        },
         { ...euroColDef, field: 'officialPrice', headerName: 'Official' },
         { ...euroColDef, field: 'unitBoughtPrice', headerName: 'Unit bought' },
         { ...percentColDef, field: 'discount', headerName: 'Discount' },
         { ...euroColDef, field: 'totalBought', headerName: 'Total bought' },
-        { ...numberColDef, field: 'quantitySold', headerName: 'Qty sold' },
+        { ...quantityColDef, field: 'quantitySold', headerName: 'Qty sold' },
         {
           ...euroColDef,
           field: 'unitSellingPrice',
@@ -152,6 +140,7 @@ const useResaleSetsColDefs = () => {
           width: 140,
         },
         {
+          cellDataType: 'dateString',
           field: 'exitDate',
           headerName: 'Exit date',
           valueFormatter: ({ value }) => formatFrDate(value ?? null),

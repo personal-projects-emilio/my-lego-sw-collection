@@ -22,7 +22,7 @@ export type RadioItem = BaseItem & {
   onClick: () => void
 }
 
-export type SwitchItem = BaseItem & {
+export type SwitchItem = Omit<BaseItem, 'icon'> & {
   kind: 'switch'
   checked: boolean
   onClick: () => void

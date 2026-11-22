@@ -4,10 +4,12 @@ import { PiLegoSmiley } from 'react-icons/pi'
 import type { ColDef, ValueSetterParams } from 'ag-grid-community'
 import { useAgGridStyles } from 'components/AgGrid'
 import {
+  buildTotalContext,
   ExternalLinksCellRenderer,
   type ExternalLinksCellRenderProps,
   ItemIdCellRenderer,
   type ItemIdCellRenderProps,
+  numberColDef,
   OverflowTypographyCellRenderer,
 } from 'components/AgGrid/column'
 import type { CollectionMinifig, LooseMinifig } from 'types/minifigs'
@@ -24,6 +26,15 @@ const euroColDef = {
   valueFormatter: ({ value }) => formatFrEuroCurrency(value ?? 0),
   width: 150,
 } as const satisfies ColDef<CollectionMinifig>
+
+const getLooseQuantity = ({ owned }: CollectionMinifig) => owned.loose.quantity
+
+const looseSumContext = buildTotalContext({ aggregation: 'sum' })
+
+const unitPriceContext = buildTotalContext<CollectionMinifig>({
+  aggregation: 'weightedAverage',
+  getWeight: getLooseQuantity,
+})
 
 const useLooseMinifigsColDefs = () => {
   const { classes: agGridClasses } = useAgGridStyles()
@@ -48,6 +59,7 @@ const useLooseMinifigsColDefs = () => {
           icon: <PiLegoSmiley />,
           variant: 'minifig',
         } satisfies ItemIdCellRenderProps,
+        context: buildTotalContext({ aggregation: 'count' }),
         field: 'id',
         headerName: 'Id',
         initialPinned: 'left',
@@ -62,13 +74,12 @@ const useLooseMinifigsColDefs = () => {
         minWidth: 120,
       },
       {
-        cellDataType: 'number',
+        ...numberColDef,
         cellEditorParams: { min: 0, precision: 0 },
         editable: true,
+        context: looseSumContext,
         field: 'owned.loose.quantity',
-        filter: 'agNumberColumnFilter',
         headerName: 'Loose qty',
-        suppressFloatingFilterButton: false,
         valueSetter: createLooseValueSetter('quantity'),
         width: 120,
       },
@@ -76,6 +87,7 @@ const useLooseMinifigsColDefs = () => {
         ...euroColDef,
         cellEditorParams: { min: 0 },
         editable: true,
+        context: unitPriceContext,
         field: 'owned.loose.unitBoughtPrice',
         headerName: 'Unit bought',
         valueSetter: createLooseValueSetter('unitBoughtPrice'),
@@ -84,12 +96,14 @@ const useLooseMinifigsColDefs = () => {
         ...euroColDef,
         cellEditorParams: { min: 0 },
         editable: true,
+        context: unitPriceContext,
         field: 'owned.loose.unitMarketValue',
         headerName: 'Unit market value',
         valueSetter: createLooseValueSetter('unitMarketValue'),
       },
       {
         ...euroColDef,
+        context: looseSumContext,
         colId: 'totalBought',
         headerName: 'Total bought',
         valueGetter: ({ data }) =>
@@ -99,6 +113,7 @@ const useLooseMinifigsColDefs = () => {
       },
       {
         ...euroColDef,
+        context: looseSumContext,
         colId: 'totalMarketValue',
         headerName: 'Total market value',
         valueGetter: ({ data }) =>

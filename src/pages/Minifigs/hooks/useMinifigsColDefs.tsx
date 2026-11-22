@@ -7,6 +7,7 @@ import {
   buildActionsColDef,
   buildTagsColDef,
   buildTimelineColDef,
+  buildTotalContext,
   ExternalLinksCellRenderer,
   type ExternalLinksCellRenderProps,
   ItemActionsCellRenderer,
@@ -17,6 +18,7 @@ import {
 } from 'components/AgGrid/column'
 import { useTagsVocabulary, useTimeline } from 'hooks'
 import type { CollectionMinifig } from 'types/minifigs'
+import { formatFrNumber } from 'utils/format'
 
 import { OwnedCellRenderer } from '../components'
 import useMinifigsMutations from './useMinifigsMutations'
@@ -37,6 +39,7 @@ const useMinifigsColDefs = () => {
             icon: <PiLegoSmiley />,
             variant: 'minifig',
           } satisfies ItemIdCellRenderProps,
+          context: buildTotalContext({ aggregation: 'count' }),
           field: 'id',
           headerName: 'Id',
           initialPinned: 'left',
@@ -62,6 +65,11 @@ const useMinifigsColDefs = () => {
         {
           cellClass: agGridClasses.flexAlignCenter,
           cellRenderer: OwnedCellRenderer,
+          context: buildTotalContext<CollectionMinifig>({
+            aggregation: 'sum',
+            getValue: ({ owned }) => owned.total,
+            formatValue: formatFrNumber,
+          }),
           field: 'owned',
           headerName: 'Owned',
           resizable: false,

@@ -7,7 +7,6 @@ import ModuleHeader from 'components/ModuleHeader/ModuleHeader'
 import { useCollection } from 'hooks'
 import { defaultMinifigsColumnDefs } from 'pages/Minifigs/Minifigs.constants'
 import { useAuth } from 'providers/AuthProvider'
-import { formatFrEuroCurrency } from 'utils/format'
 
 import useLooseMinifigsColDefs from './useLooseMinifigsColDefs'
 
@@ -23,20 +22,6 @@ const LooseMinifigs: FC = () => {
     [minifigsList]
   )
 
-  const statistics = useMemo(
-    () =>
-      (looseMinifigs ?? []).reduce(
-        (totals, { owned: { loose } }) => ({
-          quantity: totals.quantity + loose.quantity,
-          bought: totals.bought + loose.quantity * loose.unitBoughtPrice,
-          marketValue:
-            totals.marketValue + loose.quantity * loose.unitMarketValue,
-        }),
-        { quantity: 0, bought: 0, marketValue: 0 }
-      ),
-    [looseMinifigs]
-  )
-
   if (!idToken) return <Navigate to="/minifigs" />
 
   if (isLoading)
@@ -48,7 +33,6 @@ const LooseMinifigs: FC = () => {
         addTo="/loose-minifigs/add"
         quickFilter={quickFilter}
         setQuickFilter={setQuickFilter}
-        statisticsTooltipTitle={`You have ${statistics.quantity} loose minifigs across ${looseMinifigs?.length ?? 0} variants. You have spent ${formatFrEuroCurrency(statistics.bought)} on them and their market value is ${formatFrEuroCurrency(statistics.marketValue)}`}
       />
       <AgGridTable
         columnLayoutId="looseMinifigs"
