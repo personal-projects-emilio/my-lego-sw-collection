@@ -1,5 +1,3 @@
-import { forwardRef } from 'react'
-
 import {
   AllCommunityModule,
   colorSchemeDark,
@@ -7,7 +5,10 @@ import {
   themeMaterial,
 } from 'ag-grid-community'
 import { AgGridReact, type AgGridReactProps } from 'ag-grid-react'
-import { makeStyles } from 'tss-react/mui'
+import type { ColumnLayoutId } from 'types/columnLayout'
+
+import useAgGridTableStyles from './AgGridTable.styles'
+import ColumnLayoutGrid from './ColumnLayoutGrid'
 
 ModuleRegistry.registerModules([AllCommunityModule])
 
@@ -15,27 +16,35 @@ const theme = themeMaterial
   .withPart(colorSchemeDark)
   .withParams({ cellHorizontalPadding: { calc: 'spacing * 2' } })
 
-const useAgGridTableStyles = makeStyles({ name: 'AgGridTable' })((theme) => ({
-  container: {
-    boxSizing: 'border-box',
-    height: 'calc(100vh - 48px - 57px)',
-    maxHeight: 'calc(100vh - 48px - 57px)',
-    overflow: 'hidden',
-    padding: theme.spacing(1),
-    width: '100%',
-  },
-}))
+type AgGridTableProps<TData> = AgGridReactProps<TData> & {
+  className?: string
+  columnLayoutId?: ColumnLayoutId
+}
 
-const AgGridTable = forwardRef<
-  AgGridReact,
-  AgGridReactProps & { className?: string }
->(({ className, ...props }, ref) => {
-  const { classes, cx } = useAgGridTableStyles()
+const AgGridTable = <TData,>({
+  className,
+  columnLayoutId,
+  ...props
+}: AgGridTableProps<TData>) => {
+  const { classes } = useAgGridTableStyles(undefined, {
+    props: { classes: { container: className } },
+  })
+
+  if (columnLayoutId)
+    return (
+      <ColumnLayoutGrid
+        className={classes.container}
+        columnLayoutId={columnLayoutId}
+        theme={theme}
+        {...props}
+      />
+    )
+
   return (
-    <div className={cx(classes.container, className)}>
-      <AgGridReact ref={ref} theme={theme} {...props} />
+    <div className={classes.container}>
+      <AgGridReact theme={theme} {...props} />
     </div>
   )
-})
+}
 
 export default AgGridTable

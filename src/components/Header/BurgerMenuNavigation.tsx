@@ -1,64 +1,52 @@
 import { type FC, useId, useState } from 'react'
 import { MdMenu } from 'react-icons/md'
 
-import { IconButton, type IconButtonProps, Menu, MenuItem } from '@mui/material'
-import { Link } from '@tanstack/react-router'
+import { IconButton } from '@mui/material'
+import { Menu, type MenuItemDefinition } from 'components/Menu'
 import { useCurrentRoute } from 'hooks'
 import { useAuth } from 'providers/AuthProvider'
 import type { RouterRouteIds } from 'routes'
-import { makeStyles } from 'tss-react/mui'
-
-const useBurgerMenuNavigationStyles = makeStyles({
-  name: 'BurgerMenuNavigation',
-})((theme) => ({
-  menu: {
-    '& .Mui-selected': {
-      color: theme.palette.primary.main,
-      fontWeight: theme.typography.fontWeightBold,
-    },
-  },
-}))
-
-type LinkMenuItemProps = {
-  to: RouterRouteIds
-  label: string
-  onClick: () => void
-}
-
-const LinkMenuItem: FC<LinkMenuItemProps> = ({ to, label, onClick }) => {
-  const currentRoute = useCurrentRoute()
-
-  return (
-    <MenuItem
-      component={Link}
-      onClick={onClick}
-      selected={currentRoute.id === to}
-      to={to}
-    >
-      {label}
-    </MenuItem>
-  )
-}
 
 const BurgerMenuNavigation: FC = () => {
-  const { classes } = useBurgerMenuNavigationStyles()
   const { idToken, logout } = useAuth()
+  const currentRoute = useCurrentRoute()
   const menuId = useId()
   const iconButtonId = useId()
-  const [anchorEl, setAnchorEl] = useState<null | HTMLButtonElement>(null)
+  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement>()
 
   const isOpen = Boolean(anchorEl)
 
-  const handleOpenMenu: IconButtonProps['onClick'] = (event) => {
-    setAnchorEl(event.currentTarget)
-  }
+  const link = ({
+    to,
+    label,
+  }: {
+    to: RouterRouteIds
+    label: string
+  }): MenuItemDefinition => ({
+    kind: 'link',
+    key: to,
+    label,
+    to,
+    selected: currentRoute.id === to,
+  })
 
-  const handleCloseMenu = () => setAnchorEl(null)
-
-  const handleLogout = () => {
-    handleCloseMenu()
-    logout()
-  }
+  const items: MenuItemDefinition[] = [
+    link({ to: '/minifigs', label: 'Minifigs' }),
+    link({ to: '/sets', label: 'Sets' }),
+    link({ to: '/timeline', label: 'Timeline' }),
+    ...(idToken
+      ? [
+          link({ to: '/loose-minifigs', label: 'Loose minifigs' }),
+          link({ to: '/resale-sets', label: 'Resale sets' }),
+          {
+            kind: 'action',
+            key: 'logout',
+            label: 'Logout',
+            onClick: logout,
+          } as const,
+        ]
+      : [link({ to: '/auth', label: 'Login' })]),
+  ]
 
   return (
     <>
@@ -68,51 +56,17 @@ const BurgerMenuNavigation: FC = () => {
         aria-haspopup="true"
         aria-label="Application burger menu"
         id={iconButtonId}
-        onClick={handleOpenMenu}
+        onClick={(event) => setAnchorEl(event.currentTarget)}
       >
         <MdMenu />
       </IconButton>
       <Menu
-        anchorEl={anchorEl}
+        anchor={anchorEl}
         aria-labelledby={iconButtonId}
-        className={classes.menu}
-        component="nav"
         id={menuId}
-        onClose={handleCloseMenu}
-        open={isOpen}
-        role="navigation"
-      >
-        <LinkMenuItem
-          to="/minifigs"
-          label="Minifigs"
-          onClick={handleCloseMenu}
-        />
-        <LinkMenuItem to="/sets" label="Sets" onClick={handleCloseMenu} />
-        <LinkMenuItem
-          to="/timeline"
-          label="Timeline"
-          onClick={handleCloseMenu}
-        />
-        {idToken && (
-          <LinkMenuItem
-            to="/loose-minifigs"
-            label="Loose minifigs"
-            onClick={handleCloseMenu}
-          />
-        )}
-        {idToken && (
-          <LinkMenuItem
-            to="/resale-sets"
-            label="Resale sets"
-            onClick={handleCloseMenu}
-          />
-        )}
-        {idToken ? (
-          <MenuItem onClick={handleLogout}>Logout</MenuItem>
-        ) : (
-          <LinkMenuItem to="/auth" label="Login" onClick={handleCloseMenu} />
-        )}
-      </Menu>
+        items={items}
+        onClose={() => setAnchorEl(undefined)}
+      />
     </>
   )
 }

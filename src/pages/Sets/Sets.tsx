@@ -38,6 +38,7 @@ const Sets: FC = () => {
         statisticsTooltipTitle={`You owned ${owned} of the ${total} sets in our database (${formatPercentage(percentageOwned)})${idToken ? `. You have spend ${formatFrEuroCurrency(totalBought)} on your collection. The store value of your collection is ${formatFrEuroCurrency(totalStoreValue)} and the market value ${formatFrEuroCurrency(totalMarketValue)}` : ''}`}
       />
       <AgGridTable
+        columnLayoutId="sets"
         columnDefs={setsColumnDefs}
         defaultColDef={defaultSetsColumnDefs}
         quickFilterText={deferredQuickFilter}

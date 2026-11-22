@@ -1,0 +1,72 @@
+import { type ComponentType, type FC, useRef, useState } from 'react'
+import { MdArrowDownward, MdArrowUpward, MdMoreVert } from 'react-icons/md'
+
+import { IconButton } from '@mui/material'
+import type { CustomHeaderProps } from 'ag-grid-react'
+import { Menu, type MenuAnchor } from 'components/Menu'
+
+import { useColumnLayoutActions } from '../table/columnLayoutContext'
+import useColumnHeaderStyles from './ColumnHeader.styles'
+import { headerMenuItems } from './headerMenuItems'
+import useColumnSort from './useColumnSort'
+import useHeaderMenuTriggers from './useHeaderMenuTriggers'
+
+export type ColumnHeaderParams = {
+  endAdornment?: ComponentType<{ className?: string }>
+}
+
+const ColumnHeader: FC<CustomHeaderProps & ColumnHeaderParams> = ({
+  api,
+  column,
+  displayName,
+  eGridHeader,
+  enableSorting,
+  progressSort,
+  endAdornment: EndAdornment,
+}) => {
+  const { classes } = useColumnHeaderStyles()
+  const actions = useColumnLayoutActions()
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  const [anchor, setAnchor] = useState<MenuAnchor>()
+  const { direction, position } = useColumnSort({ api, column })
+  useHeaderMenuTriggers({ eGridHeader, buttonRef, open: setAnchor })
+
+  return (
+    <div className={classes.header}>
+      <span
+        className={classes.label}
+        data-sortable={enableSorting || undefined}
+        onClick={(event) => enableSorting && progressSort(event.shiftKey)}
+      >
+        {displayName}
+      </span>
+      {direction && (
+        <span aria-hidden className={classes.sort}>
+          {direction === 'asc' ? <MdArrowUpward /> : <MdArrowDownward />}
+          {position}
+        </span>
+      )}
+      {EndAdornment && <EndAdornment className={classes.adornment} />}
+      <IconButton
+        ref={buttonRef}
+        aria-expanded={!!anchor}
+        aria-haspopup="menu"
+        aria-label={`${displayName} column menu`}
+        className={classes.menuButton}
+        onClick={(event) => setAnchor(event.currentTarget)}
+        size="small"
+      >
+        <MdMoreVert fontSize="inherit" />
+      </IconButton>
+      {anchor && (
+        <Menu
+          anchor={anchor}
+          items={headerMenuItems({ api, column, ...actions })}
+          onClose={() => setAnchor(undefined)}
+        />
+      )}
+    </div>
+  )
+}
+
+export default ColumnHeader

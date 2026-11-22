@@ -1,32 +1,37 @@
 import { type KeyboardEvent, type PointerEvent, useState } from 'react'
 
-const storageKey = 'tagsDrawerWidth'
-const defaultWidth = 480
-const minWidth = 360
 const keyboardStep = 32
 
-const clamp = (width: number) =>
-  Math.round(Math.min(Math.max(width, minWidth), window.innerWidth))
-
-const storedWidth = () => {
-  try {
-    const width = Number(localStorage.getItem(storageKey))
-    return width ? clamp(width) : defaultWidth
-  } catch {
-    return defaultWidth
-  }
+type DrawerWidthOptions = {
+  storageKey: string
+  defaultWidth: number
+  minWidth: number
 }
 
-const store = (width: number) => {
-  try {
-    localStorage.setItem(storageKey, String(width))
-  } catch {
-    return
-  }
-}
+const useDrawerWidth = ({
+  storageKey,
+  defaultWidth,
+  minWidth,
+}: DrawerWidthOptions) => {
+  const clamp = (width: number) =>
+    Math.round(Math.min(Math.max(width, minWidth), window.innerWidth))
 
-const useDrawerWidth = () => {
-  const [width, setWidth] = useState(storedWidth)
+  const [width, setWidth] = useState(() => {
+    try {
+      const stored = Number(localStorage.getItem(storageKey))
+      return stored ? clamp(stored) : defaultWidth
+    } catch {
+      return defaultWidth
+    }
+  })
+
+  const store = (next: number) => {
+    try {
+      localStorage.setItem(storageKey, String(next))
+    } catch {
+      return
+    }
+  }
 
   const resize = (next: number) => {
     const clamped = clamp(next)
@@ -56,8 +61,11 @@ const useDrawerWidth = () => {
       event.currentTarget.setPointerCapture(event.pointerId)
     },
     onPointerMove: (event: PointerEvent<HTMLElement>) => {
-      if (event.currentTarget.hasPointerCapture(event.pointerId))
-        resize(window.innerWidth - event.clientX)
+      if (!event.currentTarget.hasPointerCapture(event.pointerId)) return
+      const right =
+        event.currentTarget.parentElement?.getBoundingClientRect().right ??
+        window.innerWidth
+      resize(right - event.clientX)
     },
     onPointerUp: () => store(width),
   }

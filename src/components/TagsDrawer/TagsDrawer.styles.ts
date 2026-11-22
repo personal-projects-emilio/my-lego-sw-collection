@@ -125,14 +125,6 @@ export default makeStyles<void, 'addButton'>({
     flexShrink: 0,
     width: 28,
   },
-  menu: {
-    '& .MuiListItemIcon-root': {
-      justifyContent: 'center',
-      marginRight: theme.spacing(1.5),
-      minWidth: 0,
-      width: 32,
-    },
-  },
   label: {
     flex: 1,
     minWidth: 0,

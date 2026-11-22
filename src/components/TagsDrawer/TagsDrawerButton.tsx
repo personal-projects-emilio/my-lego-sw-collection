@@ -5,7 +5,7 @@ import { IconButton, Tooltip } from '@mui/material'
 
 import { useOpenTagsDrawer } from './openTagsDrawerContext'
 
-export const tagsDrawerButtonLabel = 'Edit the tag vocabulary'
+const tagsDrawerButtonLabel = 'Edit the tag vocabulary'
 
 const TagsDrawerButton: FC<{ className?: string }> = ({ className }) => {
   const openTagsDrawer = useOpenTagsDrawer()

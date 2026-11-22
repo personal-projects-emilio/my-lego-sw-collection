@@ -1,5 +1,6 @@
 export const queryKeys = {
   bricksetIgnoreList: 'bricksetIgnoreList',
+  columnLayout: 'columnLayout',
   looseMinifigs: 'looseMinifigs',
   minifigs: 'minifigs',
   resaleSets: 'resaleSets',
@@ -20,3 +21,11 @@ export const endPoints = {
   tags: node('tags'),
   timeline: node('timeline'),
 } as const
+
+export const columnLayoutEndPoint = ({
+  userId,
+  columnLayoutId,
+}: {
+  userId: string
+  columnLayoutId: string
+}) => node(`userPreferences/${userId}/grids/${columnLayoutId}`)

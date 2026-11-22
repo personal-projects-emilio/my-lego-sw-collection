@@ -14,6 +14,7 @@ import {
   ItemIdCellRenderer,
   type ItemIdCellRenderProps,
   listValueFormatter,
+  lockedActionsColDef,
   OverflowTypographyCellRenderer,
   type SetActionsCellRendererProps,
   tagsColDef,
@@ -22,7 +23,7 @@ import {
 import { useTagsVocabulary, useTimeline } from 'hooks'
 import { useAuth } from 'providers/AuthProvider'
 import type { CollectionSet } from 'types/sets'
-import { compareIds, spreadArrayIf } from 'utils/array'
+import { compareIds } from 'utils/array'
 import { formatFrDate, formatFrEuroCurrency } from 'utils/format'
 import { isSetRetired } from 'utils/lego'
 
@@ -124,35 +125,20 @@ const useSetsColDefs = () => {
             ),
           width: 100,
         },
-        ...spreadArrayIf<ColDef<CollectionSet>>({
-          condition: idToken !== undefined,
-          array: [
-            {
-              field: 'prices.bought',
-              headerName: 'Bought',
-              filter: 'agNumberColumnFilter',
-              suppressFloatingFilterButton: false,
-              valueFormatter: ({ value }) => formatFrEuroCurrency(value),
-              width: 100,
-            },
-            {
-              field: 'prices.marketValue',
-              headerName: 'Market Value',
-              filter: 'agNumberColumnFilter',
-              suppressFloatingFilterButton: false,
-              valueFormatter: ({ value }) => formatFrEuroCurrency(value),
-              width: 100,
-            },
-            {
-              field: 'prices.storeValue',
-              headerName: 'Store Value',
-              filter: 'agNumberColumnFilter',
-              suppressFloatingFilterButton: false,
-              valueFormatter: ({ value }) => formatFrEuroCurrency(value),
-              width: 100,
-            },
-          ],
-        }),
+        ...(
+          [
+            { field: 'prices.bought', headerName: 'Bought' },
+            { field: 'prices.marketValue', headerName: 'Market Value' },
+            { field: 'prices.storeValue', headerName: 'Store Value' },
+          ] as const
+        ).map((priceColDef): ColDef<CollectionSet> => ({
+          ...priceColDef,
+          context: { isExcluded: idToken === undefined },
+          filter: 'agNumberColumnFilter',
+          suppressFloatingFilterButton: false,
+          valueFormatter: ({ value }) => formatFrEuroCurrency(value),
+          width: 100,
+        })),
         {
           colId: 'externalLinks',
           field: 'id',
@@ -169,6 +155,7 @@ const useSetsColDefs = () => {
           width: 100,
         },
         {
+          ...lockedActionsColDef,
           colId: 'actions',
           field: 'id',
           headerName: 'Actions',

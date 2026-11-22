@@ -7,6 +7,7 @@ import {
   ItemActionsCellRenderer,
   ItemIdCellRenderer,
   type ItemIdCellRenderProps,
+  lockedActionsColDef,
   OverflowTypographyCellRenderer,
   type ResaleSetActionsCellRendererProps,
 } from 'components/AgGrid/column'
@@ -100,6 +101,7 @@ const useResaleSetsColDefs = () => {
                     variant: 'resale',
                   } satisfies ResaleSetActionsCellRendererProps,
                 },
+          ...lockedActionsColDef,
           colId: 'actions',
           filter: false,
           floatingFilter: false,

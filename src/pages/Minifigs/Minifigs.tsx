@@ -30,6 +30,7 @@ const Minifigs: FC = () => {
         statisticsTooltipTitle={`You owned ${variantsOwned} of the ${totalVariants} minifig variants in our database (${formatPercentage(percentageVariantsOwned)}). The total of minifigs you owned is ${totalOwned}`}
       />
       <AgGridTable
+        columnLayoutId="minifigs"
         columnDefs={minifigsColumnDefs}
         defaultColDef={defaultMinifigsColumnDefs}
         quickFilterText={deferredQuickFilter}

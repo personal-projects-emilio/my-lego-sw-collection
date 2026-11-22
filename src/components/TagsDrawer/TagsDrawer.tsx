@@ -18,6 +18,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
+import { useDrawerWidth } from 'hooks'
 import type { Tag, TagId } from 'types/tags'
 import { addTag, editTag } from 'utils/tags'
 
@@ -32,7 +33,6 @@ import {
   keepInPlace,
   type RowActions,
 } from './tagTree'
-import useDrawerWidth from './useDrawerWidth'
 import useTagDetails from './useTagDetails'
 import useTagDrag from './useTagDrag'
 import useTagEdits from './useTagEdits'
@@ -42,7 +42,11 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
   const { classes } = useTagsDrawerStyles()
   const { state, isPending, error, setError, run, lastEdit, undo } =
     useTagEdits()
-  const { width, handleProps } = useDrawerWidth()
+  const { width, handleProps } = useDrawerWidth({
+    storageKey: 'tagsDrawerWidth',
+    defaultWidth: 480,
+    minWidth: 360,
+  })
   const [editing, setEditing] = useState<Editing>()
   const [menu, setMenu] = useState<{ anchor: HTMLElement; id: TagId }>()
   const [deleting, setDeleting] = useState<Tag>()

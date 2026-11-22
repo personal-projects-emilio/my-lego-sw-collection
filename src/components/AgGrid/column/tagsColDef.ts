@@ -1,11 +1,11 @@
 import type { ColDef } from 'ag-grid-community'
-import { tagsDrawerButtonLabel } from 'components/TagsDrawer'
+import { TagsDrawerButton } from 'components/TagsDrawer'
 import type { TaggedItem, TagId, TagTarget } from 'types/tags'
 import type { TagsVocabulary } from 'utils/tags'
 
+import type { ColumnHeaderParams } from '../header'
 import TagsCellRenderer from './TagsCellRenderer'
 import TagsFilter, { type TagsFilterProps } from './TagsFilter'
-import TagsHeader from './TagsHeader'
 
 export const tagsColDef = <TData extends TaggedItem>({
   tagsVocabulary,
@@ -22,12 +22,9 @@ export const tagsColDef = <TData extends TaggedItem>({
       .localeCompare(tagsVocabulary.groupedLabel(b ?? [])),
   field: 'effectiveTags' as ColDef<TData, TagId[]>['field'],
   headerName: 'Tags',
-  headerComponentParams: { innerHeaderComponent: TagsHeader },
-  suppressHeaderKeyboardEvent: ({ event }) =>
-    event.key === 'Tab' &&
-    !event.shiftKey &&
-    event.target instanceof HTMLElement &&
-    !!event.target.querySelector(`[aria-label="${tagsDrawerButtonLabel}"]`),
+  headerComponentParams: {
+    endAdornment: TagsDrawerButton,
+  } satisfies ColumnHeaderParams,
   filter: TagsFilter,
   filterParams: { itemType } satisfies TagsFilterProps,
   flex: 2,

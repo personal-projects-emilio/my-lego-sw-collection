@@ -1,11 +1,3 @@
-export const spreadArrayIf = <Item = unknown>({
-  condition,
-  array,
-}: {
-  condition: boolean
-  array: Item[]
-}): Item[] => (condition ? array : [])
-
 export const uniqueAndSortedArray = <Item>({
   array,
   compareFunction,
