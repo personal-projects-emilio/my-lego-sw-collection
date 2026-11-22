@@ -5,12 +5,15 @@ import { Button, Skeleton } from '@mui/material'
 import { AgGridReact, type AgGridReactProps } from 'ag-grid-react'
 import ConfirmDialog from 'components/ConfirmDialog'
 import type { ColumnLayoutId } from 'types/columnLayout'
-import type { GetTotalRow } from 'types/totalRow'
+import type { GetTotalRow, MapColIdsToTotals } from 'types/totalRow'
+import { getColumnTotals, isTotalRow, totalRowId } from 'utils/totalRow'
 
 import { ColumnChooserDrawer } from '../columnChooser'
 import { ColumnHeader, suppressHeaderKeyboardEvent } from '../header'
 import useAgGridTableStyles from './AgGridTable.styles'
-import buildTotalRowColDefs from './buildTotalRowColDefs'
+import buildTotalRowColDefs, {
+  buildTotalRowColDef,
+} from './buildTotalRowColDefs'
 import { ColumnLayoutContext } from './columnLayoutContext'
 import useColumnLayout from './useColumnLayout'
 import useTotalRow from './useTotalRow'
@@ -19,6 +22,7 @@ type ColumnLayoutGridProps<TData> = AgGridReactProps<TData> & {
   className: string
   columnLayoutId: ColumnLayoutId
   getTotalRow?: GetTotalRow<TData>
+  mapColIdsToTotals?: MapColIdsToTotals<TData>
 }
 
 const ColumnLayoutGrid = <TData,>({
@@ -27,6 +31,7 @@ const ColumnLayoutGrid = <TData,>({
   defaultColDef,
   getRowId,
   getTotalRow,
+  mapColIdsToTotals,
   ...props
 }: ColumnLayoutGridProps<TData>) => {
   const { classes } = useAgGridTableStyles()
@@ -35,35 +40,44 @@ const ColumnLayoutGrid = <TData,>({
     columnLayoutId,
     columnDefs: props.columnDefs,
   })
+  const getRowTotals: GetTotalRow<TData> | undefined =
+    getTotalRow ??
+    (mapColIdsToTotals &&
+      ((params) => getColumnTotals({ ...params, mapColIdsToTotals })))
   const totalRow = useTotalRow({
-    getTotalRow,
-    isShown: layout.showTotalRow,
+    getTotalRow: getRowTotals,
+    isTotalRowShown: layout.isTotalRowShown,
   })
   const [isChooserOpen, setIsChooserOpen] = useState(false)
   const [isResetOpen, setIsResetOpen] = useState(false)
-  const { showTotalRow, toggleTotalRow } = layout
-  const hasTotalRow = !!getTotalRow
+  const { isTotalRowShown, toggleTotalRow } = layout
+  const hasTotalRow = !!getRowTotals
   const actions = useMemo(
     () => ({
       openColumnChooser: () => setIsChooserOpen(true),
       requestReset: () => setIsResetOpen(true),
-      ...(hasTotalRow && { isTotalRowShown: showTotalRow, toggleTotalRow }),
+      ...(hasTotalRow && {
+        totalRow: { isShown: isTotalRowShown, toggle: toggleTotalRow },
+      }),
     }),
-    [hasTotalRow, showTotalRow, toggleTotalRow]
+    [hasTotalRow, isTotalRowShown, toggleTotalRow]
   )
   const columnDefs = useMemo(
     () =>
       hasTotalRow ? buildTotalRowColDefs(layout.columnDefs) : layout.columnDefs,
     [hasTotalRow, layout.columnDefs]
   )
-  const columnLayoutDefaultColDef = useMemo(
-    () => ({
+  const columnLayoutDefaultColDef = useMemo(() => {
+    const gridDefaultColDef = {
       headerComponent: ColumnHeader,
       suppressHeaderKeyboardEvent,
       ...defaultColDef,
-    }),
-    [defaultColDef]
-  )
+    }
+    return hasTotalRow
+      ? buildTotalRowColDef(gridDefaultColDef)
+      : gridDefaultColDef
+  }, [defaultColDef, hasTotalRow])
+  const resetScope = `Column order, visibility, widths, pinning${hasTotalRow ? ', sorting and the total row' : ' and sorting'} go back to their defaults`
 
   if (layout.isLoading)
     return <Skeleton className={className} variant="rectangular" />
@@ -79,7 +93,7 @@ const ColumnLayoutGrid = <TData,>({
           defaultColDef={columnLayoutDefaultColDef}
           getRowId={
             getRowId &&
-            ((params) => (params.rowPinned ? 'total' : getRowId(params)))
+            ((params) => (isTotalRow(params) ? totalRowId : getRowId(params)))
           }
           initialState={layout.initialState}
           onModelUpdated={(event) => {
@@ -122,8 +136,8 @@ const ColumnLayoutGrid = <TData,>({
         isPending={layout.isResetting}
         message={
           layout.canSave
-            ? `Column order, visibility, widths, pinning${hasTotalRow ? ', sorting and the total row' : ' and sorting'} go back to their defaults, and your saved layout for this table is deleted.`
-            : `Column order, visibility, widths, pinning${hasTotalRow ? ', sorting and the total row' : ' and sorting'} go back to their defaults.`
+            ? `${resetScope}, and your saved layout for this table is deleted.`
+            : `${resetScope}.`
         }
         onClose={() => setIsResetOpen(false)}
         onConfirm={async () => {

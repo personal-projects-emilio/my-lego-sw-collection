@@ -1,10 +1,11 @@
 import { createContext, useContext } from 'react'
 
+import type { TotalRowSwitch } from 'types/totalRow'
+
 type ColumnLayoutActions = {
   openColumnChooser: () => void
   requestReset: () => void
-  isTotalRowShown?: boolean
-  toggleTotalRow?: () => void
+  totalRow?: TotalRowSwitch
 }
 
 export const ColumnLayoutContext = createContext<

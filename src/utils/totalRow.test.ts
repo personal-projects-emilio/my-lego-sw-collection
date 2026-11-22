@@ -1,6 +1,6 @@
 import get from 'lodash/get'
 import assert from 'node:assert/strict'
-import type { TotalColumns } from 'types/totalRow'
+import type { MapColIdsToTotals, TotalRowData } from 'types/totalRow'
 import { test } from 'vitest'
 
 import { getColumnTotals, isTotalRow } from './totalRow.ts'
@@ -31,37 +31,37 @@ const readCellValue = ({ row, colId }: { row: Row; colId: string }) =>
 test.for<{
   name: string
   rows: Row[]
-  totalColumns: TotalColumns<Row>
-  expected: Record<string, number | string | null>
+  mapColIdsToTotals: MapColIdsToTotals<Row>
+  expected: TotalRowData
 }>([
   {
     name: 'counts the rows with thousand separators',
     rows: Array.from({ length: 1025 }, () => rows[0]),
-    totalColumns: { id: { aggregation: 'count' } },
+    mapColIdsToTotals: { id: { aggregation: 'count' } },
     expected: { id: '1 025' },
   },
   {
     name: 'sums a field and skips empty values',
     rows,
-    totalColumns: { price: { aggregation: 'sum' } },
+    mapColIdsToTotals: { price: { aggregation: 'sum' } },
     expected: { price: 40 },
   },
   {
     name: 'sums a nested field',
     rows,
-    totalColumns: { 'stock.quantity': { aggregation: 'sum' } },
-    expected: { 'stock.quantity': 6 },
+    mapColIdsToTotals: { 'stock.quantity': { aggregation: 'sum' } },
+    expected: { stock: { quantity: 6 } },
   },
   {
     name: 'sums the row values of a value getter column',
     rows,
-    totalColumns: { stockValue: { aggregation: 'sum' } },
+    mapColIdsToTotals: { stockValue: { aggregation: 'sum' } },
     expected: { stockValue: 100 },
   },
   {
     name: 'sums a custom value and formats it',
     rows,
-    totalColumns: {
+    mapColIdsToTotals: {
       minifigs: {
         aggregation: 'sum',
         getValue: ({ minifigs }) =>
@@ -74,7 +74,7 @@ test.for<{
   {
     name: 'averages weighted values and skips empty values',
     rows,
-    totalColumns: {
+    mapColIdsToTotals: {
       price: {
         aggregation: 'weightedAverage',
         getWeight: ({ stock }) => stock.quantity,
@@ -85,7 +85,7 @@ test.for<{
   {
     name: 'returns zero sums, zero count and no average without rows',
     rows: [],
-    totalColumns: {
+    mapColIdsToTotals: {
       id: { aggregation: 'count' },
       price: { aggregation: 'sum' },
       'stock.quantity': {
@@ -94,11 +94,11 @@ test.for<{
         formatValue: String,
       },
     },
-    expected: { id: '0', price: 0, 'stock.quantity': null },
+    expected: { id: '0', price: 0, stock: { quantity: null } },
   },
-])('getColumnTotals $name', ({ rows, totalColumns, expected }) => {
+])('getColumnTotals $name', ({ rows, mapColIdsToTotals, expected }) => {
   assert.deepEqual(
-    getColumnTotals({ rows, totalColumns, readCellValue }),
+    getColumnTotals({ rows, mapColIdsToTotals, readCellValue }),
     expected
   )
 })

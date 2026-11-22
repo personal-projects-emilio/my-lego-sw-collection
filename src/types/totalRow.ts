@@ -1,6 +1,8 @@
+import type { GridApi } from 'ag-grid-community'
+
 export type TotalRowValue = number | string | null
 
-export type TotalRowData = Record<string, TotalRowValue>
+export type TotalRowData = Record<string, unknown>
 
 export type ReadCellValue<TData> = (params: {
   row: TData
@@ -20,9 +22,14 @@ export type ColumnTotal<TData> =
       getWeight: (row: TData) => number
     })
 
-export type TotalColumns<TData> = Record<string, ColumnTotal<TData>>
+export type MapColIdsToTotals<TData> = Record<string, ColumnTotal<TData>>
 
 export type GetTotalRow<TData> = (params: {
   rows: TData[]
   readCellValue: ReadCellValue<TData>
 }) => TotalRowData
+
+export type TotalRowSwitch = {
+  isShown: boolean
+  toggle: (api: GridApi) => void
+}

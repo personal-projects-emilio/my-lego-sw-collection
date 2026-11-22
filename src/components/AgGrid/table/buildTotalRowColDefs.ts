@@ -10,7 +10,9 @@ import { isTotalRow } from 'utils/totalRow'
 
 import { OverflowTypographyCellRenderer } from '../column'
 
-const buildTotalRowColDef = <TData>(colDef: ColDef<TData>): ColDef<TData> => {
+export const buildTotalRowColDef = <TData>(
+  colDef: ColDef<TData>
+): ColDef<TData> => {
   const colId = colDef.colId ?? colDef.field
   const {
     cellClass,
@@ -35,7 +37,7 @@ const buildTotalRowColDef = <TData>(colDef: ColDef<TData>): ColDef<TData> => {
         : cellRendererSelector?.(params),
     valueGetter: (params: ValueGetterParams<TData>) => {
       if (isTotalRow(params.node))
-        return colId ? (get(params.data, [colId]) ?? null) : null
+        return colId ? (get(params.data, colId) ?? null) : null
       if (typeof valueGetter === 'function') return valueGetter(params)
       return field ? get(params.data, field) : undefined
     },

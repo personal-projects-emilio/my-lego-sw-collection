@@ -5,12 +5,11 @@ import { Outlet } from '@tanstack/react-router'
 import { AgGridTable } from 'components/AgGrid/table'
 import ModuleHeader from 'components/ModuleHeader/ModuleHeader'
 import { useCollection } from 'hooks'
-import { getColumnTotals } from 'utils/totalRow'
 
 import { useMinifigsColDefs } from './hooks'
 import {
   defaultMinifigsColumnDefs,
-  minifigsTotalColumns,
+  mapMinifigColIdsToTotals,
 } from './Minifigs.constants'
 
 const Minifigs: FC = () => {
@@ -33,9 +32,7 @@ const Minifigs: FC = () => {
         columnLayoutId="minifigs"
         columnDefs={minifigsColumnDefs}
         defaultColDef={defaultMinifigsColumnDefs}
-        getTotalRow={(params) =>
-          getColumnTotals({ ...params, totalColumns: minifigsTotalColumns })
-        }
+        mapColIdsToTotals={mapMinifigColIdsToTotals}
         quickFilterText={deferredQuickFilter}
         rowData={structuredClone(minifigsList)}
       />

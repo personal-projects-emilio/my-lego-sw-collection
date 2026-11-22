@@ -5,10 +5,9 @@ import { Outlet } from '@tanstack/react-router'
 import { AgGridTable } from 'components/AgGrid/table'
 import ModuleHeader from 'components/ModuleHeader/ModuleHeader'
 import { useCollection } from 'hooks'
-import { getColumnTotals } from 'utils/totalRow'
 
 import { useSetsColDefs } from './hooks'
-import { defaultSetsColumnDefs, setsTotalColumns } from './Sets.constants'
+import { defaultSetsColumnDefs, mapSetColIdsToTotals } from './Sets.constants'
 
 const Sets: FC = () => {
   const { setsList, isLoading } = useCollection()
@@ -30,9 +29,7 @@ const Sets: FC = () => {
         columnLayoutId="sets"
         columnDefs={setsColumnDefs}
         defaultColDef={defaultSetsColumnDefs}
-        getTotalRow={(params) =>
-          getColumnTotals({ ...params, totalColumns: setsTotalColumns })
-        }
+        mapColIdsToTotals={mapSetColIdsToTotals}
         quickFilterText={deferredQuickFilter}
         rowData={setsList}
       />

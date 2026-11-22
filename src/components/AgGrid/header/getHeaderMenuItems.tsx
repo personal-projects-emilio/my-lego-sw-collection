@@ -17,6 +17,7 @@ import {
 import type { Column, GridApi } from 'ag-grid-community'
 import type { CustomHeaderProps } from 'ag-grid-react'
 import type { MenuItemDefinition } from 'components/Menu'
+import type { TotalRowSwitch } from 'types/totalRow'
 import { countSorts, type Pinned, toPinned } from 'utils/columnLayout'
 
 const directions = [
@@ -37,16 +38,14 @@ export const getHeaderMenuItems = ({
   openColumnChooser,
   requestReset,
   setSort,
-  isTotalRowShown,
-  toggleTotalRow,
+  totalRow,
 }: {
   api: GridApi
   column: Column
   setSort: CustomHeaderProps['setSort']
   openColumnChooser?: () => void
   requestReset?: () => void
-  isTotalRowShown?: boolean
-  toggleTotalRow?: () => void
+  totalRow?: TotalRowSwitch
 }): MenuItemDefinition[] => {
   const colId = column.getColId()
   const { lockPinned, lockVisible } = column.getColDef()
@@ -149,15 +148,15 @@ export const getHeaderMenuItems = ({
             icon: <MdViewColumn />,
             onClick: openColumnChooser,
           },
-          ...(toggleTotalRow
+          ...(totalRow
             ? ([
                 {
                   kind: 'switch',
                   key: 'totalRow',
                   label: 'Show total row',
                   icon: <MdFunctions />,
-                  checked: !!isTotalRowShown,
-                  onClick: toggleTotalRow,
+                  checked: totalRow.isShown,
+                  onClick: () => totalRow.toggle(api),
                 },
               ] as const)
             : []),

@@ -7,10 +7,9 @@ import ModuleHeader from 'components/ModuleHeader/ModuleHeader'
 import { useCollection } from 'hooks'
 import {
   defaultMinifigsColumnDefs,
-  looseMinifigsTotalColumns,
+  mapLooseMinifigColIdsToTotals,
 } from 'pages/Minifigs/Minifigs.constants'
 import { useAuth } from 'providers/AuthProvider'
-import { getColumnTotals } from 'utils/totalRow'
 
 import useLooseMinifigsColDefs from './useLooseMinifigsColDefs'
 
@@ -43,12 +42,7 @@ const LooseMinifigs: FC = () => {
         columnDefs={columnDefs}
         defaultColDef={defaultMinifigsColumnDefs}
         getRowId={({ data }) => data.id}
-        getTotalRow={(params) =>
-          getColumnTotals({
-            ...params,
-            totalColumns: looseMinifigsTotalColumns,
-          })
-        }
+        mapColIdsToTotals={mapLooseMinifigColIdsToTotals}
         quickFilterText={deferredQuickFilter}
         rowData={looseMinifigs}
       />

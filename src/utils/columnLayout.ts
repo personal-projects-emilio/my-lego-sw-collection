@@ -6,6 +6,8 @@ import type {
   GridOptions,
   GridState,
 } from 'ag-grid-community'
+import sortBy from 'lodash/sortBy'
+import type { ColumnLayout } from 'types/columnLayout'
 
 export type Pinned = 'left' | 'right'
 
@@ -64,13 +66,23 @@ export const toInitialState = ({
       ],
     },
     sort: {
-      sortModel: columnState
-        .filter(({ sort }) => sort)
-        .sort((a, b) => (a.sortIndex ?? 0) - (b.sortIndex ?? 0))
-        .map(({ colId, sort }) => ({ colId, sort: sort ?? 'asc' })),
+      sortModel: sortBy(
+        columnState.filter(({ sort }) => sort),
+        ({ sortIndex }) => sortIndex ?? 0
+      ).map(({ colId, sort }) => ({ colId, sort: sort ?? 'asc' })),
     },
   }
 }
+
+export const parseColumnLayout = (
+  data?: Partial<ColumnLayout> | null
+): ColumnLayout | null =>
+  data?.columnState
+    ? {
+        columnState: data.columnState,
+        isTotalRowShown: data.isTotalRowShown ?? true,
+      }
+    : null
 
 export const hideExcluded = <TData>(
   columnDefs: GridOptions<TData>['columnDefs']

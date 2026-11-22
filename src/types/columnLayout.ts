@@ -5,7 +5,7 @@ export type ColumnLayoutId =
 
 export type ColumnLayout = {
   columnState: ColumnState[]
-  showTotalRow: boolean
+  isTotalRowShown: boolean
 }
 
 export type ColumnLayoutTarget = {

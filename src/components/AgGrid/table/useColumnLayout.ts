@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import type {
   GridApi,
@@ -48,8 +48,16 @@ const useColumnLayout = <TData>({
   const [dismissedLoadError, setDismissedLoadError] = useState<Error>()
   const [isResetting, setIsResetting] = useState(false)
   const [resetCount, setResetCount] = useState(0)
-  const [toggledTotalRow, setToggledTotalRow] = useState<boolean>()
-  const showTotalRow = toggledTotalRow ?? layout?.showTotalRow ?? true
+  const [totalRowOverride, setTotalRowOverride] = useState<{
+    userId?: string
+    isTotalRowShown: boolean
+  }>()
+  const isTotalRowShown =
+    (totalRowOverride && totalRowOverride.userId === userId
+      ? totalRowOverride.isTotalRowShown
+      : undefined) ??
+    layout?.isTotalRowShown ??
+    true
   const lastSaved = useRef<string>(undefined)
   const excludedColIds = useMemo(
     () => toExcludedColIds(columnDefs),
@@ -72,17 +80,20 @@ const useColumnLayout = <TData>({
     if (error) console.error('Unable to load the column layout', error)
   }, [error])
 
-  const saveLayout = (next: ColumnLayout) => {
-    const key = JSON.stringify(next)
-    if (!userId || !idToken || error || key === lastSaved.current) return
-    lastSaved.current = key
-    debouncedSave({ idToken, userId, columnLayoutId, layout: next })
-  }
+  const saveLayout = useCallback(
+    (next: ColumnLayout) => {
+      const key = JSON.stringify(next)
+      if (!userId || !idToken || error || key === lastSaved.current) return
+      lastSaved.current = key
+      debouncedSave({ idToken, userId, columnLayoutId, layout: next })
+    },
+    [columnLayoutId, debouncedSave, error, idToken, userId]
+  )
 
   const onGridReady = ({ api: readyApi }: GridReadyEvent<TData>) => {
     lastSaved.current = JSON.stringify({
       columnState: readyApi.getColumnState(),
-      showTotalRow,
+      isTotalRowShown,
     })
     setApi(readyApi)
   }
@@ -93,19 +104,24 @@ const useColumnLayout = <TData>({
   }: StateUpdatedEvent<TData>) => {
     if (sources.includes('gridInitializing')) return
     if (!sources.some((source) => layoutSources.has(source))) return
-    saveLayout({ columnState: updatedApi.getColumnState(), showTotalRow })
+    saveLayout({ columnState: updatedApi.getColumnState(), isTotalRowShown })
   }
 
-  const toggleTotalRow = () => {
-    const next = !showTotalRow
-    setToggledTotalRow(next)
-    if (api)
-      saveLayout({ columnState: api.getColumnState(), showTotalRow: next })
-  }
+  const toggleTotalRow = useCallback(
+    (gridApi: GridApi) => {
+      const next = !isTotalRowShown
+      setTotalRowOverride({ userId, isTotalRowShown: next })
+      saveLayout({
+        columnState: gridApi.getColumnState(),
+        isTotalRowShown: next,
+      })
+    },
+    [isTotalRowShown, saveLayout, userId]
+  )
 
   const reset = async () => {
     debouncedSave.cancel()
-    setToggledTotalRow(undefined)
+    setTotalRowOverride(undefined)
     if (userId && idToken) {
       setIsResetting(true)
       try {
@@ -143,7 +159,7 @@ const useColumnLayout = <TData>({
     onGridReady,
     onStateUpdated,
     reset,
-    showTotalRow,
+    isTotalRowShown,
     toggleTotalRow,
     saveError:
       saveError ??

@@ -6,23 +6,23 @@ import type { GetTotalRow, TotalRowData } from 'types/totalRow'
 
 const useTotalRow = <TData>({
   getTotalRow,
-  isShown,
+  isTotalRowShown,
 }: {
   getTotalRow?: GetTotalRow<TData>
-  isShown: boolean
+  isTotalRowShown: boolean
 }) => {
   const [totalRow, setTotalRow] = useState<TotalRowData>()
 
   const onModelUpdated = ({ api }: ModelUpdatedEvent<TData>) => {
     if (!getTotalRow) return
-    const nodesByRow = new Map<TData, IRowNode<TData>>()
+    const mapRowsToNodes = new Map<TData, IRowNode<TData>>()
     api.forEachNodeAfterFilter((node) => {
-      if (node.data) nodesByRow.set(node.data, node)
+      if (node.data) mapRowsToNodes.set(node.data, node)
     })
     const next = getTotalRow({
-      rows: [...nodesByRow.keys()],
+      rows: [...mapRowsToNodes.keys()],
       readCellValue: ({ row, colId }) => {
-        const rowNode = nodesByRow.get(row)
+        const rowNode = mapRowsToNodes.get(row)
         return rowNode && api.getCellValue({ rowNode, colKey: colId })
       },
     })
@@ -30,8 +30,8 @@ const useTotalRow = <TData>({
   }
 
   const pinnedBottomRowData = useMemo(
-    () => (isShown && totalRow ? [totalRow] : undefined),
-    [isShown, totalRow]
+    () => (isTotalRowShown && totalRow ? [totalRow] : undefined),
+    [isTotalRowShown, totalRow]
   )
 
   return { onModelUpdated, pinnedBottomRowData }
