@@ -1,3 +1,5 @@
+import type { ColumnLayoutTarget } from 'types/columnLayout'
+
 export const queryKeys = {
   bricksetIgnoreList: 'bricksetIgnoreList',
   columnLayout: 'columnLayout',
@@ -22,7 +24,5 @@ export const endPoints = {
 export const columnLayoutEndPoint = ({
   userId,
   columnLayoutId,
-}: {
-  userId: string
-  columnLayoutId: string
-}) => `/userPreferences/${userId}/grids/${columnLayoutId}.json`
+}: ColumnLayoutTarget) =>
+  `/userPreferences/${userId}/grids/${columnLayoutId}.json`

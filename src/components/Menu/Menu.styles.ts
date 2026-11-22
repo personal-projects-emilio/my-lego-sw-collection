@@ -31,7 +31,7 @@ export default makeStyles({ name: 'Menu' })((theme) => {
         },
       },
     },
-    end: {
+    trailing: {
       alignItems: 'center',
       color: theme.palette.text.secondary,
       display: 'flex',

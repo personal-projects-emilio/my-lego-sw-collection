@@ -50,7 +50,7 @@ export const headerMenuItems = ({
   const isSortedElsewhere = state.some(
     (columnState) => columnState.sort && columnState.colId !== colId
   )
-  const current = column.getSort() ?? null
+  const currentSort = column.getSort() ?? null
   const pinned = toPinned(column.getPinned())
 
   const sortItems = ({
@@ -65,7 +65,7 @@ export const headerMenuItems = ({
       key: `${key}-${sort}`,
       label,
       icon,
-      checked: current === sort,
+      checked: currentSort === sort,
       onClick: () => setSort(sort, multiSort),
     }))
 
@@ -93,7 +93,6 @@ export const headerMenuItems = ({
       key: 'clearSorts',
       label: sortCount ? `Clear all sorts (${sortCount})` : 'Clear all sorts',
       icon: <MdClose />,
-      destructive: true,
       disabled: sortCount === 0,
       onClick: () => api.applyColumnState({ defaultState: { sort: null } }),
     },

@@ -56,7 +56,7 @@ const useSetsColDefs = () => {
             icon: <PiLego />,
             variant: 'set',
           } satisfies ItemIdCellRenderProps,
-          sort: 'asc',
+          initialSort: 'asc',
           width: 120,
         },
         {

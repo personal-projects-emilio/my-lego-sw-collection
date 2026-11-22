@@ -17,3 +17,8 @@ export type ColumnLayout = Required<
 export type SavedColumnLayout = {
   [Part in keyof ColumnLayout]?: Partial<ColumnLayout[Part]>
 }
+
+export type ColumnLayoutTarget = {
+  userId: string
+  columnLayoutId: ColumnLayoutId
+}

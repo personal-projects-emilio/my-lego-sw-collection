@@ -3,6 +3,7 @@ import { useAuth } from 'providers/AuthProvider'
 import type {
   ColumnLayout,
   ColumnLayoutId,
+  ColumnLayoutTarget,
   SavedColumnLayout,
 } from 'types/columnLayout'
 import { toColumnLayout } from 'utils/columnLayout'
@@ -10,7 +11,7 @@ import { toColumnLayout } from 'utils/columnLayout'
 import { columnLayoutEndPoint, queryKeys } from './api.constants'
 import { api, queryClient } from './index'
 
-type ColumnLayoutTarget = { userId: string; columnLayoutId: ColumnLayoutId }
+type AuthenticatedTarget = ColumnLayoutTarget & { idToken: string }
 
 const columnLayoutQueryKey = ({
   userId,
@@ -21,10 +22,7 @@ const columnLayoutQueryKey = ({
   columnLayoutId,
 ]
 
-const fetchColumnLayout = ({
-  idToken,
-  ...target
-}: ColumnLayoutTarget & { idToken: string }) =>
+const fetchColumnLayout = ({ idToken, ...target }: AuthenticatedTarget) =>
   api
     .get<SavedColumnLayout | null>(columnLayoutEndPoint(target), {
       params: { auth: idToken },
@@ -43,14 +41,20 @@ export const useColumnLayoutQuery = (columnLayoutId?: ColumnLayoutId) => {
 }
 
 export const saveColumnLayout = async ({
+  idToken,
   layout,
   ...target
-}: ColumnLayoutTarget & { layout: ColumnLayout }) => {
-  await api.put(columnLayoutEndPoint(target), layout)
+}: AuthenticatedTarget & { layout: ColumnLayout }) => {
+  await api.put(columnLayoutEndPoint(target), layout, {
+    params: { auth: idToken },
+  })
   queryClient.setQueryData(columnLayoutQueryKey(target), layout)
 }
 
-export const deleteColumnLayout = async (target: ColumnLayoutTarget) => {
-  await api.delete(columnLayoutEndPoint(target))
+export const deleteColumnLayout = async ({
+  idToken,
+  ...target
+}: AuthenticatedTarget) => {
   queryClient.setQueryData(columnLayoutQueryKey(target), null)
+  await api.delete(columnLayoutEndPoint(target), { params: { auth: idToken } })
 }

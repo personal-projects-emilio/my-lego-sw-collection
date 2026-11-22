@@ -1,14 +1,14 @@
-import type { ColumnState } from 'ag-grid-community'
+import type { ColDef, ColumnState } from 'ag-grid-community'
 import assert from 'node:assert/strict'
 import type { ColumnLayout } from 'types/columnLayout'
 import { test } from 'vitest'
 
 import {
+  canMoveColumn,
   type ChooserColumn,
   countSorts,
   groupColumns,
   hideExcluded,
-  moveColumn,
   toColumnLayout,
   toExcludedColIds,
   toInitialState,
@@ -23,28 +23,36 @@ const layout: ColumnLayout = {
   sort: { sortModel: [] },
 }
 
-test('toColumnLayout fills the parts Firebase drops when empty', () => {
-  assert.deepEqual(
-    toColumnLayout({
+test.for([
+  {
+    name: 'fills the parts Firebase drops when empty',
+    input: {
       state: {
         columnOrder: layout.columnOrder,
         columnPinning: { rightColIds: ['actions'] },
         columnSizing: layout.columnSizing,
         columnVisibility: layout.columnVisibility,
       },
-    }),
-    layout
-  )
-})
-
-test('toColumnLayout leaves excluded columns out of the hidden ones', () => {
-  assert.deepEqual(
-    toColumnLayout({
+    },
+    expected: layout,
+  },
+  {
+    name: 'keeps the previous hidden flag of excluded columns',
+    input: {
       state: { columnVisibility: { hiddenColIds: ['name', 'price'] } },
-      excludedColIds: ['price'],
-    }).columnVisibility,
-    { hiddenColIds: ['name'] }
-  )
+      excludedColIds: ['price', 'year'],
+      previous: {
+        ...layout,
+        columnVisibility: { hiddenColIds: ['id', 'year'] },
+      },
+    },
+    expected: {
+      ...toColumnLayout({ state: {} }),
+      columnVisibility: { hiddenColIds: ['name', 'year'] },
+    },
+  },
+])('toColumnLayout $name', ({ input, expected }) => {
+  assert.deepEqual(toColumnLayout(input), expected)
 })
 
 test.for([
@@ -66,29 +74,31 @@ test.for([
   }
 )
 
-test('hideExcluded hides only the excluded column definitions', () => {
-  assert.deepEqual(
-    hideExcluded([
-      { field: 'name' },
-      { field: 'prices.bought', context: { isExcluded: true } },
-    ]),
-    [
+const columnDefs: ColDef[] = [
+  { field: 'name' },
+  { field: 'prices.bought', context: { isExcluded: true } },
+  { colId: 'retired', context: { isExcluded: true } },
+  { colId: 'tags', context: { isExcluded: false } },
+]
+
+test.for([
+  {
+    name: 'hideExcluded hides only the excluded column definitions',
+    actual: () => hideExcluded(columnDefs),
+    expected: [
       { field: 'name' },
       { field: 'prices.bought', context: { isExcluded: true }, hide: true },
-    ]
-  )
-})
-
-test('toExcludedColIds uses colId, then field', () => {
-  assert.deepEqual(
-    toExcludedColIds([
-      { field: 'name' },
-      { field: 'prices.bought', context: { isExcluded: true } },
-      { colId: 'retired', context: { isExcluded: true } },
+      { colId: 'retired', context: { isExcluded: true }, hide: true },
       { colId: 'tags', context: { isExcluded: false } },
-    ]),
-    ['prices.bought', 'retired']
-  )
+    ],
+  },
+  {
+    name: 'toExcludedColIds uses colId, then field',
+    actual: () => toExcludedColIds(columnDefs),
+    expected: ['prices.bought', 'retired'],
+  },
+])('$name', ({ actual, expected }) => {
+  assert.deepEqual(actual(), expected)
 })
 
 test('countSorts counts the sorted columns', () => {
@@ -107,7 +117,6 @@ const column = ({
   colId,
   headerName: colId,
   hide: false,
-  isExcluded: false,
   isLockedVisible: false,
   isLockedPosition: false,
   ...overrides,
@@ -116,7 +125,6 @@ const column = ({
 const columns = [
   column({ colId: 'id', pinned: 'left' }),
   column({ colId: 'name' }),
-  column({ colId: 'price', isExcluded: true }),
   column({ colId: 'year' }),
   column({
     colId: 'actions',
@@ -127,7 +135,7 @@ const columns = [
   column({ colId: 'tags' }),
 ]
 
-test('groupColumns splits by pinned side and skips excluded columns', () => {
+test('groupColumns splits by pinned side', () => {
   const groups = groupColumns(columns)
   assert.deepEqual(
     Object.fromEntries(
@@ -141,23 +149,16 @@ test('groupColumns splits by pinned side and skips excluded columns', () => {
 })
 
 test.for([
-  {
-    activeColId: 'tags',
-    overColId: 'name',
-    expected: ['id', 'tags', 'name', 'price', 'year', 'actions'],
-  },
-  {
-    activeColId: 'name',
-    overColId: 'year',
-    expected: ['id', 'price', 'year', 'name', 'actions', 'tags'],
-  },
-  { activeColId: 'name', overColId: 'id', expected: undefined },
-  { activeColId: 'actions', overColId: 'tags', expected: undefined },
-  { activeColId: 'name', overColId: 'name', expected: undefined },
+  { activeColId: 'tags', overColId: 'name', expected: true },
+  { activeColId: 'name', overColId: 'year', expected: true },
+  { activeColId: 'name', overColId: 'id', expected: false },
+  { activeColId: 'actions', overColId: 'tags', expected: false },
+  { activeColId: 'name', overColId: 'name', expected: false },
+  { activeColId: 'name', overColId: 'missing', expected: false },
 ])(
-  'moveColumn $activeColId over $overColId',
+  'canMoveColumn $activeColId over $overColId is $expected',
   ({ activeColId, overColId, expected }) => {
-    assert.deepEqual(moveColumn({ columns, activeColId, overColId }), expected)
+    assert.equal(canMoveColumn({ columns, activeColId, overColId }), expected)
   }
 )
 

@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import type {
-  ColDef,
-  ColGroupDef,
   GridApi,
+  GridOptions,
   GridReadyEvent,
   StateUpdatedEvent,
 } from 'ag-grid-community'
@@ -37,9 +36,9 @@ const useColumnLayout = <TData>({
   columnDefs,
 }: {
   columnLayoutId: ColumnLayoutId
-  columnDefs?: (ColDef<TData> | ColGroupDef<TData>)[] | null
+  columnDefs: GridOptions<TData>['columnDefs']
 }) => {
-  const { userId } = useAuth()
+  const { idToken, userId } = useAuth()
   const {
     data: layout,
     error,
@@ -65,31 +64,31 @@ const useColumnLayout = <TData>({
     }, saveDelay)
   )
 
-  useEffect(() => () => void debouncedSave.flush(), [debouncedSave])
+  useEffect(() => () => void debouncedSave.flush(), [debouncedSave, userId])
 
   useEffect(() => {
     if (error) console.error('Unable to load the column layout', error)
   }, [error])
 
   const onStateUpdated = ({ sources, state }: StateUpdatedEvent<TData>) => {
-    const next = toColumnLayout({ state, excludedColIds })
+    const next = toColumnLayout({ state, excludedColIds, previous: layout })
     const key = JSON.stringify(next)
     if (sources.includes('gridInitializing')) {
       lastSaved.current = key
       return
     }
-    if (!userId || key === lastSaved.current) return
+    if (!userId || !idToken || error || key === lastSaved.current) return
     if (!sources.some((source) => layoutSources.has(source))) return
     lastSaved.current = key
-    debouncedSave({ userId, columnLayoutId, layout: next })
+    debouncedSave({ idToken, userId, columnLayoutId, layout: next })
   }
 
   const reset = async () => {
     debouncedSave.cancel()
-    if (userId) {
+    if (userId && idToken) {
       setIsResetting(true)
       try {
-        await deleteColumnLayout({ userId, columnLayoutId })
+        await deleteColumnLayout({ idToken, userId, columnLayoutId })
         setSaveError(undefined)
       } catch (resetFailure) {
         console.error('Unable to reset the column layout', resetFailure)
@@ -106,7 +105,7 @@ const useColumnLayout = <TData>({
     clearSaveError: () => setSaveError(undefined),
     columnDefs: useMemo(() => hideExcluded(columnDefs), [columnDefs]),
     excludedColIds,
-    gridKey: `${userId}-${resetCount}`,
+    gridKey: resetCount,
     initialState: useMemo(
       () => toInitialState({ layout, excludedColIds }),
       [layout, excludedColIds]

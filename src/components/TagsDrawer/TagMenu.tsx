@@ -19,7 +19,7 @@ type TagMenuProps = {
   onDelete: (tag: Tag) => void
 }
 
-const rootItems = ({
+const rootTagSettingsItems = ({
   tag,
   state,
   isPending,
@@ -101,7 +101,9 @@ const TagMenu: FC<TagMenuProps> = ({
           label: 'Add a tag inside',
           onClick: () => onAdd(tag),
         },
-        ...(tag.parent ? [] : rootItems({ tag, state, isPending, run })),
+        ...(tag.parent
+          ? []
+          : rootTagSettingsItems({ tag, state, isPending, run })),
         { kind: 'divider', key: 'danger' },
         {
           kind: 'action',

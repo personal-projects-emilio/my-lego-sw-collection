@@ -7,7 +7,6 @@ import ConfirmDialog from 'components/ConfirmDialog'
 import type { ColumnLayoutId } from 'types/columnLayout'
 
 import { ColumnChooserDrawer } from '../columnChooser'
-import useColumnChooserStyles from '../columnChooser/ColumnChooser.styles'
 import { ColumnHeader, suppressHeaderKeyboardEvent } from '../header'
 import useAgGridTableStyles from './AgGridTable.styles'
 import { ColumnLayoutContext } from './columnLayoutContext'
@@ -25,7 +24,6 @@ const ColumnLayoutGrid = <TData,>({
   ...props
 }: ColumnLayoutGridProps<TData>) => {
   const { classes } = useAgGridTableStyles()
-  const { classes: chooserClasses } = useColumnChooserStyles()
   const chooserId = useId()
   const layout = useColumnLayout({
     columnLayoutId,
@@ -76,7 +74,6 @@ const ColumnLayoutGrid = <TData,>({
           {isChooserOpen && layout.api && (
             <ColumnChooserDrawer
               api={layout.api}
-              excludedColIds={layout.excludedColIds}
               id={chooserId}
               onClearSaveError={layout.clearSaveError}
               onClose={() => setIsChooserOpen(false)}
@@ -87,7 +84,7 @@ const ColumnLayoutGrid = <TData,>({
           <Button
             aria-controls={isChooserOpen ? chooserId : undefined}
             aria-expanded={isChooserOpen}
-            className={chooserClasses.tab}
+            className={classes.columnsTab}
             onClick={() => setIsChooserOpen((isOpen) => !isOpen)}
             size="small"
             startIcon={<MdViewColumn />}

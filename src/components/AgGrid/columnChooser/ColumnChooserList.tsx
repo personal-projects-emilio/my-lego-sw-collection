@@ -17,10 +17,10 @@ import {
 import { Typography } from '@mui/material'
 import type { GridApi } from 'ag-grid-community'
 import {
+  canMoveColumn,
   type ChooserColumn,
   type ChooserGroups,
   groupColumns,
-  moveColumn,
 } from 'utils/columnLayout'
 
 import useColumnChooserStyles from './ColumnChooser.styles'
@@ -55,17 +55,15 @@ const ColumnChooserList = <TData,>({
   const groups = groupColumns(columns)
 
   const onDragEnd = ({ active, over }: DragEndEvent) => {
-    if (!over) return
-    const order = moveColumn({
-      columns,
-      activeColId: String(active.id),
-      overColId: String(over.id),
-    })
-    if (order)
-      api.applyColumnState({
-        state: order.map((colId) => ({ colId })),
-        applyOrder: true,
-      })
+    const activeColId = String(active.id)
+    const overColId = String(over?.id)
+    if (!canMoveColumn({ columns, activeColId, overColId })) return
+    api.moveColumns(
+      [activeColId],
+      api
+        .getAllGridColumns()
+        .findIndex((column) => column.getColId() === overColId)
+    )
   }
 
   return (

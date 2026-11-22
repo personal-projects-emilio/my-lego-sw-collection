@@ -19,7 +19,6 @@ import useChooserColumns from './useChooserColumns'
 
 export type ColumnChooserProps<TData> = {
   api: GridApi<TData>
-  excludedColIds: string[]
   saveError?: string
   titleId: string
   onClearSaveError: () => void
@@ -29,7 +28,6 @@ export type ColumnChooserProps<TData> = {
 
 const ColumnChooser = <TData,>({
   api,
-  excludedColIds,
   saveError,
   titleId,
   onClearSaveError,
@@ -38,7 +36,7 @@ const ColumnChooser = <TData,>({
 }: ColumnChooserProps<TData>) => {
   const { classes } = useColumnChooserStyles()
   const [search, setSearch] = useState('')
-  const columns = useChooserColumns({ api, excludedColIds })
+  const columns = useChooserColumns(api)
   const showAll = toShowAllState(columns)
 
   return (
@@ -69,7 +67,7 @@ const ColumnChooser = <TData,>({
           {saveError}
         </Alert>
       )}
-      <search className={classes.search}>
+      <div className={classes.toolbar}>
         <Checkbox
           checked={showAll === 'checked'}
           indeterminate={showAll === 'indeterminate'}
@@ -89,12 +87,14 @@ const ColumnChooser = <TData,>({
             },
           }}
         />
-        <SearchField
-          label="Search columns"
-          onChange={setSearch}
-          value={search}
-        />
-      </search>
+        <search className={classes.search}>
+          <SearchField
+            label="Search columns"
+            onChange={setSearch}
+            value={search}
+          />
+        </search>
+      </div>
       <Divider />
       <ColumnChooserList api={api} columns={columns} search={search} />
       <footer className={classes.footer}>

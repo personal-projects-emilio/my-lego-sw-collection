@@ -55,7 +55,11 @@ const readStoredSession = (): Session | undefined => {
     clearAuthLocalStorage()
     return undefined
   }
-  return { idToken, userId, expirationDate }
+  return {
+    idToken,
+    userId,
+    expirationDate: userId ? expirationDate : new Date().toISOString(),
+  }
 }
 
 const AuthProvider: FC<PropsWithChildren> = ({ children }) => {

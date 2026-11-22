@@ -3,7 +3,7 @@ import { makeStyles } from 'tss-react/mui'
 import { gridColors } from '../table/gridColors'
 
 export default makeStyles({ name: 'ColumnChooser' })((theme) => ({
-  panel: {
+  besideGrid: {
     backgroundColor: gridColors.chrome,
     borderLeft: `1px solid ${gridColors.border}`,
     display: 'flex',
@@ -13,7 +13,7 @@ export default makeStyles({ name: 'ColumnChooser' })((theme) => ({
     minHeight: 0,
     position: 'relative',
   },
-  paper: {
+  overlayPaper: {
     backgroundColor: gridColors.chrome,
     backgroundImage: 'none',
     display: 'flex',
@@ -46,11 +46,15 @@ export default makeStyles({ name: 'ColumnChooser' })((theme) => ({
   alert: {
     margin: theme.spacing(0, 2, 1),
   },
-  search: {
+  toolbar: {
     alignItems: 'center',
     display: 'flex',
     gap: theme.spacing(0.5),
     padding: theme.spacing(1, 2, 1, 1),
+  },
+  search: {
+    display: 'flex',
+    flex: 1,
     '& .MuiTextField-root': {
       flex: 1,
     },
@@ -119,19 +123,5 @@ export default makeStyles({ name: 'ColumnChooser' })((theme) => ({
   footer: {
     borderTop: `1px solid ${theme.palette.divider}`,
     padding: theme.spacing(1, 2),
-  },
-  tab: {
-    alignSelf: 'stretch',
-    backgroundColor: gridColors.chrome,
-    borderLeft: `1px solid ${gridColors.border}`,
-    borderRadius: 0,
-    justifyContent: 'flex-start',
-    flexShrink: 0,
-    minWidth: 0,
-    padding: theme.spacing(1, 0.5),
-    writingMode: 'vertical-rl',
-    '& .MuiButton-startIcon': {
-      margin: theme.spacing(0, 0, 1, 0),
-    },
   },
 }))

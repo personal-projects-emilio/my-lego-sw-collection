@@ -23,4 +23,18 @@ export default makeStyles({ name: 'AgGridTable' })((theme) => ({
     flex: 1,
     minWidth: 0,
   },
+  columnsTab: {
+    alignSelf: 'stretch',
+    backgroundColor: gridColors.chrome,
+    borderLeft: `1px solid ${gridColors.border}`,
+    borderRadius: 0,
+    justifyContent: 'flex-start',
+    flexShrink: 0,
+    minWidth: 0,
+    padding: theme.spacing(1, 0.5),
+    writingMode: 'vertical-rl',
+    '& .MuiButton-startIcon': {
+      margin: theme.spacing(0, 0, 1, 0),
+    },
+  },
 }))

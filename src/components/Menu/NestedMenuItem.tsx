@@ -73,7 +73,7 @@ const NestedMenuItem: FC<NestedMenuItemProps> = ({
         }}
       >
         <MenuItemContent
-          end={
+          trailing={
             <>
               {item.shortcut}
               <MdChevronRight aria-hidden />

@@ -16,7 +16,7 @@ const BurgerMenuNavigation: FC = () => {
 
   const isOpen = Boolean(anchorEl)
 
-  const link = ({
+  const toLinkItem = ({
     to,
     label,
   }: {
@@ -31,13 +31,13 @@ const BurgerMenuNavigation: FC = () => {
   })
 
   const items: MenuItemDefinition[] = [
-    link({ to: '/minifigs', label: 'Minifigs' }),
-    link({ to: '/sets', label: 'Sets' }),
-    link({ to: '/timeline', label: 'Timeline' }),
+    toLinkItem({ to: '/minifigs', label: 'Minifigs' }),
+    toLinkItem({ to: '/sets', label: 'Sets' }),
+    toLinkItem({ to: '/timeline', label: 'Timeline' }),
     ...(idToken
       ? [
-          link({ to: '/loose-minifigs', label: 'Loose minifigs' }),
-          link({ to: '/resale-sets', label: 'Resale sets' }),
+          toLinkItem({ to: '/loose-minifigs', label: 'Loose minifigs' }),
+          toLinkItem({ to: '/resale-sets', label: 'Resale sets' }),
           {
             kind: 'action',
             key: 'logout',
@@ -45,7 +45,7 @@ const BurgerMenuNavigation: FC = () => {
             onClick: logout,
           } as const,
         ]
-      : [link({ to: '/auth', label: 'Login' })]),
+      : [toLinkItem({ to: '/auth', label: 'Login' })]),
   ]
 
   return (
@@ -63,6 +63,7 @@ const BurgerMenuNavigation: FC = () => {
       <Menu
         anchor={anchorEl}
         aria-labelledby={iconButtonId}
+        component="nav"
         id={menuId}
         items={items}
         onClose={() => setAnchorEl(undefined)}

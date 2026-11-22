@@ -34,7 +34,7 @@ const ColumnChooserDrawer = <TData,>({
     return (
       <aside
         aria-labelledby={titleId}
-        className={classes.panel}
+        className={classes.besideGrid}
         id={id}
         style={{ width }}
       >
@@ -50,7 +50,7 @@ const ColumnChooserDrawer = <TData,>({
       slotProps={{
         paper: {
           'aria-labelledby': titleId,
-          className: classes.paper,
+          className: classes.overlayPaper,
           id,
           style: { width },
         },

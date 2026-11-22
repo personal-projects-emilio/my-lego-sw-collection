@@ -26,14 +26,14 @@ type ItemProps<Item> = InjectedMenuItemProps & {
 export const MenuItemContent: FC<{
   icon?: ReactNode
   label: string
-  end?: ReactNode
-}> = ({ icon, label, end }) => {
+  trailing?: ReactNode
+}> = ({ icon, label, trailing }) => {
   const { classes } = useMenuStyles()
   return (
     <>
       {icon && <ListItemIcon aria-hidden>{icon}</ListItemIcon>}
       <ListItemText>{label}</ListItemText>
-      {end && <span className={classes.end}>{end}</span>}
+      {trailing && <span className={classes.trailing}>{trailing}</span>}
     </>
   )
 }
@@ -56,7 +56,7 @@ export const ActionMenuItem: FC<ItemProps<ActionItem>> = ({
       }}
     >
       <MenuItemContent
-        end={item.shortcut}
+        trailing={item.shortcut}
         icon={item.icon}
         label={item.label}
       />
@@ -82,7 +82,7 @@ export const RadioMenuItem: FC<ItemProps<RadioItem>> = ({
       role="menuitemradio"
     >
       <MenuItemContent
-        end={
+        trailing={
           <span
             className={classes.check}
             data-checked={item.checked || undefined}

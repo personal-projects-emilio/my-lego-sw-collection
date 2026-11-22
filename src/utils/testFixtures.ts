@@ -1,6 +1,8 @@
 import type { Minifig } from 'types/minifigs'
 import type { Set } from 'types/sets'
 
+type SetMinifig = Set['content']['minifigs'][number]
+
 export const setFixture = ({
   id,
   content,
@@ -60,9 +62,7 @@ export const minifigFixture = ({
 export const setMinifigFixture = ({
   id,
   ...overrides
-}: Partial<Set['content']['minifigs'][number]> & {
-  id: string
-}): Set['content']['minifigs'][number] => ({
+}: Partial<SetMinifig> & { id: string }): SetMinifig => ({
   characterName: `Name ${id}`,
   id,
   isInFrame: false,
