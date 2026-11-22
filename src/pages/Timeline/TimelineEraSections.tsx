@@ -27,10 +27,10 @@ const TimelineEraSections: FC<TimelineEraSectionsProps> = ({
     .map((era) => ({
       era,
       titles: timeline.titles.filter(
-        (title) => timeline.eraOf(title.id) === era
+        (title) => timeline.getEra(title.id) === era
       ),
       trilogies: timeline.trilogies.filter(
-        (trilogy) => timeline.eraOf(trilogy.id) === era
+        (trilogy) => timeline.getEra(trilogy.id) === era
       ),
     }))
     .filter(({ era, titles }) => era || titles.length)

@@ -1,24 +1,18 @@
 /// <reference types="node" />
 import assert from 'node:assert/strict'
-import type { Set } from 'types/sets'
 import { test } from 'vitest'
 
 import {
-  bricksetRowToSetId,
   buildBricksetReport,
-  changeKey,
-  newSetFromBricksetRow,
+  createSetFromBricksetRow,
+  getChangeKey,
+  getSetIdFromBricksetRow,
   skipChanges,
 } from './brickset.ts'
+import { setFixture } from './testFixtures.ts'
 
-const set = ({ id, ...overrides }: Partial<Set> & { id: Set['id'] }) =>
-  ({
-    id,
-    name: `Set ${id}`,
-    releaseYear: 2020,
-    bricksetImagePath: null,
-    EAN: null,
-    UPC: null,
+const set = (overrides: Parameters<typeof setFixture>[0]) =>
+  setFixture({
     prices: {
       bought: 10,
       marketValue: 0,
@@ -26,14 +20,10 @@ const set = ({ id, ...overrides }: Partial<Set> & { id: Set['id'] }) =>
       brickLinkSoldPriceNew: 0,
       brickLinkSoldPriceUsed: 0,
     },
-    dimensions: {
-      model: { width: null, height: null, depth: null },
-      box: { width: null, height: null, depth: null },
-    },
     ...overrides,
-  }) as Set
+  })
 
-const row = (fields: Record<string, string>) => ({
+const buildRow = (fields: Record<string, string>) => ({
   Number: '',
   Variant: '1',
   USItemNumber: '',
@@ -54,13 +44,13 @@ test('sorts rows into updates, unchanged, missing, ignored, not in CSV and confl
     setsList,
     ignoreList: { ids: ['10331'], themes: ['Ideas'], subthemes: [] },
     rows: [
-      row({ Number: '75192', YearFrom: '2017', Width: '58.5', EAN: '' }),
-      row({ Number: '75300', YearFrom: '2021' }),
-      row({ Number: '10331' }),
-      row({ Number: '21300', Theme: 'Ideas' }),
-      row({ Number: '75999' }),
-      row({ Number: '75001' }),
-      row({ Number: '75001', Variant: '2' }),
+      buildRow({ Number: '75192', YearFrom: '2017', Width: '58.5', EAN: '' }),
+      buildRow({ Number: '75300', YearFrom: '2021' }),
+      buildRow({ Number: '10331' }),
+      buildRow({ Number: '21300', Theme: 'Ideas' }),
+      buildRow({ Number: '75999' }),
+      buildRow({ Number: '75001' }),
+      buildRow({ Number: '75001', Variant: '2' }),
     ],
   })
 
@@ -103,8 +93,8 @@ test('sorts rows into updates, unchanged, missing, ignored, not in CSV and confl
 
 test('builds a new owned set from a Brickset row', () => {
   const base = set({ id: '' })
-  const newSet = newSetFromBricksetRow({
-    row: row({
+  const newSet = createSetFromBricksetRow({
+    row: buildRow({
       Number: '5006290',
       SetName: "Yoda's Lightsaber",
       Subtheme: 'Promotional',
@@ -140,19 +130,19 @@ test('builds a new owned set from a Brickset row', () => {
 
 test('only keeps the variant suffix when another variant exists', () => {
   const rows = [
-    row({ Number: '75466' }),
-    row({ Number: 'XWING', Variant: '1' }),
-    row({ Number: 'XWING', Variant: '2' }),
-    row({ Number: '7140' }),
+    buildRow({ Number: '75466' }),
+    buildRow({ Number: 'XWING', Variant: '1' }),
+    buildRow({ Number: 'XWING', Variant: '2' }),
+    buildRow({ Number: '7140' }),
   ]
   const setsList = [set({ id: '7140-2' })]
-  const idOf = (index: number) =>
-    bricksetRowToSetId({ row: rows[index], rows, setsList })
+  const getId = (index: number) =>
+    getSetIdFromBricksetRow({ row: rows[index], rows, setsList })
 
-  assert.equal(idOf(0), 75466)
-  assert.equal(idOf(1), 'XWING-1')
-  assert.equal(idOf(2), 'XWING-2')
-  assert.equal(idOf(3), '7140-1')
+  assert.equal(getId(0), 75466)
+  assert.equal(getId(1), 'XWING-1')
+  assert.equal(getId(2), 'XWING-2')
+  assert.equal(getId(3), '7140-1')
 })
 
 test('matches a set stored under its EU item number', () => {
@@ -160,7 +150,11 @@ test('matches a set stored under its EU item number', () => {
     setsList: [set({ id: 6346098 })],
     ignoreList: { ids: [], themes: [], subthemes: [] },
     rows: [
-      row({ Number: '5006290', EUItemNumber: '6346098', YearFrom: '2021' }),
+      buildRow({
+        Number: '5006290',
+        EUItemNumber: '6346098',
+        YearFrom: '2021',
+      }),
     ],
   })
 
@@ -187,7 +181,7 @@ test('reads the exit date and piece count, and puts back skipped changes', () =>
     ],
     ignoreList: { ids: [], themes: [], subthemes: [] },
     rows: [
-      row({
+      buildRow({
         Number: '75192',
         YearFrom: '2020',
         ExitDate: '31/12/2028 00:00:00',
@@ -198,14 +192,14 @@ test('reads the exit date and piece count, and puts back skipped changes', () =>
   })
 
   assert.deepEqual(report.updates[0].changes, [
-    { field: 'exitDate', from: undefined, to: '2028-12-31' },
+    { field: 'exitDate', from: null, to: '2028-12-31' },
     { field: 'content.partsQuantity', from: 7541, to: 7500 },
     { field: 'prices.brickLinkSoldPriceNew', from: 0, to: 800 },
   ])
 
   const [saved] = skipChanges({
     report,
-    skippedKeys: [changeKey({ id: 75192, field: 'content.partsQuantity' })],
+    skippedKeys: [getChangeKey({ id: 75192, field: 'content.partsQuantity' })],
   })
   assert.equal(saved.content.partsQuantity, 7541)
   assert.equal(saved.exitDate, '2028-12-31')

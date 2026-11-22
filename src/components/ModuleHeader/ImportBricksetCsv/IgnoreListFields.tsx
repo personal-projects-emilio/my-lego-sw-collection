@@ -3,7 +3,7 @@ import type { FC } from 'react'
 import { Alert, Typography } from '@mui/material'
 import { Autocomplete } from 'components/inputs'
 import type { BricksetIgnoreList, BricksetRow } from 'types/brickset'
-import { uniqueAndSortedArray } from 'utils/array'
+import { toUniqueSortedArray } from 'utils/array'
 
 import { ignoreFields } from './ImportBricksetCsv.constants'
 
@@ -41,12 +41,12 @@ const IgnoreListFields: FC<IgnoreListFieldsProps> = ({
       key={key}
       multiple
       freeSolo
-      options={uniqueAndSortedArray({
+      options={toUniqueSortedArray({
         array: (rows ?? []).map((row) => row[column]).filter(Boolean),
       })}
       value={ignoreList[key]}
       onChange={(values) =>
-        onChange({ key, values: (values as string[] | null) ?? [] })
+        onChange({ key, values: Array.isArray(values) ? values : [] })
       }
       textFieldProps={{ label, size: 'small' }}
     />

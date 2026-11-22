@@ -26,11 +26,11 @@ import { isSetRetired } from 'utils/lego'
 import { parseInteger, parseSetId } from 'utils/parse'
 
 import {
-  defaultSetFormValues,
+  brickLinkPriceFields,
+  contentFields,
   dimensionFields,
-  mapBrickLinkPricesToLabels,
-  mapContentToLabels,
-  mapPricesToLabels,
+  getDefaultSetFormValues,
+  priceFields,
 } from './SetFormModal.constant'
 import useSetFormModalStyles from './SetFormModal.styles'
 import type { SetFormModalProps } from './SetFormModal.types'
@@ -67,7 +67,7 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
   )
 
   const { control, handleSubmit, watch } = useForm<SetFormInput>({
-    defaultValues: defaultSetFormValues(setData),
+    defaultValues: getDefaultSetFormValues(setData),
     resolver: zodResolver(setValidationSchemaWithRefinedIdCheck),
     mode: 'onSubmit',
     reValidateMode: 'onChange',
@@ -234,10 +234,10 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
               return <SetMinifigs className={classes.gridSpan12} {...field} />
             }}
           />
-          {Object.entries(mapContentToLabels).map(([name, label]) => (
+          {contentFields.map(({ name, label }) => (
             <Controller
               key={name}
-              name={name as keyof typeof mapContentToLabels}
+              name={name}
               control={control}
               render={({ field }) => (
                 <Checkbox
@@ -278,11 +278,11 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
             <Typography variant="h6" className={classes.gridSpan12}>
               Prices
             </Typography>
-            {Object.entries(mapPricesToLabels).map(([name, label]) => (
+            {priceFields.map(({ name, label }) => (
               <FormTextField
                 key={name}
                 control={control}
-                name={name as keyof typeof mapPricesToLabels}
+                name={name}
                 className={classes.gridSpan4}
                 label={label}
                 parse={parseFloat}
@@ -290,11 +290,11 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
                 type="number"
               />
             ))}
-            {Object.entries(mapBrickLinkPricesToLabels).map(([name, label]) => (
+            {brickLinkPriceFields.map(({ name, label }) => (
               <FormTextField
                 key={name}
                 control={control}
-                name={name as keyof typeof mapBrickLinkPricesToLabels}
+                name={name}
                 className={classes.gridSpan6}
                 disabled
                 helperText="This value is updated when you upload a new CSV from Brickset"

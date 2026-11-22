@@ -16,16 +16,16 @@ export const targets: Target[] = ['sets', 'minifigs']
 
 type TargetCheck = { appliesTo: Tag['appliesTo']; target: Target }
 
-export const appliesToTarget = ({ appliesTo, target }: TargetCheck) =>
+export const doesApplyToTarget = ({ appliesTo, target }: TargetCheck) =>
   appliesTo === 'both' || appliesTo === target
 
-export const toggledAppliesTo = ({
+export const toggleAppliesTo = ({
   appliesTo,
   target,
 }: TargetCheck): Tag['appliesTo'] => {
   const other: Target = target === 'sets' ? 'minifigs' : 'sets'
-  if (!appliesToTarget({ appliesTo, target })) return 'both'
-  return appliesToTarget({ appliesTo, target: other }) ? other : appliesTo
+  if (!doesApplyToTarget({ appliesTo, target })) return 'both'
+  return doesApplyToTarget({ appliesTo, target: other }) ? other : appliesTo
 }
 
 export type Editing = { id: TagId } | { parent?: TagId }

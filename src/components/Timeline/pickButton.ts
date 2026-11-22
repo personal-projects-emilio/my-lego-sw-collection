@@ -1,14 +1,14 @@
 import type { TimelineEntry, TimelineId } from 'types/timeline'
-import { inheritedFrom } from 'utils/tags'
+import { formatInheritedFrom } from 'utils/tags'
 import {
   canToggle,
-  kindName,
+  getKindName,
   type Picks,
   pickStatus,
   type Timeline,
 } from 'utils/timeline'
 
-import { eraColor } from './eraColor'
+import { getEraColor } from './getEraColor'
 
 export type TimelinePickerProps = {
   timeline: Timeline
@@ -20,7 +20,7 @@ type PickButton = TimelinePickerProps & { entry: TimelineEntry }
 
 export const pickStyle = ({ timeline, picks, entry }: PickButton) => {
   const status = pickStatus({ timeline, picks, id: entry.id })
-  const color = eraColor({ timeline, id: entry.id })
+  const color = getEraColor({ timeline, id: entry.id })
   return status === 'picked' || status === 'inherited'
     ? { background: color, color: 'rgba(0, 0, 0, 0.87)', borderColor: color }
     : status === 'implied'
@@ -28,11 +28,13 @@ export const pickStyle = ({ timeline, picks, entry }: PickButton) => {
       : undefined
 }
 
-export const noteOf = ({
+export const getPickNote = ({
   picks,
   entry,
 }: Pick<PickButton, 'picks' | 'entry'>) =>
-  picks.inherited[entry.id] ? inheritedFrom(picks.inherited[entry.id]) : ''
+  picks.inherited[entry.id]
+    ? formatInheritedFrom(picks.inherited[entry.id])
+    : ''
 
 export const toggleProps = ({
   timeline,
@@ -50,9 +52,9 @@ export const toggleProps = ({
     'aria-label':
       status === 'inherited'
         ? [
-            entry.kind && kindName(entry.kind),
+            entry.kind && getKindName(entry.kind),
             entry.label,
-            noteOf({ picks, entry }),
+            getPickNote({ picks, entry }),
             picks.value.includes(entry.id) && 'also picked',
           ]
             .filter(Boolean)

@@ -4,9 +4,9 @@ import { MdLock } from 'react-icons/md'
 import { Tooltip } from '@mui/material'
 import { formatRange, pickStatus } from 'utils/timeline'
 
-import { eraColor } from './eraColor'
+import { getEraColor } from './getEraColor'
 import {
-  noteOf,
+  getPickNote,
   pickStyle,
   type TimelinePickerProps,
   toggleProps,
@@ -20,12 +20,12 @@ const TimelinePicker: FC<TimelinePickerProps> = (props) => {
   const { classes, theme } = useTimelinePickerStyles()
   const { timeline, picks } = props
   const looseTitles = timeline
-    .childrenOf(undefined)
+    .getChildren(undefined)
     .filter((id) => timeline.entry(id)?.kind)
   const sections = [
     ...timeline.erasWithTitles.map((era) => ({
       era,
-      ids: timeline.childrenOf(era.id),
+      ids: timeline.getChildren(era.id),
     })),
     ...(looseTitles.length ? [{ era: undefined, ids: looseTitles }] : []),
   ]
@@ -33,7 +33,7 @@ const TimelinePicker: FC<TimelinePickerProps> = (props) => {
   return (
     <div className={classes.grid}>
       {sections.map(({ era, ids }) => {
-        const color = eraColor({ timeline, id: era?.id })
+        const color = getEraColor({ timeline, id: era?.id })
         const status = era
           ? pickStatus({ timeline, picks, id: era.id })
           : 'none'
@@ -43,7 +43,7 @@ const TimelinePicker: FC<TimelinePickerProps> = (props) => {
             role="group"
             aria-label={era?.label ?? 'No era'}
             className={classes.era}
-            style={{ ['--era-color' as string]: color }}
+            style={{ '--era-color': color }}
           >
             <div className={classes.eraLine} aria-hidden>
               <span
@@ -63,7 +63,7 @@ const TimelinePicker: FC<TimelinePickerProps> = (props) => {
             </div>
             {era ? (
               <Tooltip
-                title={noteOf({ picks, entry: era })}
+                title={getPickNote({ picks, entry: era })}
                 placement="top-start"
                 describeChild
               >
@@ -77,7 +77,7 @@ const TimelinePicker: FC<TimelinePickerProps> = (props) => {
                     {picks.inherited[era.id] && <MdLock aria-hidden />}
                   </span>
                   <span className={classes.eraRange}>
-                    {formatRange(timeline.range(era.id))}
+                    {formatRange(timeline.getRange(era.id))}
                   </span>
                 </button>
               </Tooltip>

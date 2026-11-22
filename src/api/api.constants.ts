@@ -1,5 +1,8 @@
+import type { ColumnLayoutTarget } from 'types/columnLayout'
+
 export const queryKeys = {
   bricksetIgnoreList: 'bricksetIgnoreList',
+  columnLayout: 'columnLayout',
   looseMinifigs: 'looseMinifigs',
   minifigs: 'minifigs',
   resaleSets: 'resaleSets',
@@ -8,15 +11,18 @@ export const queryKeys = {
   timeline: 'timeline',
 } as const
 
-const node = (name: string) =>
-  `/${name}${import.meta.env.VITE_DATA_SUFFIX ?? ''}.json`
-
 export const endPoints = {
-  bricksetIgnoreList: node('bricksetIgnoreList'),
-  looseMinifigs: node('looseMinifigs'),
-  minifigs: node('minifigs'),
-  resaleSets: node('resaleSets'),
-  sets: node('sets'),
-  tags: node('tags'),
-  timeline: node('timeline'),
+  bricksetIgnoreList: '/bricksetIgnoreList.json',
+  looseMinifigs: '/looseMinifigs.json',
+  minifigs: '/minifigs.json',
+  resaleSets: '/resaleSets.json',
+  sets: '/sets.json',
+  tags: '/tags.json',
+  timeline: '/timeline.json',
 } as const
+
+export const getColumnLayoutEndPoint = ({
+  userId,
+  columnLayoutId,
+}: ColumnLayoutTarget) =>
+  `/userPreferences/${userId}/grids/${columnLayoutId}.json`

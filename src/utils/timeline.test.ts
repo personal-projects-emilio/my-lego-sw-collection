@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import type { TimelineList } from 'types/timeline'
 import { test } from 'vitest'
 
+import { buildMinifigFixture, setFixture } from './testFixtures.ts'
 import {
   buildTimeline,
   canToggle,
@@ -38,20 +39,24 @@ const timelineList: TimelineList = [
 const state: TimelineState = {
   timelineList,
   setsList: [
-    { id: 1, name: 'X-wing', timeline: ['anh'] },
-    { id: 2, name: 'Speeder', timeline: ['rotj'] },
-  ] as TimelineState['setsList'],
+    setFixture({ id: 1, name: 'X-wing', timeline: ['anh'] }),
+    setFixture({ id: 2, name: 'Speeder', timeline: ['rotj'] }),
+  ],
   minifigsList: [
-    { id: 'sw0001', name: 'Luke', timeline: ['ot', 'rotj'] },
-  ] as TimelineState['minifigsList'],
+    buildMinifigFixture({
+      id: 'sw0001',
+      name: 'Luke',
+      timeline: ['ot', 'rotj'],
+    }),
+  ],
 }
 
-const stateOf = (edit: TimelineEdit) => {
+const getState = (edit: TimelineEdit) => {
   assert.ok('state' in edit, 'refused' in edit ? edit.refused : '')
   return edit.state
 }
 
-const entryOf = ({ current, id }: { current: TimelineState; id: string }) =>
+const getEntry = ({ current, id }: { current: TimelineState; id: string }) =>
   current.timelineList.find((entry) => entry.id === id)
 
 test.for([
@@ -106,13 +111,13 @@ test.for([
 )
 
 test('saveEntry adds an entry with an id made from its label', () => {
-  const next = stateOf(
+  const next = getState(
     saveEntry({
       state,
       draft: { label: 'A New Hope', parent: 'ot', kind: 'movie' },
     })
   )
-  assert.deepEqual(entryOf({ current: next, id: 'a-new-hope' }), {
+  assert.deepEqual(getEntry({ current: next, id: 'a-new-hope' }), {
     id: 'a-new-hope',
     label: 'A New Hope',
     parent: 'ot',
@@ -121,7 +126,7 @@ test('saveEntry adds an entry with an id made from its label', () => {
 })
 
 test('saveEntry edits an entry in place and keeps its id and the items', () => {
-  const next = stateOf(
+  const next = getState(
     saveEntry({
       state,
       draft: {
@@ -133,7 +138,7 @@ test('saveEntry edits an entry in place and keeps its id and the items', () => {
       },
     })
   )
-  assert.deepEqual(entryOf({ current: next, id: 'anh' }), {
+  assert.deepEqual(getEntry({ current: next, id: 'anh' }), {
     id: 'anh',
     label: 'Episode IV',
     parent: 'aor',
@@ -144,8 +149,8 @@ test('saveEntry edits an entry in place and keeps its id and the items', () => {
 })
 
 test('deleteEntry removes it from items and moves its children up', () => {
-  const next = stateOf(deleteEntry({ state, id: 'ot' }))
-  assert.equal(entryOf({ current: next, id: 'ot' }), undefined)
+  const next = getState(deleteEntry({ state, id: 'ot' }))
+  assert.equal(getEntry({ current: next, id: 'ot' }), undefined)
   assert.deepEqual(
     next.timelineList
       .filter(({ parent }) => parent === 'aor')
@@ -161,9 +166,9 @@ test('deleteEntry refuses an unknown entry', () => {
 })
 
 test('deleteEntry on an era moves its trilogies up to the top', () => {
-  const next = stateOf(deleteEntry({ state, id: 'aor' }))
-  assert.equal(entryOf({ current: next, id: 'aor' }), undefined)
-  assert.deepEqual(entryOf({ current: next, id: 'ot' }), {
+  const next = getState(deleteEntry({ state, id: 'aor' }))
+  assert.equal(getEntry({ current: next, id: 'aor' }), undefined)
+  assert.deepEqual(getEntry({ current: next, id: 'ot' }), {
     id: 'ot',
     label: 'Original Trilogy',
   })
@@ -176,11 +181,14 @@ test.for([
 ])(
   'a range of $id spans its children when it has no dates',
   ({ id, expected }) => {
-    assert.equal(formatRange(buildTimeline(timelineList).range(id)), expected)
+    assert.equal(
+      formatRange(buildTimeline(timelineList).getRange(id)),
+      expected
+    )
   }
 )
 
-const picks = ({
+const buildPicks = ({
   value,
   inherited = {},
 }: {
@@ -225,7 +233,7 @@ test.for([
 ])('togglePick $case', ({ value, inherited, id, expected }) => {
   const timeline = buildTimeline(timelineList)
   assert.deepEqual(
-    togglePick({ timeline, picks: picks({ value, inherited }), id }),
+    togglePick({ timeline, picks: buildPicks({ value, inherited }), id }),
     expected
   )
 })
@@ -239,7 +247,7 @@ test.for([
   assert.equal(
     pickStatus({
       timeline: buildTimeline(timelineList),
-      picks: picks({ value: ['rotj'], inherited: { anh: ['75301'] } }),
+      picks: buildPicks({ value: ['rotj'], inherited: { anh: ['75301'] } }),
       id,
     }),
     expected
@@ -285,7 +293,7 @@ test.for<{
   assert.equal(
     canToggle({
       timeline: buildTimeline(timelineList),
-      picks: picks({ value, inherited }),
+      picks: buildPicks({ value, inherited }),
       id,
     }),
     expected

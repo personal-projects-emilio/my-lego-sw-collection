@@ -3,6 +3,7 @@ import { type FC, useId, useState } from 'react'
 import { Alert, Button, Typography } from '@mui/material'
 import useVocabularyMutations, {
   PartlySavedError,
+  timelineVocabularyConfig,
 } from 'hooks/useVocabularyMutations'
 import {
   deleteEntry,
@@ -13,7 +14,7 @@ import {
   type TimelineState,
 } from 'utils/timeline'
 
-import { countLabel, type Counts, plural } from './counts'
+import { countLabel, type Counts, pluralize } from './counts'
 import EntryFields from './EntryFields'
 import useEntryPanelStyles from './EntryPanel.styles'
 
@@ -37,17 +38,19 @@ const EntryForm: FC<EntryFormProps> = ({
 }) => {
   const { classes } = useEntryPanelStyles()
   const titleId = useId()
-  const { state, apply, isPending } = useVocabularyMutations('timeline')
+  const { state, apply, isPending } = useVocabularyMutations(
+    timelineVocabularyConfig
+  )
   const [draft, setDraft] = useState(initial)
   const [error, setError] = useState<string>()
   const [confirmDelete, setConfirmDelete] = useState(false)
   const { id } = draft
-  const picking = (items: Array<{ timeline?: string[] }> = []) =>
+  const countPicks = (items: Array<{ timeline?: string[] }> = []) =>
     items.filter((item) => id && item.timeline?.includes(id)).length
-  const pickedBySets = picking(state?.setsList)
-  const pickedByMinifigs = picking(state?.minifigsList)
+  const pickedBySets = countPicks(state?.setsList)
+  const pickedByMinifigs = countPicks(state?.minifigsList)
   const isEdit = id !== undefined && timeline.has(id)
-  const holdsTrilogies = !!id && timeline.holdsTrilogies(id)
+  const holdsTrilogies = !!id && timeline.hasTrilogies(id)
   const parents = (
     draft.kind ? [...timeline.eras, ...timeline.trilogies] : timeline.eras
   ).filter(
@@ -56,7 +59,7 @@ const EntryForm: FC<EntryFormProps> = ({
       (!id ||
         (candidate.id !== id &&
           !timeline
-            .ancestors(candidate.id)
+            .getAncestors(candidate.id)
             .some((ancestor) => ancestor.id === id)))
   )
 
@@ -133,7 +136,7 @@ const EntryForm: FC<EntryFormProps> = ({
               ? 'Its trilogies become eras.'
               : 'Its children move up.',
             (pickedBySets || pickedByMinifigs) &&
-              `It is removed from ${plural({ count: pickedBySets, noun: 'set' })} · ${plural({ count: pickedByMinifigs, noun: 'minifig' })}.`,
+              `It is removed from ${pluralize({ count: pickedBySets, noun: 'set' })} · ${pluralize({ count: pickedByMinifigs, noun: 'minifig' })}.`,
           ]
             .filter(Boolean)
             .join(' ')}

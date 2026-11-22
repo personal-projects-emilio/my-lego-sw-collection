@@ -57,7 +57,7 @@ const TimelineField: FC<TimelineFieldProps> = ({
   const inputId = useId()
   const panelId = useId()
   const picks = { value, inherited }
-  const shown = timeline.leaves([...value, ...Object.keys(inherited)])
+  const shown = timeline.getLeaves([...value, ...Object.keys(inherited)])
   const toggle = (id: TimelineId) =>
     onChange(togglePick({ timeline, picks, id }))
   const show = () => setAnchor(anchorRef.current)
@@ -73,10 +73,11 @@ const TimelineField: FC<TimelineFieldProps> = ({
     <div
       className={className}
       onBlur={(event: FocusEvent) => {
-        const next = event.relatedTarget as Node | null
+        const next = event.relatedTarget
         if (
-          anchorRef.current?.contains(next) ||
-          paperRef.current?.contains(next)
+          next instanceof Node &&
+          (anchorRef.current?.contains(next) ||
+            paperRef.current?.contains(next))
         )
           return
         setAnchor(null)
@@ -85,7 +86,10 @@ const TimelineField: FC<TimelineFieldProps> = ({
       <div
         ref={anchorRef}
         onClick={(event) => {
-          if (!(event.target as HTMLElement).closest('.MuiChip-deleteIcon'))
+          if (!(
+            event.target instanceof Element &&
+            event.target.closest('.MuiChip-deleteIcon')
+          ))
             show()
         }}
       >
@@ -99,7 +103,7 @@ const TimelineField: FC<TimelineFieldProps> = ({
           options={shown}
           value={shown}
           inputValue=""
-          getOptionLabel={timeline.pathLabel}
+          getOptionLabel={timeline.getPathLabel}
           onChange={(_, next) =>
             shown
               .filter((id) => !next.includes(id) && !inherited[id])
@@ -168,7 +172,10 @@ const TimelineField: FC<TimelineFieldProps> = ({
       >
         <ClickAwayListener
           onClickAway={(event) => {
-            if (!anchorRef.current?.contains(event.target as Node))
+            if (!(
+              event.target instanceof Node &&
+              anchorRef.current?.contains(event.target)
+            ))
               setAnchor(null)
           }}
         >

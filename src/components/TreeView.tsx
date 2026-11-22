@@ -83,13 +83,13 @@ type TreeViewProps = {
 
 const TreeView: FC<TreeViewProps> = ({ ids, notes = {}, tree }) => {
   const { classes } = useTreeViewStyles()
-  const nodes = tree.outline(ids)
-  const leaves = new Set(tree.leaves(ids))
-  const childrenOf = (parent: string) =>
+  const nodes = tree.getOutline(ids)
+  const leaves = new Set(tree.getLeaves(ids))
+  const getChildren = (parent: string) =>
     nodes.filter((node) => node.parent === parent)
 
-  const branch = (parent: string) => {
-    const children = childrenOf(parent)
+  const renderBranch = (parent: string) => {
+    const children = getChildren(parent)
     if (!children.length) return null
     return (
       <ul className={classes.branch}>
@@ -99,7 +99,7 @@ const TreeView: FC<TreeViewProps> = ({ ids, notes = {}, tree }) => {
             {leaves.has(id) && notes[id] && (
               <span className={classes.note}>{notes[id]}</span>
             )}
-            {branch(id)}
+            {renderBranch(id)}
           </li>
         ))}
       </ul>
@@ -118,7 +118,7 @@ const TreeView: FC<TreeViewProps> = ({ ids, notes = {}, tree }) => {
                 <span className={classes.rootNote}>{notes[id]}</span>
               )}
             </div>
-            {branch(id)}
+            {renderBranch(id)}
           </li>
         ))}
     </ul>

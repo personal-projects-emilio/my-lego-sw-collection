@@ -51,6 +51,7 @@ const LooseMinifigs: FC = () => {
         statisticsTooltipTitle={`You have ${statistics.quantity} loose minifigs across ${looseMinifigs?.length ?? 0} variants. You have spent ${formatFrEuroCurrency(statistics.bought)} on them and their market value is ${formatFrEuroCurrency(statistics.marketValue)}`}
       />
       <AgGridTable
+        columnLayoutId="looseMinifigs"
         columnDefs={columnDefs}
         defaultColDef={defaultMinifigsColumnDefs}
         getRowId={({ data }) => data.id}

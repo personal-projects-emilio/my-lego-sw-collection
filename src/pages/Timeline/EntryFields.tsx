@@ -1,11 +1,12 @@
 import type { FC } from 'react'
 
 import { MenuItem, TextField } from '@mui/material'
-import type { Kind, TimelineEntry } from 'types/timeline'
+import type { TimelineEntry } from 'types/timeline'
 import {
   type EntryDraft,
   formatRange,
-  kindName,
+  getKindName,
+  isKind,
   kinds,
   type Timeline,
 } from 'utils/timeline'
@@ -40,7 +41,7 @@ const EntryFields: FC<EntryFieldsProps> = ({
       onChange={(event) =>
         setDraft({
           ...draft,
-          kind: (event.target.value || undefined) as Kind | undefined,
+          kind: isKind(event.target.value) ? event.target.value : undefined,
           ...(!event.target.value &&
             draft.parent &&
             timeline.entry(draft.parent)?.parent && { parent: undefined }),
@@ -51,7 +52,7 @@ const EntryFields: FC<EntryFieldsProps> = ({
       <MenuItem value="">None (era or trilogy)</MenuItem>
       {kinds.map((kind) => (
         <MenuItem key={kind} value={kind}>
-          {kindName(kind)}
+          {getKindName(kind)}
         </MenuItem>
       ))}
     </TextField>
@@ -66,7 +67,7 @@ const EntryFields: FC<EntryFieldsProps> = ({
       <MenuItem value="">None</MenuItem>
       {parents.map((parent) => (
         <MenuItem key={parent.id} value={parent.id}>
-          {timeline.pathLabel(parent.id)}
+          {timeline.getPathLabel(parent.id)}
         </MenuItem>
       ))}
     </TextField>

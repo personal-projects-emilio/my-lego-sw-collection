@@ -1,43 +1,50 @@
 import { type KeyboardEvent, type PointerEvent, useState } from 'react'
 
-const storageKey = 'tagsDrawerWidth'
-const defaultWidth = 480
-const minWidth = 360
 const keyboardStep = 32
 
-const clamp = (width: number) =>
-  Math.round(Math.min(Math.max(width, minWidth), window.innerWidth))
-
-const storedWidth = () => {
-  try {
-    const width = Number(localStorage.getItem(storageKey))
-    return width ? clamp(width) : defaultWidth
-  } catch {
-    return defaultWidth
-  }
+type DrawerWidthOptions = {
+  storageKey: string
+  defaultWidth: number
+  minWidth: number
+  maxWidth?: number
 }
 
-const store = (width: number) => {
-  try {
-    localStorage.setItem(storageKey, String(width))
-  } catch {
-    return
-  }
-}
+const useDrawerWidth = ({
+  storageKey,
+  defaultWidth,
+  minWidth,
+  maxWidth = window.innerWidth,
+}: DrawerWidthOptions) => {
+  const clamp = (width: number) =>
+    Math.round(Math.min(Math.max(width, minWidth), maxWidth))
 
-const useDrawerWidth = () => {
-  const [width, setWidth] = useState(storedWidth)
+  const [storedWidth, setStoredWidth] = useState(() => {
+    try {
+      return Number(localStorage.getItem(storageKey)) || defaultWidth
+    } catch {
+      return defaultWidth
+    }
+  })
+  const width = clamp(storedWidth)
+
+  const store = (next: number) => {
+    try {
+      localStorage.setItem(storageKey, String(next))
+    } catch {
+      return
+    }
+  }
 
   const resize = (next: number) => {
     const clamped = clamp(next)
-    setWidth(clamped)
+    setStoredWidth(clamped)
     return clamped
   }
 
   const handleProps = {
     'aria-label': 'Resize the drawer',
     'aria-orientation': 'vertical' as const,
-    'aria-valuemax': window.innerWidth,
+    'aria-valuemax': Math.round(maxWidth),
     'aria-valuemin': minWidth,
     'aria-valuenow': width,
     role: 'separator',
@@ -56,8 +63,11 @@ const useDrawerWidth = () => {
       event.currentTarget.setPointerCapture(event.pointerId)
     },
     onPointerMove: (event: PointerEvent<HTMLElement>) => {
-      if (event.currentTarget.hasPointerCapture(event.pointerId))
-        resize(window.innerWidth - event.clientX)
+      if (!event.currentTarget.hasPointerCapture(event.pointerId)) return
+      const right =
+        event.currentTarget.parentElement?.getBoundingClientRect().right ??
+        window.innerWidth
+      resize(right - event.clientX)
     },
     onPointerUp: () => store(width),
   }

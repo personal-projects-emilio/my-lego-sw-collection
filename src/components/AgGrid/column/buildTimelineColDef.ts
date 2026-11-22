@@ -5,7 +5,7 @@ import type { Timeline } from 'utils/timeline'
 import TimelineCellRenderer from './TimelineCellRenderer'
 import TimelineFilter from './TimelineFilter'
 
-export const timelineColDef = <TData extends TimelineItem>(
+export const buildTimelineColDef = <TData extends TimelineItem>(
   timeline: Timeline
 ): ColDef<TData, TimelineId[]> => {
   const mapIdsToOrder = new Map(
@@ -13,12 +13,12 @@ export const timelineColDef = <TData extends TimelineItem>(
   )
   const mapIdsToRanks = new WeakMap<TimelineId[], number[]>()
   const noIds: TimelineId[] = []
-  const rank = (ids: TimelineId[] | null | undefined) => {
+  const getRank = (ids: TimelineId[] | null | undefined) => {
     const list = ids ?? noIds
     const known = mapIdsToRanks.get(list)
     if (known) return known
     const computed = timeline
-      .leaves(list)
+      .getLeaves(list)
       .map((id) => mapIdsToOrder.get(id) ?? Infinity)
     mapIdsToRanks.set(list, computed)
     return computed
@@ -27,21 +27,21 @@ export const timelineColDef = <TData extends TimelineItem>(
     cellRenderer: TimelineCellRenderer,
     colId: 'timeline',
     comparator: (a, b) => {
-      const left = rank(a)
-      const right = rank(b)
+      const left = getRank(a)
+      const right = getRank(b)
       const index = left.findIndex((value, i) => value !== right[i])
       return index < 0
         ? left.length - right.length
         : (left[index] ?? -Infinity) - (right[index] ?? -Infinity)
     },
-    field: 'effectiveTimeline' as ColDef<TData, TimelineId[]>['field'],
+    valueGetter: ({ data }) => data?.effectiveTimeline,
     headerName: 'Timeline',
     filter: TimelineFilter,
     flex: 2,
     getQuickFilterText: ({ value }) =>
-      (value ?? []).map(timeline.label).join(', '),
+      (value ?? []).map(timeline.getLabel).join(', '),
     minWidth: 160,
     suppressFloatingFilterButton: false,
-    valueFormatter: ({ value }) => timeline.groupedLabel(value ?? []),
+    valueFormatter: ({ value }) => timeline.getGroupedLabel(value ?? []),
   }
 }

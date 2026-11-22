@@ -1,4 +1,4 @@
-import type { CSSProperties, FC } from 'react'
+import type { FC } from 'react'
 
 import LabelInput from './LabelInput'
 import useTagsDrawerStyles from './TagsDrawer.styles'
@@ -14,7 +14,7 @@ type AddTagRowProps = {
 const AddTagRow: FC<AddTagRowProps> = ({ depth, ...inputProps }) => {
   const { classes } = useTagsDrawerStyles()
   return (
-    <li className={classes.row} style={{ '--depth': depth } as CSSProperties}>
+    <li className={classes.row} style={{ '--depth': depth }}>
       <span className={classes.handleSpacer} />
       <span className={classes.toggleSpacer} />
       <LabelInput className={classes.input} {...inputProps} />

@@ -1,13 +1,16 @@
 import type { FC } from 'react'
 import { MdAdd, MdDelete, MdTextFields } from 'react-icons/md'
 
-import { Divider, ListItemIcon, Menu, MenuItem } from '@mui/material'
+import { Menu, type MenuItemDefinition } from 'components/Menu'
 import type { Tag } from 'types/tags'
 import { editTag, isProtectedTag, type TagsState } from 'utils/tags'
 
-import TagMenuSwitch from './TagMenuSwitch'
-import useTagsDrawerStyles from './TagsDrawer.styles'
-import { appliesToTarget, type Run, targets, toggledAppliesTo } from './tagTree'
+import {
+  doesApplyToTarget,
+  type Run,
+  targets,
+  toggleAppliesTo,
+} from './tagTree'
 
 type TagMenuProps = {
   anchor?: HTMLElement
@@ -21,6 +24,59 @@ type TagMenuProps = {
   onDelete: (tag: Tag) => void
 }
 
+const getRootTagSettingsItems = ({
+  tag,
+  state,
+  isPending,
+  run,
+}: Pick<TagMenuProps, 'state' | 'isPending' | 'run'> & {
+  tag: Tag
+}): MenuItemDefinition[] => [
+  { kind: 'divider', key: 'settings' },
+  ...targets.map((target): MenuItemDefinition => {
+    const checked = doesApplyToTarget({ appliesTo: tag.appliesTo, target })
+    return {
+      kind: 'switch',
+      key: `applies-${target}`,
+      checked,
+      disabled: isPending || (checked && tag.appliesTo !== 'both'),
+      label: `Applies to ${target}`,
+      onClick: () =>
+        run(
+          state &&
+            editTag({
+              state,
+              id: tag.id,
+              changes: {
+                appliesTo: toggleAppliesTo({
+                  appliesTo: tag.appliesTo,
+                  target,
+                }),
+              },
+            }),
+          `${checked ? 'Stopped' : 'Started'} applying ${tag.label} to ${target}`
+        ),
+    }
+  }),
+  {
+    kind: 'switch',
+    key: 'inherited',
+    checked: !!tag.inherited,
+    disabled: isPending,
+    label: 'Minifigs inherit it from their sets',
+    onClick: () =>
+      run(
+        state &&
+          editTag({
+            state,
+            id: tag.id,
+            changes: { inherited: !tag.inherited },
+          }),
+        `Turned ${tag.inherited ? 'off' : 'on'} inheritance of ${tag.label}`
+      ),
+  },
+]
+
 const TagMenu: FC<TagMenuProps> = ({
   anchor,
   tag,
@@ -32,108 +88,46 @@ const TagMenu: FC<TagMenuProps> = ({
   onAdd,
   onDelete,
 }) => {
-  const { classes } = useTagsDrawerStyles()
-  const close = (action: (tag: Tag) => void) => (picked: Tag) => {
-    onClose()
-    action(picked)
-  }
-  return (
-    <Menu
-      anchorEl={anchor}
-      className={classes.menu}
-      disableEnforceFocus
-      disableRestoreFocus
-      onClose={onClose}
-      open={!!anchor}
-    >
-      {tag && [
-        <MenuItem
-          key="rename"
-          disabled={isPending}
-          onClick={() => close(onRename)(tag)}
-        >
-          <ListItemIcon>
-            <MdTextFields aria-hidden />
-          </ListItemIcon>
-          Rename
-        </MenuItem>,
-        <MenuItem
-          key="add"
-          disabled={isPending}
-          onClick={() => close(onAdd)(tag)}
-        >
-          <ListItemIcon>
-            <MdAdd aria-hidden />
-          </ListItemIcon>
-          Add a tag inside
-        </MenuItem>,
+  const items: MenuItemDefinition[] = tag
+    ? [
+        {
+          kind: 'action',
+          key: 'rename',
+          disabled: isPending,
+          icon: <MdTextFields />,
+          label: 'Rename',
+          onClick: () => onRename(tag),
+        },
+        {
+          kind: 'action',
+          key: 'add',
+          disabled: isPending,
+          icon: <MdAdd />,
+          label: 'Add a tag inside',
+          onClick: () => onAdd(tag),
+        },
         ...(tag.parent
           ? []
-          : [
-              <Divider key="settings" />,
-              ...targets.map((target) => {
-                const checked = appliesToTarget({
-                  appliesTo: tag.appliesTo,
-                  target,
-                })
-                return (
-                  <TagMenuSwitch
-                    key={`applies-${target}`}
-                    checked={checked}
-                    disabled={
-                      isPending || (checked && tag.appliesTo !== 'both')
-                    }
-                    label={`Applies to ${target}`}
-                    onClick={() =>
-                      run(
-                        state &&
-                          editTag({
-                            state,
-                            id: tag.id,
-                            changes: {
-                              appliesTo: toggledAppliesTo({
-                                appliesTo: tag.appliesTo,
-                                target,
-                              }),
-                            },
-                          }),
-                        `${checked ? 'Stopped' : 'Started'} applying ${tag.label} to ${target}`
-                      )
-                    }
-                  />
-                )
-              }),
-              <TagMenuSwitch
-                key="inherited"
-                checked={!!tag.inherited}
-                disabled={isPending}
-                label="Minifigs inherit it from their sets"
-                onClick={() =>
-                  run(
-                    state &&
-                      editTag({
-                        state,
-                        id: tag.id,
-                        changes: { inherited: !tag.inherited },
-                      }),
-                    `Turned ${tag.inherited ? 'off' : 'on'} inheritance of ${tag.label}`
-                  )
-                }
-              />,
-            ]),
-        <Divider key="danger" />,
-        <MenuItem
-          key="delete"
-          disabled={isPending || isProtectedTag(tag.id)}
-          onClick={() => close(onDelete)(tag)}
-        >
-          <ListItemIcon>
-            <MdDelete aria-hidden />
-          </ListItemIcon>
-          Delete
-        </MenuItem>,
-      ]}
-    </Menu>
+          : getRootTagSettingsItems({ tag, state, isPending, run })),
+        { kind: 'divider', key: 'danger' },
+        {
+          kind: 'action',
+          key: 'delete',
+          disabled: isPending || isProtectedTag(tag.id),
+          icon: <MdDelete />,
+          label: 'Delete',
+          onClick: () => onDelete(tag),
+        },
+      ]
+    : []
+  return (
+    <Menu
+      anchor={anchor}
+      disableEnforceFocus
+      disableRestoreFocus
+      items={items}
+      onClose={onClose}
+    />
   )
 }
 

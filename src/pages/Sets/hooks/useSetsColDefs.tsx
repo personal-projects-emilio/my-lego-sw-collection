@@ -8,26 +8,33 @@ import type {
 } from 'ag-grid-community'
 import { useAgGridStyles } from 'components/AgGrid'
 import {
+  buildActionsColDef,
+  buildTagsColDef,
+  buildTimelineColDef,
   ExternalLinksCellRenderer,
   type ExternalLinksCellRenderProps,
+  formatListValue,
   ItemActionsCellRenderer,
   ItemIdCellRenderer,
   type ItemIdCellRenderProps,
-  listValueFormatter,
   OverflowTypographyCellRenderer,
   type SetActionsCellRendererProps,
-  tagsColDef,
-  timelineColDef,
 } from 'components/AgGrid/column'
 import { useTagsVocabulary, useTimeline } from 'hooks'
 import { useAuth } from 'providers/AuthProvider'
 import type { CollectionSet } from 'types/sets'
-import { compareIds, spreadArrayIf } from 'utils/array'
+import { compareIds } from 'utils/array'
 import { formatFrDate, formatFrEuroCurrency } from 'utils/format'
 import { isSetRetired } from 'utils/lego'
 
 import { SetMinifigsCellRenderer } from '../components'
 import useSetsMutations from './useSetsMutations'
+
+const priceColDefs = [
+  { field: 'prices.bought', headerName: 'Bought' },
+  { field: 'prices.marketValue', headerName: 'Market Value' },
+  { field: 'prices.storeValue', headerName: 'Store Value' },
+] as const satisfies ColDef<CollectionSet>[]
 
 const useSetsColDefs = () => {
   const { classes: agGridClasses } = useAgGridStyles()
@@ -41,6 +48,7 @@ const useSetsColDefs = () => {
         {
           field: 'id',
           headerName: 'Id',
+          initialPinned: 'left',
           cellDataType: 'text',
           comparator: compareIds,
           cellClass: [agGridClasses.flexAlignCenter, agGridClasses.gap1],
@@ -49,7 +57,7 @@ const useSetsColDefs = () => {
             icon: <PiLego />,
             variant: 'set',
           } satisfies ItemIdCellRenderProps,
-          sort: 'asc',
+          initialSort: 'asc',
           width: 120,
         },
         {
@@ -66,8 +74,8 @@ const useSetsColDefs = () => {
           flex: 1,
           minWidth: 120,
         },
-        timelineColDef<CollectionSet>(timeline),
-        tagsColDef<CollectionSet>({ tagsVocabulary, itemType: 'sets' }),
+        buildTimelineColDef<CollectionSet>(timeline),
+        buildTagsColDef<CollectionSet>({ tagsVocabulary, itemType: 'sets' }),
         {
           field: 'releaseYear',
           headerName: 'Release',
@@ -106,7 +114,7 @@ const useSetsColDefs = () => {
             CollectionSet,
             CollectionSet['content']['minifigs']
           >) =>
-            listValueFormatter(
+            formatListValue(
               value?.map(({ id, quantity }) => `${id}: ${quantity}`)
             ),
           cellClass: [agGridClasses.flexAlignCenter],
@@ -124,35 +132,14 @@ const useSetsColDefs = () => {
             ),
           width: 100,
         },
-        ...spreadArrayIf<ColDef<CollectionSet>>({
-          condition: idToken !== undefined,
-          array: [
-            {
-              field: 'prices.bought',
-              headerName: 'Bought',
-              filter: 'agNumberColumnFilter',
-              suppressFloatingFilterButton: false,
-              valueFormatter: ({ value }) => formatFrEuroCurrency(value),
-              width: 100,
-            },
-            {
-              field: 'prices.marketValue',
-              headerName: 'Market Value',
-              filter: 'agNumberColumnFilter',
-              suppressFloatingFilterButton: false,
-              valueFormatter: ({ value }) => formatFrEuroCurrency(value),
-              width: 100,
-            },
-            {
-              field: 'prices.storeValue',
-              headerName: 'Store Value',
-              filter: 'agNumberColumnFilter',
-              suppressFloatingFilterButton: false,
-              valueFormatter: ({ value }) => formatFrEuroCurrency(value),
-              width: 100,
-            },
-          ],
-        }),
+        ...priceColDefs.map((priceColDef): ColDef<CollectionSet> => ({
+          ...priceColDef,
+          context: { isExcluded: idToken === undefined },
+          filter: 'agNumberColumnFilter',
+          suppressFloatingFilterButton: false,
+          valueFormatter: ({ value }) => formatFrEuroCurrency(value),
+          width: 100,
+        })),
         {
           colId: 'externalLinks',
           field: 'id',
@@ -168,10 +155,8 @@ const useSetsColDefs = () => {
           sortable: false,
           width: 100,
         },
-        {
-          colId: 'actions',
+        buildActionsColDef<CollectionSet>({
           field: 'id',
-          headerName: 'Actions',
           cellClass: [agGridClasses.flexAlignCenter, agGridClasses.gap1],
           cellRenderer: ItemActionsCellRenderer,
           cellRendererParams: {
@@ -179,12 +164,8 @@ const useSetsColDefs = () => {
             isPending,
             variant: 'set',
           } satisfies SetActionsCellRendererProps,
-          filter: false,
-          floatingFilter: false,
-          resizable: false,
-          sortable: false,
           width: 140,
-        },
+        }),
         {
           field: 'location',
           headerName: 'Location',

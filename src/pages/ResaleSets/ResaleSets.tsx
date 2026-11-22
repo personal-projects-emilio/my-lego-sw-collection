@@ -74,6 +74,7 @@ const ResaleSets: FC = () => {
         />
       </ModuleHeader>
       <AgGridTable
+        columnLayoutId="resaleSets"
         columnDefs={columnDefs}
         defaultColDef={defaultSetsColumnDefs}
         getRowId={({ data }) => String(data.id)}

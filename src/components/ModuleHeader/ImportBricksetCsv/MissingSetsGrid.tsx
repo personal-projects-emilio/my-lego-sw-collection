@@ -5,7 +5,7 @@ import type { ColDef } from 'ag-grid-community'
 import { makeStyles } from 'tss-react/mui'
 import type { BricksetIgnoreList, BricksetRow } from 'types/brickset'
 import type { Set } from 'types/sets'
-import { bricksetRowKey } from 'utils/brickset'
+import { getBricksetRowKey } from 'utils/brickset'
 
 import { ignoreFields } from './ImportBricksetCsv.constants'
 import ReportGrid from './ReportGrid'
@@ -45,8 +45,8 @@ const MissingSetsGrid: FC<MissingSetsGridProps> = ({
 }) => {
   const { classes } = useMissingSetsGridStyles()
   const rowData = rows.map((row): MissingRow => ({
-    key: bricksetRowKey(row),
-    id: String(newSetIds.get(row) ?? bricksetRowKey(row)),
+    key: getBricksetRowKey(row),
+    id: String(newSetIds.get(row) ?? getBricksetRowKey(row)),
     name: row.SetName,
     theme: row.Theme,
     subtheme: row.Subtheme,
@@ -103,7 +103,7 @@ const MissingSetsGrid: FC<MissingSetsGridProps> = ({
         variant="outlined"
         className={classes.addAll}
         onClick={() =>
-          onToggleAdded({ keys: rows.map(bricksetRowKey), isAdded: false })
+          onToggleAdded({ keys: rows.map(getBricksetRowKey), isAdded: false })
         }
       >
         Add all

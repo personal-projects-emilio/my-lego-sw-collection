@@ -16,10 +16,10 @@ export type Row = {
   empty?: boolean
 }
 
-export const sideOf = (entry: TimelineEntry): Side =>
+export const getSide = (entry: TimelineEntry): Side =>
   entry.kind === 'movie' ? 'left' : 'right'
 
-export const eraLayout = ({
+export const buildEraLayout = ({
   titles,
   trilogies,
   spacing,
@@ -51,7 +51,7 @@ export const eraLayout = ({
     (trilogy) => !titles.some(({ parent }) => parent === trilogy.id)
   )
   if (emptyTrilogies.length) rows.push({ empty: true })
-  const rowOf = (entry: TimelineEntry) =>
+  const getRow = (entry: TimelineEntry) =>
     rows.findIndex(
       ({ year, gap, empty }) =>
         gap === undefined && !empty && year === entry.start
@@ -60,10 +60,10 @@ export const eraLayout = ({
     sides
       .flatMap((side) => {
         const children = titles.filter(
-          (title) => title.parent === trilogy.id && sideOf(title) === side
+          (title) => title.parent === trilogy.id && getSide(title) === side
         )
         if (!children.length) return []
-        const childRows = children.map(rowOf)
+        const childRows = children.map(getRow)
         return [
           {
             trilogy,
@@ -75,13 +75,13 @@ export const eraLayout = ({
       })
       .map((bracket, index) => ({ ...bracket, duplicate: index > 0 }))
   )
-  const cellOf = ({ row, side }: { row: Row; side: Side }) =>
+  const getCell = ({ row, side }: { row: Row; side: Side }) =>
     row.empty
       ? side === 'right'
         ? emptyTrilogies
         : []
       : titles.filter(
-          (title) => title.start === row.year && sideOf(title) === side
+          (title) => title.start === row.year && getSide(title) === side
         )
-  return { rows, brackets, cellOf }
+  return { rows, brackets, getCell }
 }

@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 
 import { useSetsQuery } from 'api/sets'
-import { uniqueAndSortedArray } from 'utils/array'
+import { toUniqueSortedArray } from 'utils/array'
 
 type SetsAutocompleteOptions = {
   ids: Array<string | number>
@@ -26,7 +26,7 @@ const useSetsAutocompleteOptions = () => {
     )
     return {
       ids: statistics.ids,
-      subthemes: uniqueAndSortedArray({ array: statistics.subthemes }),
+      subthemes: toUniqueSortedArray({ array: statistics.subthemes }),
     }
   }, [setsList])
 }

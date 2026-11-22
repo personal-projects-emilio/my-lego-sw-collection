@@ -4,6 +4,9 @@ import { PiLegoSmiley } from 'react-icons/pi'
 import type { ColDef, GetQuickFilterTextParams } from 'ag-grid-community'
 import { useAgGridStyles } from 'components/AgGrid'
 import {
+  buildActionsColDef,
+  buildTagsColDef,
+  buildTimelineColDef,
   ExternalLinksCellRenderer,
   type ExternalLinksCellRenderProps,
   ItemActionsCellRenderer,
@@ -11,8 +14,6 @@ import {
   type ItemIdCellRenderProps,
   type MinifigActionsCellRendererProps,
   OverflowTypographyCellRenderer,
-  tagsColDef,
-  timelineColDef,
 } from 'components/AgGrid/column'
 import { useTagsVocabulary, useTimeline } from 'hooks'
 import type { CollectionMinifig } from 'types/minifigs'
@@ -38,6 +39,7 @@ const useMinifigsColDefs = () => {
           } satisfies ItemIdCellRenderProps,
           field: 'id',
           headerName: 'Id',
+          initialPinned: 'left',
           initialSort: 'asc',
           width: 120,
         },
@@ -52,8 +54,11 @@ const useMinifigsColDefs = () => {
           field: 'characterName',
           headerName: 'Character Name',
         },
-        timelineColDef<CollectionMinifig>(timeline),
-        tagsColDef<CollectionMinifig>({ tagsVocabulary, itemType: 'minifigs' }),
+        buildTimelineColDef<CollectionMinifig>(timeline),
+        buildTagsColDef<CollectionMinifig>({
+          tagsVocabulary,
+          itemType: 'minifigs',
+        }),
         {
           cellClass: agGridClasses.flexAlignCenter,
           cellRenderer: OwnedCellRenderer,
@@ -88,7 +93,7 @@ const useMinifigsColDefs = () => {
           sortable: false,
           width: 100,
         },
-        {
+        buildActionsColDef<CollectionMinifig>({
           cellClass: [agGridClasses.flexAlignCenter, agGridClasses.gap1],
           cellRenderer: ItemActionsCellRenderer,
           cellRendererParams: {
@@ -96,15 +101,9 @@ const useMinifigsColDefs = () => {
             isPending,
             variant: 'minifig',
           } satisfies MinifigActionsCellRendererProps,
-          colId: 'actions',
           field: 'id',
-          filter: false,
-          floatingFilter: false,
-          headerName: 'Actions',
-          resizable: false,
-          sortable: false,
           width: 140,
-        },
+        }),
       ] as const satisfies Array<ColDef<CollectionMinifig>>,
     [agGridClasses, deleteMinifig, isPending, tagsVocabulary, timeline]
   )

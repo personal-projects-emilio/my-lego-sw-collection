@@ -31,7 +31,7 @@ const TimelineFilter = ({
   )
   const getModelAsString = useCallback(
     (current: TimelineId[] | null) =>
-      (current ?? []).map(timeline.pathLabel).join(', '),
+      (current ?? []).map(timeline.getPathLabel).join(', '),
     [timeline]
   )
   const afterGuiAttached = useCallback(() => inputRef.current?.focus(), [])

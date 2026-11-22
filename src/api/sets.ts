@@ -7,7 +7,7 @@ import { api, queryClient } from './index'
 const emptyDimensions = { depth: null, height: null, width: null }
 
 // The Realtime DB drops null values and empty arrays, and whole objects holding only those
-const withDroppedValues = (set: Set): Set => ({
+const fillDroppedValues = (set: Set): Set => ({
   ...set,
   tags: set.tags ?? [],
   timeline: set.timeline ?? [],
@@ -32,11 +32,11 @@ const withDroppedValues = (set: Set): Set => ({
 export const fetchSets = () =>
   api
     .get<SetsList>(endPoints.sets)
-    .then((res) => res.data.map(withDroppedValues))
+    .then((res) => res.data.map(fillDroppedValues))
 
 export const mutateSets = async (data: SetsList) => {
   const res = await api.put<SetsList>(endPoints.sets, data)
-  return { ...res, data: res.data.map(withDroppedValues) }
+  return { ...res, data: res.data.map(fillDroppedValues) }
 }
 
 /** Used to update local query cache */

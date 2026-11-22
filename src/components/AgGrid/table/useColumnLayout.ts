@@ -1,0 +1,131 @@
+import { useEffect, useMemo, useRef, useState } from 'react'
+
+import type {
+  GridApi,
+  GridOptions,
+  GridReadyEvent,
+  StateUpdatedEvent,
+} from 'ag-grid-community'
+import {
+  deleteColumnLayout,
+  saveColumnLayout,
+  useColumnLayoutQuery,
+} from 'api/columnLayout'
+import debounce from 'lodash/debounce'
+import { useAuth } from 'providers/AuthProvider'
+import type { ColumnLayoutId } from 'types/columnLayout'
+import {
+  hideExcluded,
+  toColumnLayout,
+  toExcludedColIds,
+  toInitialState,
+} from 'utils/columnLayout'
+
+const saveDelay = 400
+
+const layoutSources = new Set<string>([
+  'columnOrder',
+  'columnPinning',
+  'columnSizing',
+  'columnVisibility',
+  'sort',
+])
+
+const useColumnLayout = <TData>({
+  columnLayoutId,
+  columnDefs,
+}: {
+  columnLayoutId: ColumnLayoutId
+  columnDefs: GridOptions<TData>['columnDefs']
+}) => {
+  const { idToken, userId } = useAuth()
+  const {
+    data: layout,
+    error,
+    isLoading,
+  } = useColumnLayoutQuery(columnLayoutId)
+  const [api, setApi] = useState<GridApi<TData>>()
+  const [saveError, setSaveError] = useState<string>()
+  const [dismissedLoadError, setDismissedLoadError] = useState<Error>()
+  const [isResetting, setIsResetting] = useState(false)
+  const [resetCount, setResetCount] = useState(0)
+  const lastSaved = useRef<string>(undefined)
+  const excludedColIds = useMemo(
+    () => toExcludedColIds(columnDefs),
+    [columnDefs]
+  )
+  const [debouncedSave] = useState(() =>
+    debounce((target: Parameters<typeof saveColumnLayout>[0]) => {
+      saveColumnLayout(target)
+        .then(() => setSaveError(undefined))
+        .catch((saveFailure) => {
+          console.error('Unable to save the column layout', saveFailure)
+          setSaveError('Unable to save the column layout')
+        })
+    }, saveDelay)
+  )
+
+  useEffect(() => () => void debouncedSave.flush(), [debouncedSave, userId])
+
+  useEffect(() => {
+    if (error) console.error('Unable to load the column layout', error)
+  }, [error])
+
+  const onStateUpdated = ({ sources, state }: StateUpdatedEvent<TData>) => {
+    const next = toColumnLayout({ state, excludedColIds, previous: layout })
+    const key = JSON.stringify(next)
+    if (sources.includes('gridInitializing')) {
+      lastSaved.current = key
+      return
+    }
+    if (!userId || !idToken || error || key === lastSaved.current) return
+    if (!sources.some((source) => layoutSources.has(source))) return
+    lastSaved.current = key
+    debouncedSave({ idToken, userId, columnLayoutId, layout: next })
+  }
+
+  const reset = async () => {
+    debouncedSave.cancel()
+    if (userId && idToken) {
+      setIsResetting(true)
+      try {
+        await deleteColumnLayout({ idToken, userId, columnLayoutId })
+        setSaveError(undefined)
+      } catch (resetFailure) {
+        console.error('Unable to reset the column layout', resetFailure)
+        setSaveError('Unable to reset the column layout')
+      } finally {
+        setIsResetting(false)
+      }
+    }
+    setResetCount((count) => count + 1)
+  }
+
+  return {
+    api,
+    canSave: !!userId && !!idToken,
+    clearSaveError: () => {
+      setSaveError(undefined)
+      setDismissedLoadError(error ?? undefined)
+    },
+    columnDefs: useMemo(() => hideExcluded(columnDefs), [columnDefs]),
+    excludedColIds,
+    gridKey: resetCount,
+    initialState: useMemo(
+      () => toInitialState({ layout, excludedColIds }),
+      [layout, excludedColIds]
+    ),
+    isLoading,
+    isResetting,
+    onGridReady: ({ api: readyApi }: GridReadyEvent<TData>) => setApi(readyApi),
+    onStateUpdated,
+    reset,
+    saveError:
+      saveError ??
+      (error && error !== dismissedLoadError
+        ? 'Unable to load your column layout, so column changes are not saved'
+        : undefined),
+  }
+}
+
+export default useColumnLayout

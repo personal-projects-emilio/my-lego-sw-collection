@@ -14,57 +14,53 @@ import { useMinifigsMutations } from 'pages/Minifigs/hooks'
 import { useSetsMutations } from 'pages/Sets/hooks'
 import { useAuth } from 'providers/AuthProvider'
 import type { VocabularyState } from 'types/common'
+import type { MinifigsList } from 'types/minifigs'
+import type { SetsList } from 'types/sets'
 import type { Tag } from 'types/tags'
 import type { TimelineEntry } from 'types/timeline'
 import { assert, isNotNullOrUndefined } from 'utils/typescript'
 
 export class PartlySavedError extends Error {}
 
-type VocabularyConfig<ListKey extends string, Entry> = {
+type ItemsState = { setsList: SetsList; minifigsList: MinifigsList }
+
+type VocabularyConfig<Entry, State extends ItemsState> = {
   queryKey: string
-  listKey: ListKey
   useList: () => Entry[] | undefined
   setQueryData: (list: Entry[]) => unknown
   save: (list: Entry[]) => Promise<unknown>
+  toState: (parts: ItemsState & { list: Entry[] }) => State
+  listOf: (state: State) => Entry[]
 }
 
-type MapVocabulariesToConfig = {
-  tags: VocabularyConfig<'tagsList', Tag>
-  timeline: VocabularyConfig<'timelineList', TimelineEntry>
+export const tagsVocabularyConfig: VocabularyConfig<
+  Tag,
+  VocabularyState<'tagsList', Tag>
+> = {
+  queryKey: queryKeys.tags,
+  useList: () => useTagsQuery().data,
+  setQueryData: setTagsQueryData,
+  save: mutateTags,
+  toState: ({ list, ...items }) => ({ tagsList: list, ...items }),
+  listOf: ({ tagsList }) => tagsList,
 }
 
-const mapVocabulariesToConfig: MapVocabulariesToConfig = {
-  tags: {
-    queryKey: queryKeys.tags,
-    listKey: 'tagsList',
-    useList: () => useTagsQuery().data,
-    setQueryData: setTagsQueryData,
-    save: mutateTags,
-  },
-  timeline: {
-    queryKey: queryKeys.timeline,
-    listKey: 'timelineList',
-    useList: () => useTimelineQuery().data,
-    setQueryData: setTimelineQueryData,
-    save: mutateTimeline,
-  },
+export const timelineVocabularyConfig: VocabularyConfig<
+  TimelineEntry,
+  VocabularyState<'timelineList', TimelineEntry>
+> = {
+  queryKey: queryKeys.timeline,
+  useList: () => useTimelineQuery().data,
+  setQueryData: setTimelineQueryData,
+  save: mutateTimeline,
+  toState: ({ list, ...items }) => ({ timelineList: list, ...items }),
+  listOf: ({ timelineList }) => timelineList,
 }
 
-type Vocabulary = keyof MapVocabulariesToConfig
-
-type StateOf<Name extends Vocabulary> =
-  MapVocabulariesToConfig[Name] extends VocabularyConfig<
-    infer ListKey,
-    infer Entry
-  >
-    ? VocabularyState<ListKey, Entry>
-    : never
-
-type AnyState = VocabularyState<string, unknown>
-
-const useVocabularyMutations = <Name extends Vocabulary>(vocabulary: Name) => {
-  const { queryKey, listKey, useList, setQueryData, save } =
-    mapVocabulariesToConfig[vocabulary] as VocabularyConfig<string, unknown>
+const useVocabularyMutations = <Entry, State extends ItemsState>(
+  config: VocabularyConfig<Entry, State>
+) => {
+  const { queryKey, useList, setQueryData, save, toState, listOf } = config
   const list = useList()
   const { data: setsList } = useSetsQuery()
   const { data: minifigsList } = useMinifigsQuery()
@@ -75,15 +71,15 @@ const useVocabularyMutations = <Name extends Vocabulary>(vocabulary: Name) => {
   const pending = useRef(false)
 
   const state = useMemo(
-    (): AnyState | undefined =>
+    () =>
       list && setsList && minifigsList
-        ? ({ [listKey]: list, setsList, minifigsList } as AnyState)
+        ? toState({ list, setsList, minifigsList })
         : undefined,
-    [listKey, list, setsList, minifigsList]
+    [toState, list, setsList, minifigsList]
   )
 
   const apply = useCallback(
-    async (next: AnyState) => {
+    async (next: State) => {
       assert(isNotNullOrUndefined(state))
       if (pending.current) throw new Error('A change is already being saved')
       pending.current = true
@@ -104,11 +100,11 @@ const useVocabularyMutations = <Name extends Vocabulary>(vocabulary: Name) => {
           await editMinifigsList(next.minifigsList)
           restores.push(() => editMinifigsList(state.minifigsList))
         }
-        setQueryData(next[listKey])
-        if (idToken) await save(next[listKey])
+        setQueryData(listOf(next))
+        if (idToken) await save(listOf(next))
       } catch (error) {
         console.error(`Unable to edit ${queryKey}`, error)
-        setQueryData(state[listKey])
+        setQueryData(listOf(state))
         const restored = await Promise.allSettled(
           restores.map((restore) => restore())
         )
@@ -132,7 +128,7 @@ const useVocabularyMutations = <Name extends Vocabulary>(vocabulary: Name) => {
       state,
       idToken,
       queryKey,
-      listKey,
+      listOf,
       save,
       setQueryData,
       editSetsList,
@@ -140,11 +136,7 @@ const useVocabularyMutations = <Name extends Vocabulary>(vocabulary: Name) => {
     ]
   )
 
-  return {
-    state: state as StateOf<Name> | undefined,
-    apply: apply as (next: StateOf<Name>) => Promise<void>,
-    isPending,
-  }
+  return { state, apply, isPending }
 }
 
 export default useVocabularyMutations

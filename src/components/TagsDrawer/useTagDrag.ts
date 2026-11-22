@@ -12,7 +12,7 @@ import {
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable'
 import type { TagId } from 'types/tags'
 import { moveTag, type TagsState } from 'utils/tags'
-import { projectDrop } from 'utils/tree'
+import { getDropProjection } from 'utils/tree'
 
 import { type Drag, indent, type Run } from './tagTree'
 import type { TagTree } from './useTagTree'
@@ -26,7 +26,7 @@ type UseTagDragOptions = {
 }
 
 const useTagDrag = ({ state, tree, run, drag, setDrag }: UseTagDragOptions) => {
-  const { nodes, tagsById, tagsVocabulary, fullPath, expand } = tree
+  const { nodes, tagsById, tagsVocabulary, getFullPath, expand } = tree
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, {
@@ -36,7 +36,7 @@ const useTagDrag = ({ state, tree, run, drag, setDrag }: UseTagDragOptions) => {
 
   const projectSortedDrop = useCallback(
     (target: Required<Drag>) => {
-      const projected = projectDrop({ nodes, ...target })
+      const projected = getDropProjection({ nodes, ...target })
       return {
         ...projected,
         stays: projected.parent === tagsById.get(target.activeId)?.parent,
@@ -53,18 +53,18 @@ const useTagDrag = ({ state, tree, run, drag, setDrag }: UseTagDragOptions) => {
       : moveTag({ state, id: drag.activeId, parent: target.parent })
     return {
       ...target,
-      depth: target.parent ? tagsVocabulary.depth(target.parent) + 1 : 0,
+      depth: target.parent ? tagsVocabulary.getDepth(target.parent) + 1 : 0,
       refused: edit && 'refused' in edit ? edit.refused : undefined,
     }
   }, [state, drag, projectSortedDrop, tagsVocabulary])
 
-  const dropNoteOf = (id: TagId) =>
+  const getDropNote = (id: TagId) =>
     drop && id === drag?.activeId
       ? {
           refused: !!drop.refused,
           text:
             drop.refused ??
-            `${drop.stays ? 'Stays in' : 'Into'} ${fullPath(drop.parent)}`,
+            `${drop.stays ? 'Stays in' : 'Into'} ${getFullPath(drop.parent)}`,
         }
       : undefined
 
@@ -99,13 +99,13 @@ const useTagDrag = ({ state, tree, run, drag, setDrag }: UseTagDragOptions) => {
     if ('state' in edit) expand(target.parent)
     run(
       edit,
-      `Moved ${tagsVocabulary.label(id)} into ${fullPath(target.parent)}`
+      `Moved ${tagsVocabulary.getLabel(id)} into ${getFullPath(target.parent)}`
     )
   }
 
   return {
     drop,
-    dropNoteOf,
+    getDropNote,
     isDropTarget,
     contextProps: {
       sensors,

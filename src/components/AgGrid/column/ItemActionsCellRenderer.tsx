@@ -1,16 +1,10 @@
 import { useMemo, useState } from 'react'
 import { MdContentCopy, MdDelete, MdEdit } from 'react-icons/md'
 
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogTitle,
-  IconButton,
-  Tooltip,
-} from '@mui/material'
+import { IconButton, Tooltip } from '@mui/material'
 import { type ToOptions, useNavigate } from '@tanstack/react-router'
 import type { CustomCellRendererProps } from 'ag-grid-react'
+import ConfirmDialog from 'components/ConfirmDialog'
 import type { Item } from 'types/common'
 import type { Minifig } from 'types/minifigs'
 import type { ResaleSet } from 'types/resale'
@@ -103,34 +97,16 @@ const ItemActionsCellRenderer = ({
           <MdDelete fontSize="inherit" />
         </IconButton>
       </Tooltip>
-      <Dialog
+      <ConfirmDialog
+        confirmLabel="Delete"
+        isPending={isPending}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={() =>
+          variant === 'minifig' ? deleteItem(itemId) : deleteItem(itemId)
+        }
         open={isDeleteModalOpen}
-        onClose={() => {
-          if (isPending) return
-          setIsDeleteModalOpen(false)
-        }}
-        maxWidth="md"
-      >
-        <DialogTitle>{`Are you sure you want to delete ${itemId}?`}</DialogTitle>
-        <DialogActions>
-          <Button
-            color="primary"
-            loading={isPending}
-            onClick={() => setIsDeleteModalOpen(false)}
-          >
-            Cancel
-          </Button>
-          <Button
-            loading={isPending}
-            onClick={() =>
-              variant === 'minifig' ? deleteItem(itemId) : deleteItem(itemId)
-            }
-            variant="contained"
-          >
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
+        title={`Are you sure you want to delete ${itemId}?`}
+      />
     </>
   )
 }

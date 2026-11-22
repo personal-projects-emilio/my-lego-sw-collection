@@ -1,3 +1,4 @@
+import setAt from 'lodash/fp/set'
 import type { BricksetIgnoreList, BricksetRow } from 'types/brickset'
 import type { Set, SetsList } from 'types/sets'
 
@@ -19,7 +20,7 @@ export type BricksetReport = {
   setsList: SetsList
 }
 
-const rowIds = ({
+const getRowIds = ({
   Number,
   USItemNumber = '',
   EUItemNumber = '',
@@ -34,7 +35,7 @@ const rowIds = ({
     `${EUItemNumber}-${Variant}`,
   ].filter((id) => id && !id.startsWith('-'))
 
-const ignoreReason = ({
+const getIgnoreReason = ({
   row: { Number, Theme, Subtheme },
   ignoreList,
 }: {
@@ -175,12 +176,12 @@ export const buildBricksetReport = ({
   }
 
   rows.forEach((row) => {
-    const reason = ignoreReason({ row, ignoreList })
+    const reason = getIgnoreReason({ row, ignoreList })
     if (reason) {
       report.ignored.push({ row, reason })
       return
     }
-    const matchedId = rowIds(row).find((id) => setIds.has(id))
+    const matchedId = getRowIds(row).find((id) => setIds.has(id))
     if (!matchedId) {
       report.missing.push(row)
       return
@@ -192,7 +193,7 @@ export const buildBricksetReport = ({
     const matchedRows = rowsBySetId.get(String(set.id)) ?? []
     if (matchedRows.length === 0) {
       const isIgnored = report.ignored.some(({ row }) =>
-        rowIds(row).includes(String(set.id))
+        getRowIds(row).includes(String(set.id))
       )
       if (!isIgnored) report.notInCsv.push(set)
       return set
@@ -216,11 +217,11 @@ export const buildBricksetReport = ({
   return report
 }
 
-export const bricksetRowKey = ({ Number, Variant }: BricksetRow) =>
+export const getBricksetRowKey = ({ Number, Variant }: BricksetRow) =>
   `${Number}-${Variant}`
 
 /** The id a new set gets: the bare number, with a `-variant` suffix only when the CSV or the collection has another variant of it. */
-export const bricksetRowToSetId = ({
+export const getSetIdFromBricksetRow = ({
   row,
   rows,
   setsList,
@@ -233,11 +234,11 @@ export const bricksetRowToSetId = ({
     rows.some(
       ({ Number, Variant }) => Number === row.Number && Variant !== row.Variant
     ) || setsList.some(({ id }) => String(id).startsWith(`${row.Number}-`))
-  if (row.Variant !== '1' || hasOtherVariant) return bricksetRowKey(row)
+  if (row.Variant !== '1' || hasOtherVariant) return getBricksetRowKey(row)
   return /^\d+$/.test(row.Number) ? Number(row.Number) : row.Number
 }
 
-export const newSetFromBricksetRow = ({
+export const createSetFromBricksetRow = ({
   row,
   base,
   id,
@@ -259,27 +260,8 @@ export const newSetFromBricksetRow = ({
   })
 }
 
-export const changeKey = ({ id, field }: { id: Set['id']; field: string }) =>
+export const getChangeKey = ({ id, field }: { id: Set['id']; field: string }) =>
   `${id}|${field}`
-
-const withValueAt = ({
-  object,
-  path: [key, ...path],
-  value,
-}: {
-  object: Record<string, unknown>
-  path: string[]
-  value: unknown
-}): Record<string, unknown> => ({
-  ...object,
-  [key]: path.length
-    ? withValueAt({
-        object: (object[key] ?? {}) as Record<string, unknown>,
-        path,
-        value,
-      })
-    : value,
-})
 
 /** The sets list to save, with the current value put back for every skipped change. */
 export const skipChanges = ({
@@ -294,15 +276,7 @@ export const skipChanges = ({
     if (!update) return set
     return update.changes
       .filter(({ field }) =>
-        skippedKeys.includes(changeKey({ id: set.id, field }))
+        skippedKeys.includes(getChangeKey({ id: set.id, field }))
       )
-      .reduce(
-        (result, { field, from }) =>
-          withValueAt({
-            object: result,
-            path: field.split('.'),
-            value: from,
-          }) as Set,
-        set
-      )
+      .reduce((result, { field, from }) => setAt(field, from, result), set)
   })

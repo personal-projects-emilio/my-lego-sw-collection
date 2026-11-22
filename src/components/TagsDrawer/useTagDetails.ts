@@ -13,7 +13,7 @@ const useTagDetails = (descendants: Map<TagId, number>) => {
         new Set(
           effectiveTags.flatMap((id) => [
             id,
-            tagsVocabulary.rootOf(id)?.id ?? id,
+            tagsVocabulary.getRoot(id)?.id ?? id,
           ])
         ).forEach((id) => counts.set(id, (counts.get(id) ?? 0) + 1))
       )

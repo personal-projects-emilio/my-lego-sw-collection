@@ -60,28 +60,30 @@ const MinifigFormModal: FC<MinifigFormModalProps> = ({
     [isEdit, ids, minifigData]
   )
 
-  const { control, handleSubmit } = useForm<MinifigFormInput>({
-    defaultValues: {
-      ...defaultMinifigFormValues,
-      ...minifigData,
-    },
-    resolver: zodResolver(minifigValidationSchemaWithRefinedIdCheck),
-    mode: 'onSubmit',
-    reValidateMode: 'onChange',
-  })
+  const { control, handleSubmit } = useForm<MinifigFormInput, unknown, Minifig>(
+    {
+      defaultValues: {
+        ...defaultMinifigFormValues,
+        ...minifigData,
+      },
+      resolver: zodResolver(minifigValidationSchemaWithRefinedIdCheck),
+      mode: 'onSubmit',
+      reValidateMode: 'onChange',
+    }
+  )
 
   const onClose = () => {
     navigate({ to: '/minifigs' })
   }
 
-  const onSubmit: SubmitHandler<MinifigFormInput> = (data) => {
+  const onSubmit: SubmitHandler<Minifig> = (data) => {
     if (isEdit) {
       return editMinifig({
-        newMinifig: data as Minifig,
+        newMinifig: data,
         previousMinifig: minifigData,
       }).then(onClose)
     }
-    return addMinifig(data as Minifig).then(onClose)
+    return addMinifig(data).then(onClose)
   }
 
   return (

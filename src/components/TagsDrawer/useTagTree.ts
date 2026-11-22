@@ -21,7 +21,7 @@ const useTagTree = ({
         (ids) =>
           new Set([
             ...ids,
-            ...tagsVocabulary.ancestors(id).map((tag) => tag.id),
+            ...tagsVocabulary.getAncestors(id).map((tag) => tag.id),
             id,
           ])
       ),
@@ -49,7 +49,7 @@ const useTagTree = ({
     const counts = new Map<TagId, number>()
     tagsList.forEach(({ id }) =>
       tagsVocabulary
-        .ancestors(id)
+        .getAncestors(id)
         .forEach((tag) => counts.set(tag.id, (counts.get(tag.id) ?? 0) + 1))
     )
     return counts
@@ -61,29 +61,29 @@ const useTagTree = ({
         .sort(tagsList.map(({ id }) => id))
         .filter((id) =>
           tagsVocabulary
-            .ancestors(id)
+            .getAncestors(id)
             .every((tag) => tag.id !== draggedParent && expanded.has(tag.id))
         )
         .map((id) => ({
           id,
           parent: tagsById.get(id)?.parent,
-          depth: tagsVocabulary.depth(id),
+          depth: tagsVocabulary.getDepth(id),
         })),
     [tagsVocabulary, tagsList, tagsById, draggedParent, expanded]
   )
 
-  const fullPath = (id: TagId | undefined) =>
+  const getFullPath = (id: TagId | undefined) =>
     id
       ? [
           ...tagsVocabulary
-            .ancestors(id)
+            .getAncestors(id)
             .reverse()
             .map(({ label }) => label),
-          tagsVocabulary.label(id),
+          tagsVocabulary.getLabel(id),
         ].join(' › ')
       : 'the top level'
 
-  const labelsUnder = ({
+  const getLabelsUnder = ({
     parent,
     except,
   }: {
@@ -105,8 +105,8 @@ const useTagTree = ({
     parents,
     descendants,
     nodes,
-    fullPath,
-    labelsUnder,
+    getFullPath,
+    getLabelsUnder,
   }
 }
 

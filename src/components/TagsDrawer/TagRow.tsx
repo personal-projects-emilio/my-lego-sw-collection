@@ -1,4 +1,4 @@
-import type { CSSProperties, FC } from 'react'
+import type { FC } from 'react'
 import { MdDragIndicator } from 'react-icons/md'
 
 import { useSortable } from '@dnd-kit/sortable'
@@ -30,15 +30,11 @@ const TagRow: FC<TagRowProps> = ({ depth, isDropTarget, ...content }) => {
       className={classes.row}
       data-dragging={isDragging || undefined}
       data-drop-target={isDropTarget || undefined}
-      style={
-        {
-          '--depth': depth,
-          transform: CSS.Translate.toString(
-            transform && { ...transform, x: 0 }
-          ),
-          transition,
-        } as CSSProperties
-      }
+      style={{
+        '--depth': depth,
+        transform: CSS.Translate.toString(transform && { ...transform, x: 0 }),
+        transition,
+      }}
       onKeyDown={(event) => {
         if (event.key === 'F2' && !disabled && !content.editing)
           content.rowActions.startRenaming(content.id)

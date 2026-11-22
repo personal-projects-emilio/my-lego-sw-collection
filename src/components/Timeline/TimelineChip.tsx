@@ -4,9 +4,9 @@ import { MdLock } from 'react-icons/md'
 import { Chip, type ChipProps, Tooltip } from '@mui/material'
 import { useTimeline } from 'hooks'
 import type { TimelineId } from 'types/timeline'
-import { inheritedFrom } from 'utils/tags'
+import { formatInheritedFrom } from 'utils/tags'
 
-import { eraColor } from './eraColor'
+import { getEraColor } from './getEraColor'
 import KindIcon from './KindIcon'
 import useTimelineFieldStyles from './TimelineField.styles'
 
@@ -27,13 +27,15 @@ const TimelineChip: FC<TimelineChipProps> = ({
   const entry = timeline.entry(id)
   if (!entry) return null
   return (
-    <Tooltip title={sources ? inheritedFrom(sources) : ''} describeChild>
+    <Tooltip title={sources ? formatInheritedFrom(sources) : ''} describeChild>
       <Chip
         {...chipProps}
-        aria-label={sources ? `${label}, ${inheritedFrom(sources)}` : undefined}
+        aria-label={
+          sources ? `${label}, ${formatInheritedFrom(sources)}` : undefined
+        }
         size="small"
         className={classes.chip}
-        style={{ ['--era-color' as string]: eraColor({ timeline, id }) }}
+        style={{ '--era-color': getEraColor({ timeline, id }) }}
         icon={<KindIcon kind={entry.kind} />}
         label={
           <span className={classes.chipLabel}>

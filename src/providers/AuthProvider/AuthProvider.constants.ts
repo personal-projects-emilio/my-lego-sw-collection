@@ -5,6 +5,7 @@ import type { LoginData, LoginInputs } from 'types/auth'
 
 type Auth = {
   idToken?: LoginData['idToken']
+  userId?: LoginData['localId']
   login: UseMutateFunction<LoginData, unknown, LoginInputs, unknown>
   logout: () => void
   isLoading: boolean
@@ -12,6 +13,7 @@ type Auth = {
 
 export const AuthContext = createContext<Auth>({
   idToken: undefined,
+  userId: undefined,
   login: () => {},
   logout: () => {},
   isLoading: false,

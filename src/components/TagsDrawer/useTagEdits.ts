@@ -1,6 +1,8 @@
 import { useCallback, useState } from 'react'
 
-import useVocabularyMutations from 'hooks/useVocabularyMutations'
+import useVocabularyMutations, {
+  tagsVocabularyConfig,
+} from 'hooks/useVocabularyMutations'
 import { isEqual } from 'lodash'
 import { type TagsState, undoTagEdit } from 'utils/tags'
 
@@ -9,7 +11,8 @@ import { type Run, saveError } from './tagTree'
 type HistoryEntry = { description: string; before: TagsState; after: TagsState }
 
 const useTagEdits = () => {
-  const { state, apply, isPending } = useVocabularyMutations('tags')
+  const { state, apply, isPending } =
+    useVocabularyMutations(tagsVocabularyConfig)
   const [error, setError] = useState<string>()
   const [history, setHistory] = useState<HistoryEntry[]>([])
   const lastEdit = history[history.length - 1]

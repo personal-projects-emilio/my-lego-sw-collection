@@ -18,6 +18,7 @@ export type LoginData = {
   email: string
   expiresIn: string
   idToken: string
+  localId: string
   refreshToken: string
 }
 
@@ -26,4 +27,5 @@ export type RefreshTokenData = {
   id_token: string
   refresh_token: string
   token_type: string
+  user_id: string
 }

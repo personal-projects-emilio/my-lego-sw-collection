@@ -1,11 +1,4 @@
-import {
-  Children,
-  type CSSProperties,
-  forwardRef,
-  useEffect,
-  useId,
-  useMemo,
-} from 'react'
+import { Children, forwardRef, useEffect, useId, useMemo } from 'react'
 
 import {
   Autocomplete as MuiAutocomplete,
@@ -22,9 +15,9 @@ import { TagsDrawerButton } from 'components/TagsDrawer'
 import TreeView from 'components/TreeView'
 import { useTagsVocabulary } from 'hooks'
 import type { InheritedTags, TagId, TagTarget } from 'types/tags'
-import { filterTagsAfterPick, storedTagsAfterPick } from 'utils/tags'
+import { filterTagsAfterPick, getStoredTagsAfterPick } from 'utils/tags'
 
-import nestOptions, { type OptionElement } from './nestOptions'
+import nestOptions, { isOptionElement } from './nestOptions'
 import useTagsAutocompleteStyles from './TagsAutocomplete.styles'
 import useTagNotes from './useTagNotes'
 
@@ -72,18 +65,18 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
     const { classes } = useTagsAutocompleteStyles()
     const groupId = useId()
     const options = useMemo(
-      () => tagsVocabulary.pickable(itemType),
+      () => tagsVocabulary.getPickable(itemType),
       [tagsVocabulary, itemType]
     )
     const isFilter = mode === 'filter'
     const chips = isFilter
-      ? tagsVocabulary.tops(value)
+      ? tagsVocabulary.getTops(value)
       : tagsVocabulary.sort([
-          ...tagsVocabulary.leaves(value),
-          ...tagsVocabulary.leaves(Object.keys(inheritedTags)),
+          ...tagsVocabulary.getLeaves(value),
+          ...tagsVocabulary.getLeaves(Object.keys(inheritedTags)),
         ])
 
-    const { isInherited, isCovered, note } = useTagNotes({
+    const { isInherited, isCovered, getNote } = useTagNotes({
       tagsVocabulary,
       options,
       chips,
@@ -97,15 +90,15 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
         disableCloseOnSelect
         disabled={disabled}
         getOptionDisabled={(id) => isInherited(id) || isCovered(id)}
-        getOptionLabel={tagsVocabulary.pathLabel}
-        groupBy={(id) => tagsVocabulary.rootOf(id)?.label ?? ''}
+        getOptionLabel={tagsVocabulary.getPathLabel}
+        groupBy={(id) => tagsVocabulary.getRoot(id)?.label ?? ''}
         multiple
         onBlur={onBlur}
         onChange={(_event, ids) =>
           onChange(
             isFilter
               ? filterTagsAfterPick({ tagsVocabulary, picked: ids })
-              : storedTagsAfterPick({
+              : getStoredTagsAfterPick({
                   tagsVocabulary,
                   picked: ids,
                   stored: value,
@@ -135,7 +128,7 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
             </ListSubheader>
             <ul className={classes.nestedList} role="presentation">
               {nestOptions({
-                options: Children.toArray(children) as OptionElement[],
+                options: Children.toArray(children).filter(isOptionElement),
                 subtreeClassName: classes.subtree,
               })}
             </ul>
@@ -146,17 +139,17 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
           id,
           { selected }
         ) => {
-          const optionNote = note(id)
+          const optionNote = getNote(id)
           return (
             <li
               key={key}
               {...props}
-              aria-label={[tagsVocabulary.pathLabel(id), optionNote]
+              aria-label={[tagsVocabulary.getPathLabel(id), optionNote]
                 .filter(Boolean)
                 .join(', ')}
               className={optionClassName}
-              data-depth={tagsVocabulary.depth(id)}
-              style={{ '--depth': tagsVocabulary.depth(id) } as CSSProperties}
+              data-depth={tagsVocabulary.getDepth(id)}
+              style={{ '--depth': tagsVocabulary.getDepth(id) }}
             >
               <Checkbox
                 aria-hidden
@@ -164,7 +157,7 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
                 size="small"
                 tabIndex={-1}
               />
-              {tagsVocabulary.label(id)}
+              {tagsVocabulary.getLabel(id)}
               {optionNote && (
                 <Typography className={classes.note} variant="caption">
                   {optionNote}
@@ -179,7 +172,7 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
           popper: { className: popperClassName },
         }}
         renderValue={(ids, getItemProps) => {
-          const tagChip = ({
+          const renderTagChip = ({
             id,
             chipLabel,
           }: {
@@ -199,15 +192,15 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
               />
             )
           }
-          const notes = (group: TagId[]) =>
+          const getNotes = (group: TagId[]) =>
             Object.fromEntries(
               group.flatMap((id) => {
-                const groupNote = note(id)
+                const groupNote = getNote(id)
                 return groupNote ? [[id, groupNote]] : []
               })
             )
           return tagsVocabulary
-            .siblingGroups(ids)
+            .getSiblingGroups(ids)
             .map(({ parent, ids: group }) => {
               if (parent)
                 return (
@@ -217,31 +210,34 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
                     title={
                       <TreeView
                         ids={group}
-                        notes={notes(group)}
+                        notes={getNotes(group)}
                         tree={tagsVocabulary}
                       />
                     }
                   >
                     <div
-                      aria-label={tagsVocabulary.pathLabel(parent)}
+                      aria-label={tagsVocabulary.getPathLabel(parent)}
                       className={classes.group}
                       role="group"
                     >
                       <Typography aria-hidden variant="caption">
-                        {tagsVocabulary.pathLabel(parent)} ›
+                        {tagsVocabulary.getPathLabel(parent)} ›
                       </Typography>
                       {group.map((id) =>
-                        tagChip({ id, chipLabel: tagsVocabulary.label(id) })
+                        renderTagChip({
+                          id,
+                          chipLabel: tagsVocabulary.getLabel(id),
+                        })
                       )}
                     </div>
                   </Tooltip>
                 )
               const [id] = group
-              const chip = tagChip({
+              const chip = renderTagChip({
                 id,
-                chipLabel: tagsVocabulary.pathLabel(id),
+                chipLabel: tagsVocabulary.getPathLabel(id),
               })
-              const chipNote = note(id)
+              const chipNote = getNote(id)
               if (!chipNote) return chip
               return (
                 <Tooltip key={`note-${id}`} describeChild title={chipNote}>

@@ -33,8 +33,8 @@ const TagsFilter = ({
   const getModelAsString = useCallback(
     (current: TagId[] | null) =>
       tagsVocabulary
-        .tops(current ?? [])
-        .map(tagsVocabulary.pathLabel)
+        .getTops(current ?? [])
+        .map(tagsVocabulary.getPathLabel)
         .join(', '),
     [tagsVocabulary]
   )

@@ -12,7 +12,7 @@ type LabelInputProps = {
   siblingLabels: string[]
 }
 
-const normalized = (label: string) => label.trim().toLocaleLowerCase()
+const normalizeLabel = (label: string) => label.trim().toLocaleLowerCase()
 
 const LabelInput: FC<LabelInputProps> = ({
   className,
@@ -28,7 +28,9 @@ const LabelInput: FC<LabelInputProps> = ({
     value.trim() && value !== defaultValue ? onCommit(value) : onCancel()
   const duplicate =
     !!value.trim() &&
-    siblingLabels.some((label) => normalized(label) === normalized(value))
+    siblingLabels.some(
+      (label) => normalizeLabel(label) === normalizeLabel(value)
+    )
   return (
     <TextField
       autoFocus

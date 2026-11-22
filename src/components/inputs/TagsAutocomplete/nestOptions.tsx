@@ -1,6 +1,10 @@
-import type { ReactElement, ReactNode } from 'react'
+import { isValidElement, type ReactElement, type ReactNode } from 'react'
 
 export type OptionElement = ReactElement<{ 'data-depth': number }>
+
+export const isOptionElement = (child: ReactNode): child is OptionElement =>
+  isValidElement<{ 'data-depth'?: unknown }>(child) &&
+  typeof child.props['data-depth'] === 'number'
 
 const nestOptions = ({
   options,
