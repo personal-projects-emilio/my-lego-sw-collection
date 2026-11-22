@@ -15,7 +15,7 @@ import {
   updateLooseMinifig,
 } from './lego.ts'
 import {
-  minifigFixture,
+  buildMinifigFixture,
   setFixture,
   setMinifigFixture,
 } from './testFixtures.ts'
@@ -43,7 +43,7 @@ test('renames a minifig in every set that contains it', () => {
   assert.equal(renamed[1], setsList[1])
 })
 
-const minifig = ({
+const buildMinifig = ({
   id,
   tags = [],
   timeline = [],
@@ -51,9 +51,9 @@ const minifig = ({
   id: string
   tags?: string[]
   timeline?: string[]
-}) => minifigFixture({ id, tags, timeline })
+}) => buildMinifigFixture({ id, tags, timeline })
 
-const loose = (quantity: number): LooseMinifig => ({
+const buildLooseMinifig = (quantity: number): LooseMinifig => ({
   quantity,
   isInFrame: false,
   unitBoughtPrice: 2,
@@ -90,8 +90,8 @@ const setWith = ({
 
 test('buildCollection adds owned set quantities to the loose total and lists every set', () => {
   const { minifigsList } = buildCollection({
-    minifigsList: [minifig({ id: 'sw0001' })],
-    looseMinifigsList: [{ id: 'sw0001', ...loose(1) }],
+    minifigsList: [buildMinifig({ id: 'sw0001' })],
+    looseMinifigsList: [{ id: 'sw0001', ...buildLooseMinifig(1) }],
     setsList: [
       setWith({ id: 1, ownedQuantity: 1 }),
       setWith({ id: 2, ownedQuantity: 0 }),
@@ -101,7 +101,7 @@ test('buildCollection adds owned set quantities to the loose total and lists eve
   })
 
   assert.equal(minifigsList[0].owned.total, 3)
-  assert.deepEqual(minifigsList[0].owned.loose, loose(1))
+  assert.deepEqual(minifigsList[0].owned.loose, buildLooseMinifig(1))
   assert.deepEqual(minifigsList[0].owned.inSet, [
     { setId: 1, quantity: 2, isInFrame: true, setOwnedQuantity: 1 },
     { setId: 2, quantity: 2, isInFrame: true, setOwnedQuantity: 0 },
@@ -110,8 +110,8 @@ test('buildCollection adds owned set quantities to the loose total and lists eve
 
 test('buildCollection counts set minifigs once per owned copy of the set', () => {
   const { minifigsList } = buildCollection({
-    minifigsList: [minifig({ id: 'sw0001' })],
-    looseMinifigsList: [{ id: 'sw0001', ...loose(1) }],
+    minifigsList: [buildMinifig({ id: 'sw0001' })],
+    looseMinifigsList: [{ id: 'sw0001', ...buildLooseMinifig(1) }],
     setsList: [setWith({ id: 1, ownedQuantity: 2 })],
     tagsList: [],
     timelineList: [],
@@ -122,7 +122,7 @@ test('buildCollection counts set minifigs once per owned copy of the set', () =>
 
 test('buildCollection gives a minifig without a loose entry an empty loose', () => {
   const { minifigsList } = buildCollection({
-    minifigsList: [minifig({ id: 'sw0001' })],
+    minifigsList: [buildMinifig({ id: 'sw0001' })],
     looseMinifigsList: [],
     setsList: [],
     tagsList: [],
@@ -143,15 +143,20 @@ test.for([
     case: 'merges changes into an entry',
     id: 'sw0002',
     quantity: 3,
-    expected: [{ id: 'sw0002', ...loose(3) }],
+    expected: [{ id: 'sw0002', ...buildLooseMinifig(3) }],
   },
   {
     case: 'adds a sorted entry with default prices',
     id: 'sw0001',
     quantity: 1,
     expected: [
-      { id: 'sw0001', ...loose(1), unitBoughtPrice: 0, unitMarketValue: 0 },
-      { id: 'sw0002', ...loose(1) },
+      {
+        id: 'sw0001',
+        ...buildLooseMinifig(1),
+        unitBoughtPrice: 0,
+        unitMarketValue: 0,
+      },
+      { id: 'sw0002', ...buildLooseMinifig(1) },
     ],
   },
   {
@@ -161,7 +166,7 @@ test.for([
     expected: [],
   },
 ])('updateLooseMinifig $case', ({ id, quantity, expected }) => {
-  const list = [{ id: 'sw0002', ...loose(1) }]
+  const list = [{ id: 'sw0002', ...buildLooseMinifig(1) }]
 
   assert.deepEqual(
     updateLooseMinifig({
@@ -174,7 +179,7 @@ test.for([
 })
 
 test('renameLooseMinifig moves the entry to the new id', () => {
-  const list = [{ id: 'sw0001', ...loose(1) }]
+  const list = [{ id: 'sw0001', ...buildLooseMinifig(1) }]
 
   assert.deepEqual(
     renameLooseMinifig({
@@ -182,7 +187,7 @@ test('renameLooseMinifig moves the entry to the new id', () => {
       previousId: 'sw0001',
       newId: 'sw0001a',
     }),
-    [{ id: 'sw0001a', ...loose(1) }]
+    [{ id: 'sw0001a', ...buildLooseMinifig(1) }]
   )
   assert.equal(
     renameLooseMinifig({
@@ -344,7 +349,7 @@ test.for([
   },
 ])('buildCollection: $case', ({ sets, minifigTags, expected }) => {
   const { setsList, minifigsList } = buildCollection({
-    minifigsList: [minifig({ id: 'sw0001', tags: minifigTags })],
+    minifigsList: [buildMinifig({ id: 'sw0001', tags: minifigTags })],
     looseMinifigsList: [],
     setsList: sets.map((row) => {
       const set = setWith({
@@ -556,7 +561,7 @@ test.for([
   },
 ])('buildCollection timeline: $case', ({ sets, minifigTimeline, expected }) => {
   const { setsList, minifigsList } = buildCollection({
-    minifigsList: [minifig({ id: 'sw0001', timeline: minifigTimeline })],
+    minifigsList: [buildMinifig({ id: 'sw0001', timeline: minifigTimeline })],
     looseMinifigsList: [],
     setsList: sets.map((row) =>
       setWith({
@@ -583,7 +588,7 @@ test.for([
 
 test('buildCollection refreshes the character names on set content', () => {
   const { setsList } = buildCollection({
-    minifigsList: [minifig({ id: 'sw0001' })],
+    minifigsList: [buildMinifig({ id: 'sw0001' })],
     looseMinifigsList: [],
     setsList: [setWith({ id: 1, ownedQuantity: 0 })],
     tagsList: [],

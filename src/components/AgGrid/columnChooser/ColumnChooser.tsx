@@ -4,7 +4,7 @@ import { MdClose, MdRestartAlt } from 'react-icons/md'
 import { Alert, Button, Checkbox, IconButton, Typography } from '@mui/material'
 import type { GridApi } from 'ag-grid-community'
 import SearchField from 'components/inputs/SearchField'
-import { toggleableColIds, toShowAllState } from 'utils/columnLayout'
+import { getToggleableColIds, toShowAllState } from 'utils/columnLayout'
 
 import useColumnChooserStyles from './ColumnChooser.styles'
 import ColumnChooserList from './ColumnChooserList'
@@ -66,7 +66,7 @@ const ColumnChooser = <TData,>({
         indeterminate={showAll === 'indeterminate'}
         onChange={() =>
           api.setColumnsVisible(
-            toggleableColIds(columns),
+            getToggleableColIds(columns),
             showAll !== 'checked'
           )
         }

@@ -7,27 +7,27 @@ import type {
   TimelineList,
 } from 'types/timeline'
 
-import { uniqueId } from './tags'
+import { createUniqueId } from './tags'
 import { buildTree, byLabel } from './tree'
-import { withoutUndefined } from './typescript'
+import { removeUndefined } from './typescript'
 
 export const kinds: Kind[] = ['movie', 'show', 'game', 'book', 'other']
 
 export const isKind = (value: string): value is Kind =>
   kinds.some((kind) => kind === value)
 
-export const kindName = (kind: Kind) => kind[0].toUpperCase() + kind.slice(1)
+export const getKindName = (kind: Kind) => kind[0].toUpperCase() + kind.slice(1)
 
 type Range = { start?: number; end?: number }
 
 export type Role = 'era' | 'trilogy' | 'title'
 
-export const roleOf = ({ parent, kind }: TimelineEntry): Role =>
+export const getRole = ({ parent, kind }: TimelineEntry): Role =>
   kind ? 'title' : parent ? 'trilogy' : 'era'
 
 type Children = Map<TimelineId | undefined, TimelineEntry[]>
 
-const childrenByParent = (timelineList: TimelineList) => {
+const groupChildrenByParent = (timelineList: TimelineList) => {
   const children: Children = new Map()
   timelineList.forEach((entry) =>
     children.set(entry.parent, [...(children.get(entry.parent) ?? []), entry])
@@ -35,7 +35,7 @@ const childrenByParent = (timelineList: TimelineList) => {
   return children
 }
 
-const rangesById = ({
+const buildRangesById = ({
   timelineList,
   children,
 }: {
@@ -43,7 +43,7 @@ const rangesById = ({
   children: Children
 }) => {
   const ranges = new Map<TimelineId, Range>()
-  const rangeOf = ({
+  const computeRange = ({
     entry,
     seen,
   }: {
@@ -55,7 +55,7 @@ const rangesById = ({
     if (seen.has(entry.id)) return {}
     seen.add(entry.id)
     const inner = (children.get(entry.id) ?? []).map((child) =>
-      rangeOf({ entry: child, seen })
+      computeRange({ entry: child, seen })
     )
     const starts = inner.flatMap(({ start }) => start ?? [])
     const ends = inner.flatMap(({ start, end }) => end ?? start ?? [])
@@ -68,91 +68,94 @@ const rangesById = ({
     ranges.set(entry.id, range)
     return range
   }
-  timelineList.forEach((entry) => rangeOf({ entry, seen: new Set() }))
+  timelineList.forEach((entry) => computeRange({ entry, seen: new Set() }))
   return ranges
 }
 
 const createTimeline = (timelineList: TimelineList) => {
-  const children = childrenByParent(timelineList)
-  const ranges = rangesById({ timelineList, children })
-  const range = (id: TimelineId) => ranges.get(id) ?? {}
+  const children = groupChildrenByParent(timelineList)
+  const ranges = buildRangesById({ timelineList, children })
+  const getRange = (id: TimelineId) => ranges.get(id) ?? {}
   const byDate = (a: TimelineEntry, b: TimelineEntry) =>
-    (range(a.id).start ?? Infinity) - (range(b.id).start ?? Infinity) ||
-    (range(a.id).end ?? Infinity) - (range(b.id).end ?? Infinity) ||
+    (getRange(a.id).start ?? Infinity) - (getRange(b.id).start ?? Infinity) ||
+    (getRange(a.id).end ?? Infinity) - (getRange(b.id).end ?? Infinity) ||
     byLabel(a, b)
   const tree = buildTree({ nodes: timelineList, compare: byDate })
   const byId = new Map(timelineList.map((entry) => [entry.id, entry]))
 
   const has = (id: TimelineId) => byId.has(id)
 
-  const withImplied = (ids: TimelineId[]) =>
+  const addImplied = (ids: TimelineId[]) =>
     tree.sort(
       ids
         .filter(has)
-        .flatMap((id) => [id, ...tree.ancestors(id).map((entry) => entry.id)])
+        .flatMap((id) => [
+          id,
+          ...tree.getAncestors(id).map((entry) => entry.id),
+        ])
     )
 
-  const pathLabel = (id: TimelineId) =>
+  const getPathLabel = (id: TimelineId) =>
     [
       ...tree
-        .ancestors(id)
+        .getAncestors(id)
         .reverse()
         .map(({ label }) => label),
-      tree.label(id),
+      tree.getLabel(id),
     ].join(' › ')
 
-  const childrenOf = (id: TimelineId | undefined) =>
+  const getChildren = (id: TimelineId | undefined) =>
     tree.sort((children.get(id) ?? []).map((entry) => entry.id))
 
-  const holdsTrilogies = (id: TimelineId) =>
-    (children.get(id) ?? []).some((child) => roleOf(child) === 'trilogy')
+  const hasTrilogies = (id: TimelineId) =>
+    (children.get(id) ?? []).some((child) => getRole(child) === 'trilogy')
 
   const sorted = tree
     .sort(timelineList.map(({ id }) => id))
     .flatMap((id) => byId.get(id) ?? [])
 
-  const eraOf = (id: TimelineId) => {
-    const root = tree.rootOf(id)
-    return root && roleOf(root) === 'era' ? root : undefined
+  const getEra = (id: TimelineId) => {
+    const root = tree.getRoot(id)
+    return root && getRole(root) === 'era' ? root : undefined
   }
 
-  const groupedLabel = (ids: TimelineId[]) => {
+  const getGroupedLabel = (ids: TimelineId[]) => {
     const groups = new Map<TimelineId, TimelineId[]>()
-    tree.leaves(ids.filter(has)).forEach((id) => {
+    tree.getLeaves(ids.filter(has)).forEach((id) => {
       const key = byId.get(id)?.parent ?? id
       groups.set(key, [...(groups.get(key) ?? []), id])
     })
     return [...groups]
       .map(([key, members]) =>
         members.length > 1
-          ? `${pathLabel(key)} › ${members.map(tree.label).join(', ')}`
-          : pathLabel(members[0])
+          ? `${getPathLabel(key)} › ${members.map(tree.getLabel).join(', ')}`
+          : getPathLabel(members[0])
       )
       .join(' | ')
   }
 
-  const withRole = (role: Role) =>
-    sorted.filter((entry) => roleOf(entry) === role)
-  const eras = withRole('era')
-  const titles = withRole('title')
+  const filterByRole = (role: Role) =>
+    sorted.filter((entry) => getRole(entry) === role)
+  const eras = filterByRole('era')
+  const titles = filterByRole('title')
 
   return {
     ...tree,
     entry: (id: TimelineId) => byId.get(id),
     has,
-    range,
-    withImplied,
-    pathLabel,
-    groupedLabel,
-    childrenOf,
-    holdsTrilogies,
-    eraOf,
+    getRange,
+    addImplied,
+    getPathLabel,
+    getGroupedLabel,
+    getChildren,
+    hasTrilogies,
+    getEra,
     entries: sorted,
     eras,
     erasWithTitles: eras.filter((era) =>
-      titles.some(({ id }) => eraOf(id) === era)
+      titles.some(({ id }) => getEra(id) === era)
     ),
-    trilogies: withRole('trilogy'),
+    trilogies: filterByRole('trilogy'),
     titles,
   }
 }
@@ -202,14 +205,14 @@ export const saveEntry = ({
     return { refused: `${parentEntry.label} is a title and can't hold entries` }
   if (!kind && parentEntry?.parent)
     return { refused: 'A trilogy goes directly under an era' }
-  if (!kind && parentEntry && id && timeline.holdsTrilogies(id))
+  if (!kind && parentEntry && id && timeline.hasTrilogies(id))
     return { refused: `${label} holds trilogies, so it must stay an era` }
-  if (kind && id && timeline.childrenOf(id).length)
+  if (kind && id && timeline.getChildren(id).length)
     return { refused: `${label} has entries under it, so it can't be a title` }
   if (
     id &&
     parent &&
-    (parent === id || timeline.ancestors(parent).some((a) => a.id === id))
+    (parent === id || timeline.getAncestors(parent).some((a) => a.id === id))
   )
     return { refused: `${label} can't move under itself` }
   if (
@@ -221,9 +224,9 @@ export const saveEntry = ({
   if (start !== undefined && end !== undefined && end < start)
     return { refused: 'The end comes before the start' }
   const existing = id !== undefined && timeline.has(id)
-  const entry: TimelineEntry = withoutUndefined({
+  const entry: TimelineEntry = removeUndefined({
     ...draft,
-    id: existing ? id : uniqueId({ list: state.timelineList, label }),
+    id: existing ? id : createUniqueId({ list: state.timelineList, label }),
     label,
   })
   return {
@@ -238,7 +241,7 @@ export const saveEntry = ({
 
 type WithTimeline = { timeline?: TimelineId[] }
 
-const withoutTimelineEntry = <Item extends WithTimeline>({
+const removeTimelineEntry = <Item extends WithTimeline>({
   items,
   id,
 }: {
@@ -268,11 +271,11 @@ export const deleteEntry = ({
         e.id === id
           ? []
           : e.parent === id
-            ? [withoutUndefined({ ...e, parent: entry.parent })]
+            ? [removeUndefined({ ...e, parent: entry.parent })]
             : [e]
       ),
-      setsList: withoutTimelineEntry({ items: state.setsList, id }),
-      minifigsList: withoutTimelineEntry({ items: state.minifigsList, id }),
+      setsList: removeTimelineEntry({ items: state.setsList, id }),
+      minifigsList: removeTimelineEntry({ items: state.minifigsList, id }),
     },
   }
 }
@@ -294,7 +297,7 @@ const isUnder = ({
   timeline: Timeline
   id: TimelineId
   ancestor: TimelineId
-}) => timeline.ancestors(id).some((entry) => entry.id === ancestor)
+}) => timeline.getAncestors(id).some((entry) => entry.id === ancestor)
 
 export const pickStatus = ({
   timeline,
@@ -316,7 +319,7 @@ export const togglePick = ({ timeline, picks, id }: PickTarget) => {
   const status = pickStatus({ timeline, picks, id })
   if (value.includes(id)) return value.filter((other) => other !== id)
   return status === 'none'
-    ? timeline.leaves([...value, id])
+    ? timeline.getLeaves([...value, id])
     : status === 'implied'
       ? value.filter((other) => !isUnder({ timeline, id: other, ancestor: id }))
       : value

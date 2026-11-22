@@ -7,7 +7,7 @@ import {
   type TextFieldProps,
 } from '@mui/material'
 import TextField from '@mui/material/TextField'
-import { uniqueAndSortedArray } from 'utils/array'
+import { toUniqueSortedArray } from 'utils/array'
 import { isNotNullOrUndefined } from 'utils/typescript'
 
 const filter = createFilterOptions<string>()
@@ -20,7 +20,7 @@ type AutocompleteProps = Omit<
   textFieldProps?: Partial<TextFieldProps>
 }
 
-const asNoValue = (option: string | string[] | null | undefined): boolean => {
+const isNoValue = (option: string | string[] | null | undefined): boolean => {
   return Array.isArray(option)
     ? option.length === 0
     : isNotNullOrUndefined(option) && option === ''
@@ -45,7 +45,7 @@ const Autocomplete = forwardRef<HTMLInputElement, AutocompleteProps>(
       (newValue: string | string[] | null | undefined) => {
         setOptionValue(newValue)
         if (Array.isArray(newValue)) {
-          return onChange(uniqueAndSortedArray({ array: newValue }))
+          return onChange(toUniqueSortedArray({ array: newValue }))
         }
         onChange(newValue || null)
       },
@@ -67,7 +67,7 @@ const Autocomplete = forwardRef<HTMLInputElement, AutocompleteProps>(
       <MuiAutocomplete
         {...rest}
         autoHighlight
-        disableClearable={asNoValue(optionValue)}
+        disableClearable={isNoValue(optionValue)}
         filterOptions={(options, params) => {
           const filtered = filter(options, params)
           const trimedInputValue = params.inputValue.trim()
@@ -111,7 +111,7 @@ const Autocomplete = forwardRef<HTMLInputElement, AutocompleteProps>(
             variant="outlined"
             {...textFieldProps}
             placeholder={
-              asNoValue(optionValue) ? textFieldProps?.placeholder : undefined
+              isNoValue(optionValue) ? textFieldProps?.placeholder : undefined
             }
           />
         )}

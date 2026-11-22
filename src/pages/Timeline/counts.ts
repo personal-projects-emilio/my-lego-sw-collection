@@ -26,7 +26,7 @@ export const countItems = ({
   return counts
 }
 
-export const plural = ({ count, noun }: { count: number; noun: string }) =>
+export const pluralize = ({ count, noun }: { count: number; noun: string }) =>
   `${count} ${noun}${count === 1 ? '' : 's'}`
 
 export const countLabel = ({
@@ -38,6 +38,6 @@ export const countLabel = ({
 }) => {
   const count = counts.get(id)
   return count
-    ? `${plural({ count: count.sets, noun: 'set' })} · ${plural({ count: count.minifigs, noun: 'minifig' })}`
+    ? `${pluralize({ count: count.sets, noun: 'set' })} · ${pluralize({ count: count.minifigs, noun: 'minifig' })}`
     : 'Not in collection'
 }

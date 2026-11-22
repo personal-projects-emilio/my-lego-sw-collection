@@ -4,7 +4,7 @@ import { PiLego } from 'react-icons/pi'
 import type { ColDef } from 'ag-grid-community'
 import { useAgGridStyles } from 'components/AgGrid'
 import {
-  actionsColDef,
+  buildActionsColDef,
   ItemActionsCellRenderer,
   ItemIdCellRenderer,
   type ItemIdCellRenderProps,
@@ -88,7 +88,7 @@ const useResaleSetsColDefs = () => {
           headerName: 'French name',
           width: 150,
         },
-        actionsColDef<ResaleSetRow>({
+        buildActionsColDef<ResaleSetRow>({
           cellClass: [agGridClasses.flexAlignCenter, agGridClasses.gap1],
           cellDataType: false,
           cellRendererSelector: ({ node }) =>

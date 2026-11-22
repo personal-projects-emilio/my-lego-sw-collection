@@ -3,8 +3,8 @@ import { type FC, useMemo } from 'react'
 import type { ColDef, GridApi, RowSelectionOptions } from 'ag-grid-community'
 import {
   type BricksetReport,
-  changeKey,
   type FieldChange,
+  getChangeKey,
 } from 'utils/brickset'
 
 import ReportGrid from './ReportGrid'
@@ -76,7 +76,7 @@ const UpdatesGrid: FC<UpdatesGridProps> = ({
     () =>
       updates.flatMap(({ set, changes }) =>
         changes.map(({ field, from, to }): UpdateRow => ({
-          key: changeKey({ id: set.id, field }),
+          key: getChangeKey({ id: set.id, field }),
           id: String(set.id),
           name: set.name,
           field,

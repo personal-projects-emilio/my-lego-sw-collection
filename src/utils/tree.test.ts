@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict'
 import { test } from 'vitest'
 
-import { buildTree, type FlatNode, projectDrop, type TreeNode } from './tree.ts'
+import {
+  buildTree,
+  type FlatNode,
+  getDropProjection,
+  type TreeNode,
+} from './tree.ts'
 
 const nodes: TreeNode[] = [
   { id: 'timeline', label: 'Timeline' },
@@ -26,8 +31,8 @@ test.for([
     tops: ['carbonite', 'aor'],
   },
 ])('leaves and tops of $ids', ({ ids, leaves, tops }) => {
-  assert.deepEqual(tree.leaves(ids), leaves)
-  assert.deepEqual(tree.tops(ids), tops)
+  assert.deepEqual(tree.getLeaves(ids), leaves)
+  assert.deepEqual(tree.getTops(ids), tops)
 })
 
 test.for([
@@ -39,7 +44,7 @@ test.for([
 ])(
   'withImplied adds every ancestor except the root for $ids',
   ({ ids, expected }) => {
-    assert.deepEqual(tree.withImplied(ids), expected)
+    assert.deepEqual(tree.addImplied(ids), expected)
   }
 )
 
@@ -48,7 +53,7 @@ test.for([
   { id: 'tatooine', expected: 'Tatooine' },
   { id: 'unknown', expected: 'unknown' },
 ])('pathLabel of $id', ({ id, expected }) => {
-  assert.equal(tree.pathLabel(id), expected)
+  assert.equal(tree.getPathLabel(id), expected)
 })
 
 test.for([
@@ -64,11 +69,11 @@ test.for([
     expected: 'Bespin | Age of Rebellion › Original Trilogy › A New Hope',
   },
 ])('groupedLabel $case', ({ ids, expected }) => {
-  assert.equal(tree.groupedLabel(ids), expected)
+  assert.equal(tree.getGroupedLabel(ids), expected)
 })
 
 test('outline lists every ancestor with its parent in tree order', () => {
-  assert.deepEqual(tree.outline(['carbonite']), [
+  assert.deepEqual(tree.getOutline(['carbonite']), [
     { id: 'place', label: 'Place', parent: undefined },
     { id: 'bespin', label: 'Bespin', parent: 'place' },
     { id: 'carbonite', label: 'Carbonite Chamber', parent: 'bespin' },
@@ -130,7 +135,7 @@ test.for([
   },
 ])('projectDrop $case', ({ active, over, delta, expected }) => {
   assert.deepEqual(
-    projectDrop({
+    getDropProjection({
       nodes: flat,
       activeId: active,
       overId: over,

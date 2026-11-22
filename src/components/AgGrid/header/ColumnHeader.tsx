@@ -7,7 +7,7 @@ import { Menu, type MenuAnchor } from 'components/Menu'
 
 import { useColumnLayoutActions } from '../table/columnLayoutContext'
 import useColumnHeaderStyles from './ColumnHeader.styles'
-import { headerMenuItems } from './headerMenuItems'
+import { getHeaderMenuItems } from './getHeaderMenuItems'
 import useColumnSort from './useColumnSort'
 import useHeaderMenuTriggers from './useHeaderMenuTriggers'
 
@@ -69,7 +69,7 @@ const ColumnHeader: FC<CustomHeaderProps & ColumnHeaderParams> = ({
       {anchor && (
         <Menu
           anchor={anchor}
-          items={headerMenuItems({ api, column, setSort, ...actions })}
+          items={getHeaderMenuItems({ api, column, setSort, ...actions })}
           onClose={() => setAnchor(undefined)}
         />
       )}

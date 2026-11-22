@@ -11,7 +11,7 @@ export function isNotNullOrUndefined<Value = unknown>(
   return value !== null && value !== undefined
 }
 
-export const withoutUndefined = <Item extends object>(item: Item): Item => {
+export const removeUndefined = <Item extends object>(item: Item): Item => {
   const copy = { ...item }
   Object.keys(copy).forEach((key) => {
     if (Reflect.get(copy, key) === undefined) Reflect.deleteProperty(copy, key)

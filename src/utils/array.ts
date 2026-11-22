@@ -1,4 +1,4 @@
-export const uniqueAndSortedArray = <Item>({
+export const toUniqueSortedArray = <Item>({
   array,
   compareFunction,
 }: {

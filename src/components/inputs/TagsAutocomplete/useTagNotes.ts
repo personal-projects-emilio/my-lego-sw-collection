@@ -1,5 +1,5 @@
 import type { InheritedTags, TagId } from 'types/tags'
-import { inheritedFrom, type TagsVocabulary } from 'utils/tags'
+import { formatInheritedFrom, type TagsVocabulary } from 'utils/tags'
 
 const useTagNotes = ({
   tagsVocabulary,
@@ -19,14 +19,14 @@ const useTagNotes = ({
   if (isFilter) {
     options.forEach((id) => {
       const covering = tagsVocabulary
-        .ancestors(id)
+        .getAncestors(id)
         .map((tag) => tag.id)
         .filter((ancestor) => chipSet.has(ancestor))
       if (covering.length) coveringChips.set(id, covering)
     })
   } else {
     chips.forEach((chip) =>
-      tagsVocabulary.ancestors(chip).forEach(({ id }) => {
+      tagsVocabulary.getAncestors(chip).forEach(({ id }) => {
         if (!chipSet.has(id))
           coveringChips.set(id, [...(coveringChips.get(id) ?? []), chip])
       })
@@ -36,15 +36,15 @@ const useTagNotes = ({
   const isInherited = (id: TagId) => id in inheritedTags
   const isCovered = (id: TagId) => coveringChips.has(id)
 
-  const note = (id: TagId) => {
-    if (isInherited(id)) return inheritedFrom(inheritedTags[id])
+  const getNote = (id: TagId) => {
+    if (isInherited(id)) return formatInheritedFrom(inheritedTags[id])
     const covering = coveringChips.get(id)
     if (!covering) return undefined
-    const labels = covering.map(tagsVocabulary.label).join(', ')
+    const labels = covering.map(tagsVocabulary.getLabel).join(', ')
     return isFilter ? `Included in ${labels}` : `Implied by ${labels}`
   }
 
-  return { isInherited, isCovered, note }
+  return { isInherited, isCovered, getNote }
 }
 
 export default useTagNotes

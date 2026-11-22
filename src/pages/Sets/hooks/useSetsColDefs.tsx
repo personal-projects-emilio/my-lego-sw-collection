@@ -8,17 +8,17 @@ import type {
 } from 'ag-grid-community'
 import { useAgGridStyles } from 'components/AgGrid'
 import {
-  actionsColDef,
+  buildActionsColDef,
+  buildTagsColDef,
+  buildTimelineColDef,
   ExternalLinksCellRenderer,
   type ExternalLinksCellRenderProps,
+  formatListValue,
   ItemActionsCellRenderer,
   ItemIdCellRenderer,
   type ItemIdCellRenderProps,
-  listValueFormatter,
   OverflowTypographyCellRenderer,
   type SetActionsCellRendererProps,
-  tagsColDef,
-  timelineColDef,
 } from 'components/AgGrid/column'
 import { useTagsVocabulary, useTimeline } from 'hooks'
 import { useAuth } from 'providers/AuthProvider'
@@ -74,8 +74,8 @@ const useSetsColDefs = () => {
           flex: 1,
           minWidth: 120,
         },
-        timelineColDef<CollectionSet>(timeline),
-        tagsColDef<CollectionSet>({ tagsVocabulary, itemType: 'sets' }),
+        buildTimelineColDef<CollectionSet>(timeline),
+        buildTagsColDef<CollectionSet>({ tagsVocabulary, itemType: 'sets' }),
         {
           field: 'releaseYear',
           headerName: 'Release',
@@ -114,7 +114,7 @@ const useSetsColDefs = () => {
             CollectionSet,
             CollectionSet['content']['minifigs']
           >) =>
-            listValueFormatter(
+            formatListValue(
               value?.map(({ id, quantity }) => `${id}: ${quantity}`)
             ),
           cellClass: [agGridClasses.flexAlignCenter],
@@ -155,7 +155,7 @@ const useSetsColDefs = () => {
           sortable: false,
           width: 100,
         },
-        actionsColDef<CollectionSet>({
+        buildActionsColDef<CollectionSet>({
           field: 'id',
           cellClass: [agGridClasses.flexAlignCenter, agGridClasses.gap1],
           cellRenderer: ItemActionsCellRenderer,

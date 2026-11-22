@@ -47,7 +47,7 @@ export const setFixture = ({
   ...overrides,
 })
 
-export const minifigFixture = ({
+export const buildMinifigFixture = ({
   id,
   ...overrides
 }: Partial<Minifig> & { id: Minifig['id'] }): Minifig => ({

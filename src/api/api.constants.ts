@@ -21,7 +21,7 @@ export const endPoints = {
   timeline: '/timeline.json',
 } as const
 
-export const columnLayoutEndPoint = ({
+export const getColumnLayoutEndPoint = ({
   userId,
   columnLayoutId,
 }: ColumnLayoutTarget) =>

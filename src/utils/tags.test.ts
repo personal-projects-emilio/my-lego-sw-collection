@@ -9,17 +9,17 @@ import {
   deleteTag,
   editTag,
   filterTagsAfterPick,
-  inheritedFrom,
+  formatInheritedFrom,
+  getRootTargets,
+  getStoredTagsAfterPick,
+  getTagUsage,
   moveTag,
-  rootTargets,
-  storedTagsAfterPick,
   type TagEdit,
   type TagsState,
-  tagUsage,
   undoTagEdit,
 } from './tags.ts'
 import {
-  minifigFixture,
+  buildMinifigFixture,
   setFixture,
   setMinifigFixture,
 } from './testFixtures.ts'
@@ -84,7 +84,7 @@ test.for([
   'storedTagsAfterPick $case',
   ({ picked, stored, inheritedTags, expected }) => {
     assert.deepEqual(
-      storedTagsAfterPick({ tagsVocabulary, picked, stored, inheritedTags }),
+      getStoredTagsAfterPick({ tagsVocabulary, picked, stored, inheritedTags }),
       expected
     )
   }
@@ -107,12 +107,15 @@ test.for([
 ])(
   'pickable for $target skips roots and other item types',
   ({ target, expected }) => {
-    assert.deepEqual(tagsVocabulary.pickable(target), expected)
+    assert.deepEqual(tagsVocabulary.getPickable(target), expected)
   }
 )
 
 test('inheritedFrom lists the source sets', () => {
-  assert.equal(inheritedFrom([75301, '75315']), 'Inherited from 75301, 75315')
+  assert.equal(
+    formatInheritedFrom([75301, '75315']),
+    'Inherited from 75301, 75315'
+  )
 })
 
 test('buildTagsVocabulary reuses the vocabulary for the same tags list', () => {
@@ -134,19 +137,19 @@ const editState: TagsState = {
     setFixture({ id: 2, name: 'Falcon', tags: ['ot'] }),
   ],
   minifigsList: [
-    minifigFixture({ id: 'sw0001', name: 'Luke', tags: ['rebel-pilot'] }),
+    buildMinifigFixture({ id: 'sw0001', name: 'Luke', tags: ['rebel-pilot'] }),
   ],
 }
 
-const stateOf = (edit: TagEdit) => {
+const getState = (edit: TagEdit) => {
   assert.ok('state' in edit, 'refused' in edit ? edit.refused : '')
   return edit.state
 }
 
-const tagOf = ({ state, id }: { state: TagsState; id: string }) =>
+const getTag = ({ state, id }: { state: TagsState; id: string }) =>
   state.tagsList.find((tag) => tag.id === id)
 
-const childrenOf = ({ state, parent }: { state: TagsState; parent: string }) =>
+const getChildren = ({ state, parent }: { state: TagsState; parent: string }) =>
   buildTagsVocabulary(state.tagsList).sort(
     state.tagsList.filter((tag) => tag.parent === parent).map(({ id }) => id)
   )
@@ -235,15 +238,15 @@ test.for([
     },
   },
 ])('addTag $case', ({ label, parent, expected }) => {
-  const state = stateOf(addTag({ state: editState, label, parent }))
-  assert.deepEqual(tagOf({ state: state, id: expected.id }), expected)
+  const state = getState(addTag({ state: editState, label, parent }))
+  assert.deepEqual(getTag({ state: state, id: expected.id }), expected)
 })
 
 test('editTag renames without changing the id or the items', () => {
-  const state = stateOf(
+  const state = getState(
     editTag({ state: editState, id: 'anh', changes: { label: 'Episode IV' } })
   )
-  assert.equal(tagOf({ state: state, id: 'anh' })?.label, 'Episode IV')
+  assert.equal(getTag({ state: state, id: 'anh' })?.label, 'Episode IV')
   assert.equal(state.setsList, editState.setsList)
 })
 
@@ -261,15 +264,15 @@ test.for([
     expected: { other: ['misc', 'x-wing'], vehicle: ['seasonal'] },
   },
 ])('moveTag $case', ({ id, parent, expected }) => {
-  const state = stateOf(moveTag({ state: editState, id: id, parent }))
+  const state = getState(moveTag({ state: editState, id: id, parent }))
   Object.entries(expected).forEach(([parent, ids]) =>
-    assert.deepEqual(childrenOf({ state: state, parent: parent }), ids)
+    assert.deepEqual(getChildren({ state: state, parent: parent }), ids)
   )
 })
 
 test('moveTag turns a tag into a root for both, not inherited', () => {
-  const state = stateOf(moveTag({ state: editState, id: 'misc' }))
-  assert.deepEqual(tagOf({ state: state, id: 'misc' }), {
+  const state = getState(moveTag({ state: editState, id: 'misc' }))
+  assert.deepEqual(getTag({ state: state, id: 'misc' }), {
     id: 'misc',
     label: 'Misc',
     appliesTo: 'both',
@@ -278,10 +281,10 @@ test('moveTag turns a tag into a root for both, not inherited', () => {
 })
 
 test('moveTag drops root settings when a root moves under a tag', () => {
-  const state = stateOf(
+  const state = getState(
     moveTag({ state: editState, id: 'pilot', parent: 'misc' })
   )
-  assert.deepEqual(tagOf({ state: state, id: 'pilot' }), {
+  assert.deepEqual(getTag({ state: state, id: 'pilot' }), {
     id: 'pilot',
     label: 'Pilot',
     parent: 'misc',
@@ -289,24 +292,24 @@ test('moveTag drops root settings when a root moves under a tag', () => {
 })
 
 test('undoTagEdit keeps tags added after the edit', () => {
-  const after = stateOf(
+  const after = getState(
     editTag({ state: editState, id: 'anh', changes: { label: 'Episode IV' } })
   )
-  const current = stateOf(
+  const current = getState(
     addTag({ state: after, label: 'Droid', parent: 'other' })
   )
   const undone = undoTagEdit({ current, before: editState, after })
-  assert.equal(tagOf({ state: undone, id: 'anh' })?.label, 'A New Hope')
-  assert.equal(tagOf({ state: undone, id: 'droid' })?.label, 'Droid')
+  assert.equal(getTag({ state: undone, id: 'anh' })?.label, 'A New Hope')
+  assert.equal(getTag({ state: undone, id: 'droid' })?.label, 'Droid')
 })
 
 test('children sort A–Z, numbers by value', () => {
   const state = [{ label: 'Wing 10' }, { label: 'Wing 2' }].reduce(
     (current, { label }) =>
-      stateOf(addTag({ state: current, label, parent: 'vehicle' })),
+      getState(addTag({ state: current, label, parent: 'vehicle' })),
     editState
   )
-  assert.deepEqual(childrenOf({ state: state, parent: 'vehicle' }), [
+  assert.deepEqual(getChildren({ state: state, parent: 'vehicle' }), [
     'seasonal',
     'wing-2',
     'wing-10',
@@ -315,9 +318,9 @@ test('children sort A–Z, numbers by value', () => {
 })
 
 test('deleteTag removes it from items and moves its children up in place', () => {
-  const state = stateOf(deleteTag({ state: editState, id: 'ot' }))
-  assert.equal(tagOf({ state: state, id: 'ot' }), undefined)
-  assert.deepEqual(childrenOf({ state: state, parent: 'aor' }), ['anh', 'esb'])
+  const state = getState(deleteTag({ state: editState, id: 'ot' }))
+  assert.equal(getTag({ state: state, id: 'ot' }), undefined)
+  assert.deepEqual(getChildren({ state: state, parent: 'aor' }), ['anh', 'esb'])
   assert.deepEqual(
     state.setsList.map(({ tags }) => tags),
     [['x-wing', 'anh'], []]
@@ -327,9 +330,9 @@ test('deleteTag removes it from items and moves its children up in place', () =>
 })
 
 test('deleteRoot moves its tags under the target root and keeps items', () => {
-  const state = stateOf(deleteRoot({ state: editState, id: 'pilot' }))
-  assert.equal(tagOf({ state: state, id: 'pilot' }), undefined)
-  assert.deepEqual(childrenOf({ state: state, parent: 'other' }), [
+  const state = getState(deleteRoot({ state: editState, id: 'pilot' }))
+  assert.equal(getTag({ state: state, id: 'pilot' }), undefined)
+  assert.deepEqual(getChildren({ state: state, parent: 'other' }), [
     'misc',
     'rebel-pilot',
   ])
@@ -344,7 +347,7 @@ test('deleteRoot removes the root itself from items', () => {
       setFixture({ id: 3, name: 'Shuttle', tags: ['vehicle', 'x-wing'] }),
     ],
   }
-  const state = stateOf(
+  const state = getState(
     deleteRoot({ state: tagged, id: 'vehicle', targetId: 'other' })
   )
   assert.deepEqual(
@@ -354,9 +357,9 @@ test('deleteRoot removes the root itself from items', () => {
 })
 
 test('addTag never uses a prototype key as id', () => {
-  const state = stateOf(addTag({ state: editState, label: 'Constructor' }))
-  assert.equal(tagOf({ state: state, id: 'constructor' }), undefined)
-  assert.ok(tagOf({ state: state, id: 'constructor-2' }))
+  const state = getState(addTag({ state: editState, label: 'Constructor' }))
+  assert.equal(getTag({ state: state, id: 'constructor' }), undefined)
+  assert.ok(getTag({ state: state, id: 'constructor-2' }))
 })
 
 test.for([
@@ -374,12 +377,16 @@ test.for([
       }),
     ],
     minifigsList: [
-      minifigFixture({ id: 'sw0001', name: 'Luke', tags: ['anh', 'x-wing'] }),
-      minifigFixture({ id: 'sw0002', name: 'Biggs' }),
+      buildMinifigFixture({
+        id: 'sw0001',
+        name: 'Luke',
+        tags: ['anh', 'x-wing'],
+      }),
+      buildMinifigFixture({ id: 'sw0002', name: 'Biggs' }),
     ],
   }
   assert.deepEqual(
-    tagUsage({ state, ids: [id] }).minifigs.map(({ id }) => id),
+    getTagUsage({ state, ids: [id] }).minifigs.map(({ id }) => id),
     expected
   )
 })
@@ -389,7 +396,7 @@ test.for([
   { id: 'saga', expected: ['other'] },
 ])('rootTargets of $id', ({ id, expected }) => {
   assert.deepEqual(
-    rootTargets({ tagsList: editState.tagsList, id }).map(({ id }) => id),
+    getRootTargets({ tagsList: editState.tagsList, id }).map(({ id }) => id),
     expected
   )
 })
@@ -430,7 +437,7 @@ test.for([
     }),
   },
 ])('undoTagEdit $case', ({ edit, later, expectedTags }) => {
-  const after = stateOf(edit())
+  const after = getState(edit())
   const current = later(after)
   const undone = undoTagEdit({ current, before: editState, after })
   assert.deepEqual(undone.tagsList, editState.tagsList)

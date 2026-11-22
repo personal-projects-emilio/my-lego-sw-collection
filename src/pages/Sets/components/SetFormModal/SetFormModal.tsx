@@ -28,8 +28,8 @@ import { parseInteger, parseSetId } from 'utils/parse'
 import {
   brickLinkPriceFields,
   contentFields,
-  defaultSetFormValues,
   dimensionFields,
+  getDefaultSetFormValues,
   priceFields,
 } from './SetFormModal.constant'
 import useSetFormModalStyles from './SetFormModal.styles'
@@ -67,7 +67,7 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
   )
 
   const { control, handleSubmit, watch } = useForm<SetFormInput>({
-    defaultValues: defaultSetFormValues(setData),
+    defaultValues: getDefaultSetFormValues(setData),
     resolver: zodResolver(setValidationSchemaWithRefinedIdCheck),
     mode: 'onSubmit',
     reValidateMode: 'onChange',

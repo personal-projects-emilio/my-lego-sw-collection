@@ -30,7 +30,7 @@ const useLooseMinifigsColDefs = () => {
   const { editLooseMinifig } = useLooseMinifigsMutations()
 
   return useMemo(() => {
-    const looseValueSetter =
+    const createLooseValueSetter =
       (field: LooseField) =>
       ({ data, newValue }: ValueSetterParams<CollectionMinifig>) => {
         const value = Math.max(0, Number(newValue) || 0)
@@ -69,7 +69,7 @@ const useLooseMinifigsColDefs = () => {
         filter: 'agNumberColumnFilter',
         headerName: 'Loose qty',
         suppressFloatingFilterButton: false,
-        valueSetter: looseValueSetter('quantity'),
+        valueSetter: createLooseValueSetter('quantity'),
         width: 120,
       },
       {
@@ -78,7 +78,7 @@ const useLooseMinifigsColDefs = () => {
         editable: true,
         field: 'owned.loose.unitBoughtPrice',
         headerName: 'Unit bought',
-        valueSetter: looseValueSetter('unitBoughtPrice'),
+        valueSetter: createLooseValueSetter('unitBoughtPrice'),
       },
       {
         ...euroColDef,
@@ -86,7 +86,7 @@ const useLooseMinifigsColDefs = () => {
         editable: true,
         field: 'owned.loose.unitMarketValue',
         headerName: 'Unit market value',
-        valueSetter: looseValueSetter('unitMarketValue'),
+        valueSetter: createLooseValueSetter('unitMarketValue'),
       },
       {
         ...euroColDef,

@@ -57,7 +57,7 @@ const TimelineField: FC<TimelineFieldProps> = ({
   const inputId = useId()
   const panelId = useId()
   const picks = { value, inherited }
-  const shown = timeline.leaves([...value, ...Object.keys(inherited)])
+  const shown = timeline.getLeaves([...value, ...Object.keys(inherited)])
   const toggle = (id: TimelineId) =>
     onChange(togglePick({ timeline, picks, id }))
   const show = () => setAnchor(anchorRef.current)
@@ -103,7 +103,7 @@ const TimelineField: FC<TimelineFieldProps> = ({
           options={shown}
           value={shown}
           inputValue=""
-          getOptionLabel={timeline.pathLabel}
+          getOptionLabel={timeline.getPathLabel}
           onChange={(_, next) =>
             shown
               .filter((id) => !next.includes(id) && !inherited[id])

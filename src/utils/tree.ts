@@ -33,7 +33,7 @@ export const buildTree = <Node extends TreeNode>({
     })
   walk(undefined)
 
-  const ancestors = (id: string) => {
+  const getAncestors = (id: string) => {
     const result: Node[] = []
     let node = byId.get(id)
     while (node?.parent && !result.some(({ id }) => id === node?.parent)) {
@@ -43,12 +43,12 @@ export const buildTree = <Node extends TreeNode>({
     return result
   }
 
-  const rootOf = (id: string) => {
-    const chain = ancestors(id)
+  const getRoot = (id: string) => {
+    const chain = getAncestors(id)
     return chain[chain.length - 1] ?? byId.get(id)
   }
 
-  const depth = (id: string) => ancestors(id).length
+  const getDepth = (id: string) => getAncestors(id).length
 
   const sort = (ids: Iterable<string>) =>
     [...new Set(ids)].sort(
@@ -57,42 +57,42 @@ export const buildTree = <Node extends TreeNode>({
         a.localeCompare(b)
     )
 
-  const withImplied = (ids: string[]) =>
+  const addImplied = (ids: string[]) =>
     sort(
       ids.flatMap((id) => [
         id,
-        ...ancestors(id)
+        ...getAncestors(id)
           .filter(({ parent }) => parent)
           .map(({ id }) => id),
       ])
     )
 
-  const label = (id: string) => byId.get(id)?.label ?? id
+  const getLabel = (id: string) => byId.get(id)?.label ?? id
 
-  const leaves = (ids: string[]) => {
+  const getLeaves = (ids: string[]) => {
     const implied = new Set(
-      ids.flatMap((id) => ancestors(id).map(({ id }) => id))
+      ids.flatMap((id) => getAncestors(id).map(({ id }) => id))
     )
     return sort(ids.filter((id) => !implied.has(id)))
   }
 
-  const tops = (ids: string[]) => {
+  const getTops = (ids: string[]) => {
     const picked = new Set(ids)
     return sort(
-      ids.filter((id) => !ancestors(id).some(({ id }) => picked.has(id)))
+      ids.filter((id) => !getAncestors(id).some(({ id }) => picked.has(id)))
     )
   }
 
-  const pathLabel = (id: string) =>
+  const getPathLabel = (id: string) =>
     [
-      ...ancestors(id)
+      ...getAncestors(id)
         .filter(({ parent }) => parent)
         .reverse()
         .map(({ label }) => label),
-      label(id),
+      getLabel(id),
     ].join(' › ')
 
-  const siblingGroups = (ids: string[]): SiblingGroup[] => {
+  const getSiblingGroups = (ids: string[]): SiblingGroup[] => {
     const groups = new Map<string, SiblingGroup>()
     sort(ids).forEach((id) => {
       const parent = byId.get(id)?.parent
@@ -106,39 +106,39 @@ export const buildTree = <Node extends TreeNode>({
     )
   }
 
-  const groupedLabel = (ids: string[]) =>
-    siblingGroups(leaves(ids))
+  const getGroupedLabel = (ids: string[]) =>
+    getSiblingGroups(getLeaves(ids))
       .map(({ parent, ids }) =>
         parent
-          ? `${pathLabel(parent)} › ${ids.map(label).join(', ')}`
-          : pathLabel(ids[0])
+          ? `${getPathLabel(parent)} › ${ids.map(getLabel).join(', ')}`
+          : getPathLabel(ids[0])
       )
       .join(' | ')
 
-  const outline = (ids: string[]) =>
-    sort(ids.flatMap((id) => [id, ...ancestors(id).map(({ id }) => id)])).map(
-      (id) => ({ id, label: label(id), parent: byId.get(id)?.parent })
-    )
+  const getOutline = (ids: string[]) =>
+    sort(
+      ids.flatMap((id) => [id, ...getAncestors(id).map(({ id }) => id)])
+    ).map((id) => ({ id, label: getLabel(id), parent: byId.get(id)?.parent }))
 
   return {
-    ancestors,
-    rootOf,
-    depth,
+    getAncestors,
+    getRoot,
+    getDepth,
     sort,
-    withImplied,
-    label,
-    leaves,
-    tops,
-    pathLabel,
-    siblingGroups,
-    groupedLabel,
-    outline,
+    addImplied,
+    getLabel,
+    getLeaves,
+    getTops,
+    getPathLabel,
+    getSiblingGroups,
+    getGroupedLabel,
+    getOutline,
   }
 }
 
 export type FlatNode = { id: string; parent?: string; depth: number }
 
-export const projectDrop = ({
+export const getDropProjection = ({
   nodes,
   activeId,
   overId,

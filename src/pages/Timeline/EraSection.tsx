@@ -1,11 +1,11 @@
 import { type FC, Fragment } from 'react'
 
-import { eraColor } from 'components/Timeline'
+import { getEraColor } from 'components/Timeline'
 import type { TimelineEntry, TimelineId } from 'types/timeline'
 import { formatRange, formatYear, type Timeline } from 'utils/timeline'
 
 import type { Counts } from './counts'
-import { eraLayout, sides, type Spacing } from './eraLayout'
+import { buildEraLayout, sides, type Spacing } from './eraLayout'
 import TimelineCard from './TimelineCard'
 import useTimelineEraSectionsStyles from './TimelineEraSections.styles'
 import TrilogyBracket from './TrilogyBracket'
@@ -32,8 +32,12 @@ const EraSection: FC<EraSectionProps> = ({
   onSelect,
 }) => {
   const { classes } = useTimelineEraSectionsStyles()
-  const color = eraColor({ timeline, id: era?.id })
-  const { rows, brackets, cellOf } = eraLayout({ titles, trilogies, spacing })
+  const color = getEraColor({ timeline, id: era?.id })
+  const { rows, brackets, getCell } = buildEraLayout({
+    titles,
+    trilogies,
+    spacing,
+  })
 
   return (
     <section
@@ -56,7 +60,7 @@ const EraSection: FC<EraSectionProps> = ({
           >
             {era.label}
             <span className={classes.headerRange}>
-              {formatRange(timeline.range(era.id))}
+              {formatRange(timeline.getRange(era.id))}
             </span>
           </button>
         ) : (
@@ -85,7 +89,7 @@ const EraSection: FC<EraSectionProps> = ({
           </div>
           {row.gap === undefined &&
             sides.map((side) => {
-              const inCell = cellOf({ row, side })
+              const inCell = getCell({ row, side })
               return inCell.length ? (
                 <div
                   key={side}

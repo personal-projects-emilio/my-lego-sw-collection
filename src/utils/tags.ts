@@ -9,19 +9,19 @@ export const seasonalTagId = 'seasonal'
 const createTagsVocabulary = (tagsList: TagsList) => {
   const tree = buildTree({ nodes: tagsList })
 
-  const appliesTo = ({ id, target }: { id: TagId; target: TagTarget }) => {
-    const appliesTo = tree.rootOf(id)?.appliesTo
+  const doesApplyTo = ({ id, target }: { id: TagId; target: TagTarget }) => {
+    const appliesTo = tree.getRoot(id)?.appliesTo
     return appliesTo === 'both' || appliesTo === target
   }
 
-  const pickable = (target: TagTarget) =>
+  const getPickable = (target: TagTarget) =>
     tree.sort(
       tagsList
-        .filter(({ id, parent }) => parent && appliesTo({ id, target }))
+        .filter(({ id, parent }) => parent && doesApplyTo({ id, target }))
         .map(({ id }) => id)
     )
 
-  return { ...tree, appliesTo, pickable }
+  return { ...tree, doesApplyTo, getPickable }
 }
 
 export type TagsVocabulary = ReturnType<typeof createTagsVocabulary>
@@ -36,10 +36,10 @@ export const buildTagsVocabulary = (tagsList: TagsList) => {
   return tagsVocabulary
 }
 
-export const inheritedFrom = (sources: Array<string | number>) =>
+export const formatInheritedFrom = (sources: Array<string | number>) =>
   `Inherited from ${sources.join(', ')}`
 
-export const storedTagsAfterPick = ({
+export const getStoredTagsAfterPick = ({
   tagsVocabulary,
   picked,
   stored,
@@ -51,7 +51,7 @@ export const storedTagsAfterPick = ({
   inheritedTags: InheritedTags
 }) => {
   const isInherited = (id: TagId) => id in inheritedTags
-  return tagsVocabulary.leaves([
+  return tagsVocabulary.getLeaves([
     ...picked.filter((id) => !isInherited(id) || stored.includes(id)),
     ...stored.filter(isInherited),
   ])
@@ -63,7 +63,7 @@ export const filterTagsAfterPick = ({
 }: {
   tagsVocabulary: TagsVocabulary
   picked: TagId[]
-}) => tagsVocabulary.tops(picked)
+}) => tagsVocabulary.getTops(picked)
 
 export const otherRootId = 'other'
 
@@ -79,13 +79,13 @@ export type TagEdit = { state: TagsState } | { refused: string }
 
 type AppliesTo = Tag['appliesTo']
 
-const covers = ({ root, target }: { root: AppliesTo; target: AppliesTo }) =>
+const doesCover = ({ root, target }: { root: AppliesTo; target: AppliesTo }) =>
   root === 'both' || root === target
 
 const findTag = ({ tagsList, id }: { tagsList: TagsList; id?: TagId }) =>
   tagsList.find((tag) => tag.id === id)
 
-export const subtree = ({
+export const getSubtree = ({
   tagsList,
   id,
 }: {
@@ -97,12 +97,12 @@ export const subtree = ({
     .filter(
       (tag) =>
         tag.id === id ||
-        tree.ancestors(tag.id).some((ancestor) => ancestor.id === id)
+        tree.getAncestors(tag.id).some((ancestor) => ancestor.id === id)
     )
     .map((tag) => tag.id)
 }
 
-export const tagUsage = ({
+export const getTagUsage = ({
   state: { tagsList, setsList, minifigsList },
   ids,
 }: {
@@ -110,30 +110,30 @@ export const tagUsage = ({
   ids: TagId[]
 }) => {
   const tree = buildTagsVocabulary(tagsList)
-  const uses = ({ tags }: TaggedRecord) =>
+  const doesUse = ({ tags }: TaggedRecord) =>
     tags?.some((id) => ids.includes(id)) ?? false
-  const passesOn = ({ tags }: TaggedRecord) =>
+  const doesPassOn = ({ tags }: TaggedRecord) =>
     tags?.some(
       (id) =>
         ids.includes(id) &&
-        tree.rootOf(id)?.inherited &&
-        tree.appliesTo({ id, target: 'minifigs' })
+        tree.getRoot(id)?.inherited &&
+        tree.doesApplyTo({ id, target: 'minifigs' })
     ) ?? false
-  const sets = setsList.filter(uses)
+  const sets = setsList.filter(doesUse)
   const inheriting = new Set(
     sets
-      .filter(passesOn)
+      .filter(doesPassOn)
       .flatMap((set) => set.content?.minifigs?.map(({ id }) => id) ?? [])
   )
   return {
     sets,
     minifigs: minifigsList.filter(
-      (minifig) => uses(minifig) || inheriting.has(minifig.id)
+      (minifig) => doesUse(minifig) || inheriting.has(minifig.id)
     ),
   }
 }
 
-const refusesAppliesTo = ({
+const getAppliesToRefusal = ({
   state,
   id,
   appliesTo,
@@ -142,18 +142,18 @@ const refusesAppliesTo = ({
   id: TagId
   appliesTo: AppliesTo
 }) => {
-  const { sets, minifigs } = tagUsage({
+  const { sets, minifigs } = getTagUsage({
     state,
-    ids: subtree({ tagsList: state.tagsList, id }),
+    ids: getSubtree({ tagsList: state.tagsList, id }),
   })
-  if (sets.length && !covers({ root: appliesTo, target: 'sets' }))
+  if (sets.length && !doesCover({ root: appliesTo, target: 'sets' }))
     return `${sets.length} sets use these tags`
-  if (minifigs.length && !covers({ root: appliesTo, target: 'minifigs' }))
+  if (minifigs.length && !doesCover({ root: appliesTo, target: 'minifigs' }))
     return `${minifigs.length} minifigs use these tags`
   return undefined
 }
 
-const withParent = ({ tag, parent }: { tag: Tag; parent?: TagId }): Tag =>
+const setParent = ({ tag, parent }: { tag: Tag; parent?: TagId }): Tag =>
   parent
     ? { ...omit(tag, ['appliesTo', 'inherited']), parent }
     : {
@@ -172,10 +172,10 @@ const reparentChildren = ({
   to?: TagId
 }) =>
   tagsList.map((tag) =>
-    tag.parent === from ? withParent({ tag, parent: to }) : tag
+    tag.parent === from ? setParent({ tag, parent: to }) : tag
   )
 
-export const uniqueId = ({
+export const createUniqueId = ({
   list,
   label,
 }: {
@@ -209,9 +209,9 @@ export const addTag = ({
   if (!trimmed) return { refused: 'A tag needs a label' }
   if (parent && !findTag({ tagsList: state.tagsList, id: parent }))
     return { refused: `Unknown parent ${parent}` }
-  const tag = withParent({
+  const tag = setParent({
     tag: {
-      id: uniqueId({ list: state.tagsList, label: trimmed }),
+      id: createUniqueId({ list: state.tagsList, label: trimmed }),
       label: trimmed,
     },
     parent,
@@ -235,7 +235,7 @@ export const editTag = ({
   if (tag.parent && ('appliesTo' in changes || 'inherited' in changes))
     return { refused: `Only roots apply to items or are inherited` }
   if (changes.appliesTo) {
-    const refused = refusesAppliesTo({
+    const refused = getAppliesToRefusal({
       state,
       id,
       appliesTo: changes.appliesTo,
@@ -273,23 +273,23 @@ export const moveTag = ({
   if (
     parent &&
     (parent === id ||
-      tree.ancestors(parent).some((ancestor) => ancestor.id === id))
+      tree.getAncestors(parent).some((ancestor) => ancestor.id === id))
   )
     return { refused: `${tag.label} can't move under itself` }
-  const root = parent ? tree.rootOf(parent) : withParent({ tag })
-  const refused = refusesAppliesTo({ state, id, appliesTo: root?.appliesTo })
+  const root = parent ? tree.getRoot(parent) : setParent({ tag })
+  const refused = getAppliesToRefusal({ state, id, appliesTo: root?.appliesTo })
   if (refused) return { refused: `${root?.label} doesn't apply: ${refused}` }
   return {
     state: {
       ...state,
       tagsList: tagsList.map((other) =>
-        other.id === id ? withParent({ tag: other, parent }) : other
+        other.id === id ? setParent({ tag: other, parent }) : other
       ),
     },
   }
 }
 
-const withoutTag = <Item extends TaggedRecord>({
+const removeTag = <Item extends TaggedRecord>({
   items,
   id,
 }: {
@@ -323,8 +323,8 @@ export const deleteTag = ({
         from: id,
         to: tag.parent,
       }),
-      setsList: withoutTag({ items: state.setsList, id }),
-      minifigsList: withoutTag({ items: state.minifigsList, id }),
+      setsList: removeTag({ items: state.setsList, id }),
+      minifigsList: removeTag({ items: state.minifigsList, id }),
     },
   }
 }
@@ -418,7 +418,7 @@ export const undoTagEdit = ({
   }
 }
 
-export const rootTargets = ({
+export const getRootTargets = ({
   tagsList,
   id,
 }: {
@@ -431,7 +431,7 @@ export const rootTargets = ({
       (tag) =>
         !tag.parent &&
         tag.id !== id &&
-        covers({ root: tag.appliesTo, target: appliesTo })
+        doesCover({ root: tag.appliesTo, target: appliesTo })
     )
     .sort(byLabel)
 }
@@ -449,7 +449,7 @@ export const deleteRoot = ({
   if (!root || root.parent) return { refused: `${id} isn't a root` }
   if (isProtectedTag(id)) return { refused: `${root.label} can't be deleted` }
   if (
-    !rootTargets({ tagsList: state.tagsList, id }).some(
+    !getRootTargets({ tagsList: state.tagsList, id }).some(
       (target) => target.id === targetId
     )
   )
@@ -463,8 +463,8 @@ export const deleteRoot = ({
         from: id,
         to: targetId,
       }),
-      setsList: withoutTag({ items: state.setsList, id }),
-      minifigsList: withoutTag({ items: state.minifigsList, id }),
+      setsList: removeTag({ items: state.setsList, id }),
+      minifigsList: removeTag({ items: state.minifigsList, id }),
     },
   }
 }

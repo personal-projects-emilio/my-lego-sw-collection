@@ -8,7 +8,7 @@ import {
 } from 'react-icons/md'
 
 import type { Kind } from 'types/timeline'
-import { kindName } from 'utils/timeline'
+import { getKindName } from 'utils/timeline'
 
 const mapKindsToIcons = {
   movie: MdMovie,
@@ -26,7 +26,7 @@ const KindIcon: FC<{ kind?: Kind; className?: string }> = ({
     ? createElement(mapKindsToIcons[kind], {
         className,
         role: 'img',
-        'aria-label': kindName(kind),
+        'aria-label': getKindName(kind),
       })
     : null
 

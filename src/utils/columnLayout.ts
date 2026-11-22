@@ -125,14 +125,14 @@ export const canMoveColumn = ({
   )
 }
 
-const toggleableColumns = (columns: ChooserColumn[]) =>
+const getToggleableColumns = (columns: ChooserColumn[]) =>
   columns.filter(({ isLockedVisible }) => !isLockedVisible)
 
-export const toggleableColIds = (columns: ChooserColumn[]) =>
-  toggleableColumns(columns).map(({ colId }) => colId)
+export const getToggleableColIds = (columns: ChooserColumn[]) =>
+  getToggleableColumns(columns).map(({ colId }) => colId)
 
 export const toShowAllState = (columns: ChooserColumn[]): ShowAllState => {
-  const toggleable = toggleableColumns(columns)
+  const toggleable = getToggleableColumns(columns)
   const shown = toggleable.filter(({ hide }) => !hide).length
   if (shown === 0) return 'unchecked'
   return shown === toggleable.length ? 'checked' : 'indeterminate'

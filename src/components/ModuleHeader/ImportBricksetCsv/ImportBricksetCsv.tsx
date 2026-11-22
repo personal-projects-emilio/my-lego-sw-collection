@@ -15,16 +15,16 @@ import {
   useBricksetIgnoreListQuery,
 } from 'api/brickset'
 import { useSetsQuery } from 'api/sets'
-import { defaultSetFormValues } from 'pages/Sets/components/SetFormModal/SetFormModal.constant'
+import { getDefaultSetFormValues } from 'pages/Sets/components/SetFormModal/SetFormModal.constant'
 import { useSetsMutations } from 'pages/Sets/hooks'
 import type { BricksetIgnoreList, BricksetRow } from 'types/brickset'
-import { compareIds, uniqueAndSortedArray } from 'utils/array'
+import { compareIds, toUniqueSortedArray } from 'utils/array'
 import {
-  bricksetRowKey,
-  bricksetRowToSetId,
   buildBricksetReport,
-  changeKey,
-  newSetFromBricksetRow,
+  createSetFromBricksetRow,
+  getBricksetRowKey,
+  getChangeKey,
+  getSetIdFromBricksetRow,
   skipChanges,
 } from 'utils/brickset'
 import { readCsvFile } from 'utils/csv'
@@ -67,7 +67,7 @@ const ImportBricksetCsv: FC = () => {
       new Map(
         report?.missing.map((row) => [
           row,
-          bricksetRowToSetId({
+          getSetIdFromBricksetRow({
             row,
             rows: rows ?? [],
             setsList: setsList ?? [],
@@ -80,12 +80,12 @@ const ImportBricksetCsv: FC = () => {
   const addedSets = useMemo(
     () =>
       report?.missing
-        .filter((row) => addedKeys.includes(bricksetRowKey(row)))
+        .filter((row) => addedKeys.includes(getBricksetRowKey(row)))
         .map((row) =>
-          newSetFromBricksetRow({
+          createSetFromBricksetRow({
             row,
-            base: defaultSetFormValues(undefined),
-            id: newSetIds.get(row) ?? bricksetRowKey(row),
+            base: getDefaultSetFormValues(undefined),
+            id: newSetIds.get(row) ?? getBricksetRowKey(row),
           })
         ) ?? [],
     [report, addedKeys, newSetIds]
@@ -93,7 +93,7 @@ const ImportBricksetCsv: FC = () => {
 
   const changeKeysBySet =
     report?.updates.map(({ set, changes }) =>
-      changes.map(({ field }) => changeKey({ id: set.id, field }))
+      changes.map(({ field }) => getChangeKey({ id: set.id, field }))
     ) ?? []
   const isApplied = (key: string) => !skippedKeys.includes(key)
   const changesCount = changeKeysBySet.flat().length
@@ -112,7 +112,7 @@ const ImportBricksetCsv: FC = () => {
     setAddedKeys((previousKeys) =>
       isAdded
         ? previousKeys.filter((key) => !keys.includes(key))
-        : uniqueAndSortedArray({ array: [...previousKeys, ...keys] })
+        : toUniqueSortedArray({ array: [...previousKeys, ...keys] })
     )
 
   const onClose = () => {
@@ -150,7 +150,7 @@ const ImportBricksetCsv: FC = () => {
     ignoreList &&
     updateIgnoreList({
       key,
-      values: uniqueAndSortedArray({ array: [...ignoreList[key], value] }),
+      values: toUniqueSortedArray({ array: [...ignoreList[key], value] }),
     })
 
   const onValidate = async () => {

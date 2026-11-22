@@ -110,7 +110,7 @@ test('countSorts counts the sorted columns', () => {
   assert.equal(countSorts(state), 2)
 })
 
-const column = ({
+const buildColumn = ({
   colId,
   ...overrides
 }: Partial<ChooserColumn> & { colId: string }): ChooserColumn => ({
@@ -123,16 +123,16 @@ const column = ({
 })
 
 const columns = [
-  column({ colId: 'id', pinned: 'left' }),
-  column({ colId: 'name' }),
-  column({ colId: 'year' }),
-  column({
+  buildColumn({ colId: 'id', pinned: 'left' }),
+  buildColumn({ colId: 'name' }),
+  buildColumn({ colId: 'year' }),
+  buildColumn({
     colId: 'actions',
     pinned: 'right',
     isLockedVisible: true,
     isLockedPosition: true,
   }),
-  column({ colId: 'tags' }),
+  buildColumn({ colId: 'tags' }),
 ]
 
 test('groupColumns splits by pinned side', () => {

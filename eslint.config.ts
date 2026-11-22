@@ -7,6 +7,11 @@ import simpleImportSort from 'eslint-plugin-simple-import-sort'
 import globals from 'globals'
 import { config, configs } from 'typescript-eslint'
 
+const verbFirstName =
+  '/^([A-Z]|(use|on|by|compare|get|set|build|create|find|count|group|sort|filter|format|parse|map|merge|move|open|close|toggle|reset|save|load|fetch|delete|remove|add|apply|render|read|write|hide|show|clamp|run|is|has|can|to|handle|update|edit|mutate|refresh|login|logout|clear|select|validate|compute|split|undo|insert|replace|store|resize|assert|check|keep|pick|focus|restore|flush|cancel|start|stop|schedule|extract|import|export|normalize|sanitize|nest|flatten|collect|ensure|suppress|commit|prefill|skip|sum|rename|reparent|walk|pluralize|fill|does)([A-Z]|$))/'
+const verbFirstMessage =
+  'Start function names with a verb (getItems, isOpen, toLabel), not a noun.'
+
 export default config(
   { ignores: ['dist', 'pnpm-lock.yaml'] },
   {
@@ -53,6 +58,14 @@ export default config(
       'max-params': ['error', 3],
       'no-restricted-syntax': [
         'error',
+        {
+          selector: `FunctionDeclaration[id.name!=${verbFirstName}]`,
+          message: verbFirstMessage,
+        },
+        {
+          selector: `VariableDeclarator[id.name!=${verbFirstName}] > :matches(ArrowFunctionExpression, FunctionExpression)`,
+          message: verbFirstMessage,
+        },
         {
           selector: 'FunctionDeclaration[id.name!="assert"][params.length>1]',
           message:

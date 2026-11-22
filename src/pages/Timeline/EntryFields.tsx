@@ -5,8 +5,8 @@ import type { TimelineEntry } from 'types/timeline'
 import {
   type EntryDraft,
   formatRange,
+  getKindName,
   isKind,
-  kindName,
   kinds,
   type Timeline,
 } from 'utils/timeline'
@@ -52,7 +52,7 @@ const EntryFields: FC<EntryFieldsProps> = ({
       <MenuItem value="">None (era or trilogy)</MenuItem>
       {kinds.map((kind) => (
         <MenuItem key={kind} value={kind}>
-          {kindName(kind)}
+          {getKindName(kind)}
         </MenuItem>
       ))}
     </TextField>
@@ -67,7 +67,7 @@ const EntryFields: FC<EntryFieldsProps> = ({
       <MenuItem value="">None</MenuItem>
       {parents.map((parent) => (
         <MenuItem key={parent.id} value={parent.id}>
-          {timeline.pathLabel(parent.id)}
+          {timeline.getPathLabel(parent.id)}
         </MenuItem>
       ))}
     </TextField>

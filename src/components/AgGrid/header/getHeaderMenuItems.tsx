@@ -30,7 +30,7 @@ const pinSides: { pinned?: Pinned; label: string }[] = [
   { label: 'None' },
 ]
 
-export const headerMenuItems = ({
+export const getHeaderMenuItems = ({
   api,
   column,
   openColumnChooser,

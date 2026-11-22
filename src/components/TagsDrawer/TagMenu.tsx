@@ -5,7 +5,12 @@ import { Menu, type MenuItemDefinition } from 'components/Menu'
 import type { Tag } from 'types/tags'
 import { editTag, isProtectedTag, type TagsState } from 'utils/tags'
 
-import { appliesToTarget, type Run, targets, toggledAppliesTo } from './tagTree'
+import {
+  doesApplyToTarget,
+  type Run,
+  targets,
+  toggleAppliesTo,
+} from './tagTree'
 
 type TagMenuProps = {
   anchor?: HTMLElement
@@ -19,7 +24,7 @@ type TagMenuProps = {
   onDelete: (tag: Tag) => void
 }
 
-const rootTagSettingsItems = ({
+const getRootTagSettingsItems = ({
   tag,
   state,
   isPending,
@@ -29,7 +34,7 @@ const rootTagSettingsItems = ({
 }): MenuItemDefinition[] => [
   { kind: 'divider', key: 'settings' },
   ...targets.map((target): MenuItemDefinition => {
-    const checked = appliesToTarget({ appliesTo: tag.appliesTo, target })
+    const checked = doesApplyToTarget({ appliesTo: tag.appliesTo, target })
     return {
       kind: 'switch',
       key: `applies-${target}`,
@@ -43,7 +48,7 @@ const rootTagSettingsItems = ({
               state,
               id: tag.id,
               changes: {
-                appliesTo: toggledAppliesTo({
+                appliesTo: toggleAppliesTo({
                   appliesTo: tag.appliesTo,
                   target,
                 }),
@@ -103,7 +108,7 @@ const TagMenu: FC<TagMenuProps> = ({
         },
         ...(tag.parent
           ? []
-          : rootTagSettingsItems({ tag, state, isPending, run })),
+          : getRootTagSettingsItems({ tag, state, isPending, run })),
         { kind: 'divider', key: 'danger' },
         {
           kind: 'action',

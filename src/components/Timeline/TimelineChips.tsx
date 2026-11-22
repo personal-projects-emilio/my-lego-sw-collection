@@ -7,7 +7,7 @@ import {
 import { useTimeline } from 'hooks'
 import type { InheritedTimeline, TimelineId } from 'types/timeline'
 
-import { eraColor } from './eraColor'
+import { getEraColor } from './getEraColor'
 import TimelineChip from './TimelineChip'
 import useTimelineFieldStyles from './TimelineField.styles'
 
@@ -34,7 +34,7 @@ const TimelineChips: FC<TimelineChipsProps> = ({
     },
     []
   )
-  const chip = ({ id, label }: { id: TimelineId; label: string }) => {
+  const renderChip = ({ id, label }: { id: TimelineId; label: string }) => {
     const { key, ...itemProps } = getItemProps({ index: ids.indexOf(id) })
     return (
       <TimelineChip
@@ -52,19 +52,19 @@ const TimelineChips: FC<TimelineChipsProps> = ({
       <div
         key={`group-${parent}`}
         role="group"
-        aria-label={timeline.pathLabel(parent)}
+        aria-label={timeline.getPathLabel(parent)}
         className={classes.group}
         style={{
-          '--era-color': eraColor({ timeline, id: parent }),
+          '--era-color': getEraColor({ timeline, id: parent }),
         }}
       >
         <Typography variant="caption" aria-hidden>
-          {timeline.pathLabel(parent)} ›
+          {timeline.getPathLabel(parent)} ›
         </Typography>
-        {members.map((id) => chip({ id, label: timeline.label(id) }))}
+        {members.map((id) => renderChip({ id, label: timeline.getLabel(id) }))}
       </div>
     ) : (
-      members.map((id) => chip({ id, label: timeline.pathLabel(id) }))
+      members.map((id) => renderChip({ id, label: timeline.getPathLabel(id) }))
     )
   )
 }

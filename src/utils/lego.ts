@@ -60,7 +60,7 @@ export const getResaleTotals = (resaleSets: ResaleInputs[]) => {
     ...resaleSet,
     ...getResaleValues(resaleSet),
   }))
-  const averagePerUnitBought = (
+  const getAveragePerUnitBought = (
     pick: (row: (typeof rows)[number]) => number | null
   ) => {
     const weighted = rows.flatMap((row) => {
@@ -72,9 +72,9 @@ export const getResaleTotals = (resaleSets: ResaleInputs[]) => {
       ? sum(weighted.map((w) => w.value * w.quantity)) / quantity
       : null
   }
-  const officialPrice = averagePerUnitBought((row) => row.officialPrice)
-  const unitBoughtPrice = averagePerUnitBought((row) => row.unitBoughtPrice)
-  const unitProfit = averagePerUnitBought((row) => row.unitProfit)
+  const officialPrice = getAveragePerUnitBought((row) => row.officialPrice)
+  const unitBoughtPrice = getAveragePerUnitBought((row) => row.unitBoughtPrice)
+  const unitProfit = getAveragePerUnitBought((row) => row.unitProfit)
 
   return {
     officialPrice,
@@ -85,7 +85,7 @@ export const getResaleTotals = (resaleSets: ResaleInputs[]) => {
         ? 1 - unitBoughtPrice / officialPrice
         : null,
     totalBought: sum(rows.map((row) => row.totalBought)),
-    unitSellingPrice: averagePerUnitBought((row) => row.unitSellingPrice),
+    unitSellingPrice: getAveragePerUnitBought((row) => row.unitSellingPrice),
     quantitySold: sum(rows.map((row) => row.quantitySold)),
     unitProfit,
     profitPercentage:
@@ -178,7 +178,7 @@ export const buildCollection = ({
 }: StoredCollection): Collection => {
   const tagsVocabulary = buildTagsVocabulary(tagsList)
   const timeline = buildTimeline(timelineList)
-  const withSource = ({
+  const addSource = ({
     record,
     ids,
     source,
@@ -194,18 +194,24 @@ export const buildCollection = ({
           : { ...result, [id]: [...(result[id] ?? []), source] },
       record
     )
-  const ownTags = ({ tags, target }: { tags?: string[]; target: TagTarget }) =>
-    tagsVocabulary.withImplied(
-      (tags ?? []).filter((id) => tagsVocabulary.appliesTo({ id, target }))
+  const getOwnTags = ({
+    tags,
+    target,
+  }: {
+    tags?: string[]
+    target: TagTarget
+  }) =>
+    tagsVocabulary.addImplied(
+      (tags ?? []).filter((id) => tagsVocabulary.doesApplyTo({ id, target }))
     )
   const isSeasonal = (set: Set) => !!set.tags?.includes(seasonalTagId)
-  const inheritable = (set: Set) =>
+  const getInheritableTags = (set: Set) =>
     isSeasonal(set)
       ? []
-      : ownTags({ tags: set.tags, target: 'sets' }).filter(
+      : getOwnTags({ tags: set.tags, target: 'sets' }).filter(
           (id) =>
-            tagsVocabulary.rootOf(id)?.inherited &&
-            tagsVocabulary.appliesTo({ id, target: 'minifigs' })
+            tagsVocabulary.getRoot(id)?.inherited &&
+            tagsVocabulary.doesApplyTo({ id, target: 'minifigs' })
         )
   const looseById = new Map(looseMinifigsList.map((loose) => [loose.id, loose]))
   const cleanedMinifigsList = minifigsList.map((minifig): CollectionMinifig => {
@@ -240,16 +246,16 @@ export const buildCollection = ({
         const currentMinifig = updatedMinifigsList[index]
         updatedMinifigsList[index] = {
           ...currentMinifig,
-          inheritedTags: withSource({
+          inheritedTags: addSource({
             record: currentMinifig.inheritedTags,
-            ids: inheritable(currentSet),
+            ids: getInheritableTags(currentSet),
             source: currentSet.id,
           }),
-          inheritedTimeline: withSource({
+          inheritedTimeline: addSource({
             record: currentMinifig.inheritedTimeline,
             ids: isSeasonal(currentSet)
               ? []
-              : timeline.withImplied(currentSet.timeline ?? []),
+              : timeline.addImplied(currentSet.timeline ?? []),
             source: currentSet.id,
           }),
           owned: {
@@ -275,8 +281,11 @@ export const buildCollection = ({
           {
             ...currentSet,
             tags: Array.from(new Set(currentSet.tags)),
-            effectiveTags: ownTags({ tags: currentSet.tags, target: 'sets' }),
-            effectiveTimeline: timeline.withImplied(currentSet.timeline ?? []),
+            effectiveTags: getOwnTags({
+              tags: currentSet.tags,
+              target: 'sets',
+            }),
+            effectiveTimeline: timeline.addImplied(currentSet.timeline ?? []),
             ...(currentSet.content && {
               content: {
                 ...currentSet.content,
@@ -302,11 +311,11 @@ export const buildCollection = ({
     minifigsList: syncedList.minifigs.map((minifig) => ({
       ...minifig,
       effectiveTags: tagsVocabulary.sort([
-        ...ownTags({ tags: minifig.tags, target: 'minifigs' }),
+        ...getOwnTags({ tags: minifig.tags, target: 'minifigs' }),
         ...Object.keys(minifig.inheritedTags),
       ]),
       effectiveTimeline: timeline.sort([
-        ...timeline.withImplied(minifig.timeline ?? []),
+        ...timeline.addImplied(minifig.timeline ?? []),
         ...Object.keys(minifig.inheritedTimeline),
       ]),
     })),

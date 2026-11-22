@@ -53,7 +53,7 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
   const [drag, setDrag] = useState<Drag>()
   const tagsList = useMemo(() => state?.tagsList ?? [], [state])
   const tree = useTagTree({ tagsList, activeId: drag?.activeId })
-  const { drop, dropNoteOf, isDropTarget, contextProps } = useTagDrag({
+  const { drop, getDropNote, isDropTarget, contextProps } = useTagDrag({
     state,
     tree,
     run,
@@ -66,7 +66,7 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
     tagsVocabulary,
     parents,
     expanded,
-    labelsUnder,
+    getLabelsUnder,
     expand,
     toggle,
   } = tree
@@ -106,12 +106,14 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
       .find(
         ({ id }) =>
           id === adding.parent ||
-          tagsVocabulary.ancestors(id).some((tag) => tag.id === adding.parent)
+          tagsVocabulary
+            .getAncestors(id)
+            .some((tag) => tag.id === adding.parent)
       )?.id
   const addRow = adding && (
     <AddTagRow
       key="adding"
-      depth={adding.parent ? tagsVocabulary.depth(adding.parent) + 1 : 0}
+      depth={adding.parent ? tagsVocabulary.getDepth(adding.parent) + 1 : 0}
       onCancel={() => setEditing(undefined)}
       onCommit={(label) => {
         setEditing(undefined)
@@ -122,10 +124,10 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
       }}
       placeholder={
         adding.parent
-          ? `New tag in ${tagsVocabulary.label(adding.parent)}`
+          ? `New tag in ${tagsVocabulary.getLabel(adding.parent)}`
           : 'New root'
       }
-      siblingLabels={labelsUnder({ parent: adding.parent })}
+      siblingLabels={getLabelsUnder({ parent: adding.parent })}
     />
   )
 
@@ -195,7 +197,7 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
                   depth={id === drag?.activeId && drop ? drop.depth : depth}
                   disabled={isPending}
                   details={details(tag)}
-                  dropNote={dropNoteOf(id)}
+                  dropNote={getDropNote(id)}
                   isDropTarget={isDropTarget(id)}
                   editing={isEditing}
                   expanded={parents.has(id) ? expanded.has(id) : undefined}
@@ -205,7 +207,7 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
                   rowActions={rowActions}
                   siblingLabels={
                     isEditing
-                      ? labelsUnder({ parent: tag.parent, except: id })
+                      ? getLabelsUnder({ parent: tag.parent, except: id })
                       : undefined
                   }
                 />,

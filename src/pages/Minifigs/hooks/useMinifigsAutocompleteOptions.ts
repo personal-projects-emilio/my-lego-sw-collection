@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 
 import { useMinifigsQuery } from 'api/minifigs'
-import { uniqueAndSortedArray } from 'utils/array'
+import { toUniqueSortedArray } from 'utils/array'
 
 type MinifigsAutocompleteOptions = {
   characterNames: string[]
@@ -25,7 +25,7 @@ const useMinifigsAutocompleteOptions = () => {
       }
     )
     return {
-      characterNames: uniqueAndSortedArray({
+      characterNames: toUniqueSortedArray({
         array: statistics.characterNames,
       }),
       ids: statistics.ids,

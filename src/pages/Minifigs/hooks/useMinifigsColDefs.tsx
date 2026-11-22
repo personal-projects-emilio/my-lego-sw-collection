@@ -4,7 +4,9 @@ import { PiLegoSmiley } from 'react-icons/pi'
 import type { ColDef, GetQuickFilterTextParams } from 'ag-grid-community'
 import { useAgGridStyles } from 'components/AgGrid'
 import {
-  actionsColDef,
+  buildActionsColDef,
+  buildTagsColDef,
+  buildTimelineColDef,
   ExternalLinksCellRenderer,
   type ExternalLinksCellRenderProps,
   ItemActionsCellRenderer,
@@ -12,8 +14,6 @@ import {
   type ItemIdCellRenderProps,
   type MinifigActionsCellRendererProps,
   OverflowTypographyCellRenderer,
-  tagsColDef,
-  timelineColDef,
 } from 'components/AgGrid/column'
 import { useTagsVocabulary, useTimeline } from 'hooks'
 import type { CollectionMinifig } from 'types/minifigs'
@@ -54,8 +54,11 @@ const useMinifigsColDefs = () => {
           field: 'characterName',
           headerName: 'Character Name',
         },
-        timelineColDef<CollectionMinifig>(timeline),
-        tagsColDef<CollectionMinifig>({ tagsVocabulary, itemType: 'minifigs' }),
+        buildTimelineColDef<CollectionMinifig>(timeline),
+        buildTagsColDef<CollectionMinifig>({
+          tagsVocabulary,
+          itemType: 'minifigs',
+        }),
         {
           cellClass: agGridClasses.flexAlignCenter,
           cellRenderer: OwnedCellRenderer,
@@ -90,7 +93,7 @@ const useMinifigsColDefs = () => {
           sortable: false,
           width: 100,
         },
-        actionsColDef<CollectionMinifig>({
+        buildActionsColDef<CollectionMinifig>({
           cellClass: [agGridClasses.flexAlignCenter, agGridClasses.gap1],
           cellRenderer: ItemActionsCellRenderer,
           cellRendererParams: {

@@ -21,7 +21,7 @@ const noEraColor = '#e0e0e0'
 
 const mapTimelinesToEraColors = new WeakMap<Timeline, Map<TimelineId, string>>()
 
-const colorsOf = (timeline: Timeline) => {
+const getColors = (timeline: Timeline) => {
   const known = mapTimelinesToEraColors.get(timeline)
   if (known) return known
   const withTitles = new Set(timeline.erasWithTitles)
@@ -35,13 +35,13 @@ const colorsOf = (timeline: Timeline) => {
   return colors
 }
 
-export const eraColor = ({
+export const getEraColor = ({
   timeline,
   id,
 }: {
   timeline: Timeline
   id?: TimelineId
 }) => {
-  const era = id === undefined ? undefined : timeline.eraOf(id)
-  return (era && colorsOf(timeline).get(era.id)) ?? noEraColor
+  const era = id === undefined ? undefined : timeline.getEra(id)
+  return (era && getColors(timeline).get(era.id)) ?? noEraColor
 }

@@ -14,11 +14,11 @@ import type { Tag } from 'types/tags'
 import {
   deleteRoot,
   deleteTag,
+  getRootTargets,
+  getTagUsage,
   otherRootId,
-  rootTargets,
   type TagEdit,
   type TagsState,
-  tagUsage,
 } from 'utils/tags'
 
 import useDeleteTagDialogStyles from './DeleteTagDialog.styles'
@@ -39,13 +39,13 @@ const DeleteTagDialog: FC<DeleteTagDialogProps> = ({
   tag,
 }) => {
   const { classes } = useDeleteTagDialogStyles()
-  const targets = rootTargets({ tagsList: state.tagsList, id: tag.id })
+  const targets = getRootTargets({ tagsList: state.tagsList, id: tag.id })
   const [targetId, setTargetId] = useState(
     targets.some(({ id }) => id === otherRootId)
       ? otherRootId
       : (targets[0]?.id ?? '')
   )
-  const { sets, minifigs } = tagUsage({ state, ids: [tag.id] })
+  const { sets, minifigs } = getTagUsage({ state, ids: [tag.id] })
   const items = [
     ...sets.map(({ id, name }) => `Set ${id} ${name}`),
     ...minifigs.map(({ id, name }) => `Minifig ${id} ${name}`),

@@ -6,7 +6,7 @@ import type { TimelineEntry, TimelineId } from 'types/timeline'
 
 import KindIcon from './KindIcon'
 import {
-  noteOf,
+  getPickNote,
   pickStyle,
   type TimelinePickerProps,
   toggleProps,
@@ -17,11 +17,11 @@ type NodeProps = { props: TimelinePickerProps; entry: TimelineEntry }
 
 const Node: FC<NodeProps> = ({ props, entry }) => {
   const { classes } = useTimelinePickerStyles()
-  const children = props.timeline.childrenOf(entry.id)
+  const children = props.timeline.getChildren(entry.id)
   return (
     <>
       <Tooltip
-        title={noteOf({ picks: props.picks, entry })}
+        title={getPickNote({ picks: props.picks, entry })}
         placement="right"
         describeChild
       >

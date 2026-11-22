@@ -4,7 +4,7 @@ const groupHeight = 48
 const groupLayer = 20
 const optionHeight = 36
 
-const tint = (color: string) => `linear-gradient(${color}, ${color})`
+const toTintGradient = (color: string) => `linear-gradient(${color}, ${color})`
 
 export default makeStyles({ name: 'TagsAutocomplete' })((theme) => ({
   field: {
@@ -44,10 +44,10 @@ export default makeStyles({ name: 'TagsAutocomplete' })((theme) => ({
       top: `calc(${groupHeight}px + (var(--depth) - 1) * ${optionHeight}px)`,
       zIndex: `calc(${groupLayer} - var(--depth))`,
       '&.Mui-focused': {
-        backgroundImage: tint(theme.palette.action.hover),
+        backgroundImage: toTintGradient(theme.palette.action.hover),
       },
       '&[aria-selected="true"]': {
-        backgroundImage: tint(
+        backgroundImage: toTintGradient(
           theme.alpha(
             theme.palette.primary.main,
             theme.palette.action.selectedOpacity
@@ -55,7 +55,7 @@ export default makeStyles({ name: 'TagsAutocomplete' })((theme) => ({
         ),
       },
       '&[aria-selected="true"].Mui-focused': {
-        backgroundImage: tint(
+        backgroundImage: toTintGradient(
           theme.alpha(
             theme.palette.primary.main,
             theme.palette.action.selectedOpacity +

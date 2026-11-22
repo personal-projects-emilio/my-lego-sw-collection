@@ -37,7 +37,7 @@ const TrilogyBracket: FC<TrilogyBracketProps> = ({
         gridColumn: side === 'left' ? 1 : 5,
         gridRow: `${from} / ${to + 1}`,
       }}
-      title={formatRange(timeline.range(trilogy.id))}
+      title={formatRange(timeline.getRange(trilogy.id))}
     >
       <span className={classes.bracketLabel}>{trilogy.label}</span>
     </button>

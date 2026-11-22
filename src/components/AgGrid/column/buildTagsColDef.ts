@@ -7,7 +7,7 @@ import type { ColumnHeaderParams } from '../header'
 import TagsCellRenderer from './TagsCellRenderer'
 import TagsFilter, { type TagsFilterProps } from './TagsFilter'
 
-export const tagsColDef = <TData extends TaggedItem>({
+export const buildTagsColDef = <TData extends TaggedItem>({
   tagsVocabulary,
   itemType,
 }: {
@@ -18,8 +18,8 @@ export const tagsColDef = <TData extends TaggedItem>({
   colId: 'tags',
   comparator: (a, b) =>
     tagsVocabulary
-      .groupedLabel(a ?? [])
-      .localeCompare(tagsVocabulary.groupedLabel(b ?? [])),
+      .getGroupedLabel(a ?? [])
+      .localeCompare(tagsVocabulary.getGroupedLabel(b ?? [])),
   valueGetter: ({ data }) => data?.effectiveTags,
   headerName: 'Tags',
   headerComponentParams: {
@@ -29,8 +29,8 @@ export const tagsColDef = <TData extends TaggedItem>({
   filterParams: { itemType } satisfies TagsFilterProps,
   flex: 2,
   getQuickFilterText: ({ value }) =>
-    (value ?? []).map(tagsVocabulary.label).join(', '),
+    (value ?? []).map(tagsVocabulary.getLabel).join(', '),
   minWidth: 160,
   suppressFloatingFilterButton: false,
-  valueFormatter: ({ value }) => tagsVocabulary.groupedLabel(value ?? []),
+  valueFormatter: ({ value }) => tagsVocabulary.getGroupedLabel(value ?? []),
 })

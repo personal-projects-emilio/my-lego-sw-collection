@@ -1,6 +1,8 @@
 import type { ColDef } from 'ag-grid-community'
 
-export const actionsColDef = <TData>(colDef: ColDef<TData>): ColDef<TData> => ({
+export const buildActionsColDef = <TData>(
+  colDef: ColDef<TData>
+): ColDef<TData> => ({
   colId: 'actions',
   filter: false,
   floatingFilter: false,

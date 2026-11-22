@@ -3,7 +3,7 @@ import type { FC } from 'react'
 import { Tooltip, Typography } from '@mui/material'
 import TreeView from 'components/TreeView'
 import { makeStyles } from 'tss-react/mui'
-import { inheritedFrom } from 'utils/tags'
+import { formatInheritedFrom } from 'utils/tags'
 import type { TreeModel } from 'utils/tree'
 
 type TreeCellProps = {
@@ -32,7 +32,7 @@ const TreeCell: FC<TreeCellProps> = ({ ids, inherited = {}, text, tree }) => {
   const notes = Object.fromEntries(
     Object.entries(inherited).map(([id, sources]) => [
       id,
-      inheritedFrom(sources),
+      formatInheritedFrom(sources),
     ])
   )
   return (
