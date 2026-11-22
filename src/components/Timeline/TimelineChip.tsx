@@ -33,7 +33,7 @@ const TimelineChip: FC<TimelineChipProps> = ({
         aria-label={sources ? `${label}, ${inheritedFrom(sources)}` : undefined}
         size="small"
         className={classes.chip}
-        style={{ ['--era-color' as string]: eraColor({ timeline, id }) }}
+        style={{ '--era-color': eraColor({ timeline, id }) }}
         icon={<KindIcon kind={entry.kind} />}
         label={
           <span className={classes.chipLabel}>

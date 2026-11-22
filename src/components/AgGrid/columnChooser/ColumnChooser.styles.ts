@@ -38,7 +38,7 @@ export default makeStyles({ name: 'ColumnChooser' })((theme) => ({
     alignItems: 'center',
     display: 'flex',
     gap: theme.spacing(1),
-    padding: theme.spacing(1, 1, 1, 2),
+    padding: theme.spacing(0.5, 0.5, 0.5, 2),
   },
   title: {
     flex: 1,

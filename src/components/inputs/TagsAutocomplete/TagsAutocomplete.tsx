@@ -1,11 +1,4 @@
-import {
-  Children,
-  type CSSProperties,
-  forwardRef,
-  useEffect,
-  useId,
-  useMemo,
-} from 'react'
+import { Children, forwardRef, useEffect, useId, useMemo } from 'react'
 
 import {
   Autocomplete as MuiAutocomplete,
@@ -24,7 +17,7 @@ import { useTagsVocabulary } from 'hooks'
 import type { InheritedTags, TagId, TagTarget } from 'types/tags'
 import { filterTagsAfterPick, storedTagsAfterPick } from 'utils/tags'
 
-import nestOptions, { type OptionElement } from './nestOptions'
+import nestOptions, { isOptionElement } from './nestOptions'
 import useTagsAutocompleteStyles from './TagsAutocomplete.styles'
 import useTagNotes from './useTagNotes'
 
@@ -135,7 +128,7 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
             </ListSubheader>
             <ul className={classes.nestedList} role="presentation">
               {nestOptions({
-                options: Children.toArray(children) as OptionElement[],
+                options: Children.toArray(children).filter(isOptionElement),
                 subtreeClassName: classes.subtree,
               })}
             </ul>
@@ -156,7 +149,7 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
                 .join(', ')}
               className={optionClassName}
               data-depth={tagsVocabulary.depth(id)}
-              style={{ '--depth': tagsVocabulary.depth(id) } as CSSProperties}
+              style={{ '--depth': tagsVocabulary.depth(id) }}
             >
               <Checkbox
                 aria-hidden

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import type { TimelineList } from 'types/timeline'
 import { test } from 'vitest'
 
+import { minifigFixture, setFixture } from './testFixtures.ts'
 import {
   buildTimeline,
   canToggle,
@@ -38,12 +39,12 @@ const timelineList: TimelineList = [
 const state: TimelineState = {
   timelineList,
   setsList: [
-    { id: 1, name: 'X-wing', timeline: ['anh'] },
-    { id: 2, name: 'Speeder', timeline: ['rotj'] },
-  ] as TimelineState['setsList'],
+    setFixture({ id: 1, name: 'X-wing', timeline: ['anh'] }),
+    setFixture({ id: 2, name: 'Speeder', timeline: ['rotj'] }),
+  ],
   minifigsList: [
-    { id: 'sw0001', name: 'Luke', timeline: ['ot', 'rotj'] },
-  ] as TimelineState['minifigsList'],
+    minifigFixture({ id: 'sw0001', name: 'Luke', timeline: ['ot', 'rotj'] }),
+  ],
 }
 
 const stateOf = (edit: TimelineEdit) => {

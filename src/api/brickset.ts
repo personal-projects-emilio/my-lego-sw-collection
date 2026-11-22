@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { skipToken, useMutation, useQuery } from '@tanstack/react-query'
 import { useAuth } from 'providers/AuthProvider'
 import type { BricksetIgnoreList } from 'types/brickset'
 
@@ -21,8 +21,7 @@ export const useBricksetIgnoreListQuery = () => {
   const { idToken } = useAuth()
   return useQuery({
     queryKey: [queryKeys.bricksetIgnoreList],
-    queryFn: () => fetchBricksetIgnoreList(idToken as string),
-    enabled: Boolean(idToken),
+    queryFn: idToken ? () => fetchBricksetIgnoreList(idToken) : skipToken,
   })
 }
 

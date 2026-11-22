@@ -1,7 +1,6 @@
 /// <reference types="node" />
 import assert from 'node:assert/strict'
-import type { LooseMinifig, Minifig } from 'types/minifigs'
-import type { Set, SetsList } from 'types/sets'
+import type { LooseMinifig } from 'types/minifigs'
 import type { TagsList } from 'types/tags'
 import type { TimelineList } from 'types/timeline'
 import { test } from 'vitest'
@@ -15,13 +14,24 @@ import {
   renameMinifigInSets,
   updateLooseMinifig,
 } from './lego.ts'
+import {
+  minifigFixture,
+  setFixture,
+  setMinifigFixture,
+} from './testFixtures.ts'
 
 test('renames a minifig in every set that contains it', () => {
   const minifig = { characterName: 'Han Solo', quantity: 1, isInFrame: false }
   const setsList = [
-    { id: 1, content: { minifigs: [{ ...minifig, id: 'sw0001' }] } },
-    { id: 2, content: { minifigs: [{ ...minifig, id: 'sw0002' }] } },
-  ] as SetsList
+    setFixture({
+      id: 1,
+      content: { minifigs: [setMinifigFixture({ ...minifig, id: 'sw0001' })] },
+    }),
+    setFixture({
+      id: 2,
+      content: { minifigs: [setMinifigFixture({ ...minifig, id: 'sw0002' })] },
+    }),
+  ]
 
   const renamed = renameMinifigInSets({
     setsList,
@@ -41,13 +51,7 @@ const minifig = ({
   id: string
   tags?: string[]
   timeline?: string[]
-}) =>
-  ({
-    id,
-    characterName: `Name ${id}`,
-    tags,
-    timeline,
-  }) as unknown as Minifig
+}) => minifigFixture({ id, tags, timeline })
 
 const loose = (quantity: number): LooseMinifig => ({
   quantity,
@@ -67,22 +71,22 @@ const setWith = ({
   tags?: string[]
   timeline?: string[]
 }) =>
-  ({
+  setFixture({
     id,
     ownedQuantity,
     tags,
     timeline,
     content: {
       minifigs: [
-        {
+        setMinifigFixture({
           id: 'sw0001',
           characterName: 'Old name',
           quantity: 2,
           isInFrame: true,
-        },
+        }),
       ],
     },
-  }) as unknown as Set
+  })
 
 test('buildCollection adds owned set quantities to the loose total and lists every set', () => {
   const { minifigsList } = buildCollection({

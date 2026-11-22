@@ -64,19 +64,19 @@ export const dimensionFields = (['model', 'box'] as const).flatMap((part) =>
   }))
 )
 
-export const mapPricesToLabels = {
-  'prices.bought': 'Bought',
-  'prices.storeValue': 'Store Value',
-  'prices.marketValue': 'Market Value',
-} as const
+export const priceFields = [
+  { name: 'prices.bought', label: 'Bought' },
+  { name: 'prices.storeValue', label: 'Store Value' },
+  { name: 'prices.marketValue', label: 'Market Value' },
+] as const
 
-export const mapBrickLinkPricesToLabels = {
-  'prices.brickLinkSoldPriceNew': 'BrickLink Sold Price New',
-  'prices.brickLinkSoldPriceUsed': 'BrickLink Sold Price Used',
-} as const
+export const brickLinkPriceFields = [
+  { name: 'prices.brickLinkSoldPriceNew', label: 'BrickLink Sold Price New' },
+  { name: 'prices.brickLinkSoldPriceUsed', label: 'BrickLink Sold Price Used' },
+] as const
 
-export const mapContentToLabels = {
-  'content.box': 'Box',
-  'content.notice': 'Notice',
-  'content.bags': 'Bags',
-} as const
+export const contentFields = [
+  { name: 'content.box', label: 'Box' },
+  { name: 'content.notice', label: 'Notice' },
+  { name: 'content.bags', label: 'Bags' },
+] as const

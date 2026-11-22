@@ -20,7 +20,7 @@ export const tagsColDef = <TData extends TaggedItem>({
     tagsVocabulary
       .groupedLabel(a ?? [])
       .localeCompare(tagsVocabulary.groupedLabel(b ?? [])),
-  field: 'effectiveTags' as ColDef<TData, TagId[]>['field'],
+  valueGetter: ({ data }) => data?.effectiveTags,
   headerName: 'Tags',
   headerComponentParams: {
     labelAdornment: TagsDrawerButton,

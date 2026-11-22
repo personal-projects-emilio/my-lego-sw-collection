@@ -43,7 +43,7 @@ const TimelinePicker: FC<TimelinePickerProps> = (props) => {
             role="group"
             aria-label={era?.label ?? 'No era'}
             className={classes.era}
-            style={{ ['--era-color' as string]: color }}
+            style={{ '--era-color': color }}
           >
             <div className={classes.eraLine} aria-hidden>
               <span

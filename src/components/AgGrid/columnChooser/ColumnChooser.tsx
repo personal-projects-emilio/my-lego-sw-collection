@@ -48,11 +48,15 @@ const ColumnChooser = <TData,>({
           className={classes.title}
           component="h2"
           id={titleId}
-          variant="h6"
+          variant="subtitle2"
         >
           Columns
         </Typography>
-        <IconButton aria-label="Close the column chooser" onClick={onClose}>
+        <IconButton
+          aria-label="Close the column chooser"
+          onClick={onClose}
+          size="small"
+        >
           <MdClose />
         </IconButton>
       </header>

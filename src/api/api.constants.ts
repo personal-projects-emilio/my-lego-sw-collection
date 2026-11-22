@@ -9,17 +9,14 @@ export const queryKeys = {
   timeline: 'timeline',
 } as const
 
-const node = (name: string) =>
-  `/${name}${import.meta.env.VITE_DATA_SUFFIX ?? ''}.json`
-
 export const endPoints = {
-  bricksetIgnoreList: node('bricksetIgnoreList'),
-  looseMinifigs: node('looseMinifigs'),
-  minifigs: node('minifigs'),
-  resaleSets: node('resaleSets'),
-  sets: node('sets'),
-  tags: node('tags'),
-  timeline: node('timeline'),
+  bricksetIgnoreList: '/bricksetIgnoreList.json',
+  looseMinifigs: '/looseMinifigs.json',
+  minifigs: '/minifigs.json',
+  resaleSets: '/resaleSets.json',
+  sets: '/sets.json',
+  tags: '/tags.json',
+  timeline: '/timeline.json',
 } as const
 
 export const columnLayoutEndPoint = ({
@@ -28,4 +25,4 @@ export const columnLayoutEndPoint = ({
 }: {
   userId: string
   columnLayoutId: string
-}) => node(`userPreferences/${userId}/grids/${columnLayoutId}`)
+}) => `/userPreferences/${userId}/grids/${columnLayoutId}.json`

@@ -1,6 +1,5 @@
 /// <reference types="node" />
 import assert from 'node:assert/strict'
-import type { Set } from 'types/sets'
 import { test } from 'vitest'
 
 import {
@@ -10,15 +9,10 @@ import {
   newSetFromBricksetRow,
   skipChanges,
 } from './brickset.ts'
+import { setFixture } from './testFixtures.ts'
 
-const set = ({ id, ...overrides }: Partial<Set> & { id: Set['id'] }) =>
-  ({
-    id,
-    name: `Set ${id}`,
-    releaseYear: 2020,
-    bricksetImagePath: null,
-    EAN: null,
-    UPC: null,
+const set = (overrides: Parameters<typeof setFixture>[0]) =>
+  setFixture({
     prices: {
       bought: 10,
       marketValue: 0,
@@ -26,12 +20,8 @@ const set = ({ id, ...overrides }: Partial<Set> & { id: Set['id'] }) =>
       brickLinkSoldPriceNew: 0,
       brickLinkSoldPriceUsed: 0,
     },
-    dimensions: {
-      model: { width: null, height: null, depth: null },
-      box: { width: null, height: null, depth: null },
-    },
     ...overrides,
-  }) as Set
+  })
 
 const row = (fields: Record<string, string>) => ({
   Number: '',
@@ -198,7 +188,7 @@ test('reads the exit date and piece count, and puts back skipped changes', () =>
   })
 
   assert.deepEqual(report.updates[0].changes, [
-    { field: 'exitDate', from: undefined, to: '2028-12-31' },
+    { field: 'exitDate', from: null, to: '2028-12-31' },
     { field: 'content.partsQuantity', from: 7541, to: 7500 },
     { field: 'prices.brickLinkSoldPriceNew', from: 0, to: 800 },
   ])

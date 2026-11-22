@@ -1,10 +1,11 @@
 import type { FC } from 'react'
 
 import { MenuItem, TextField } from '@mui/material'
-import type { Kind, TimelineEntry } from 'types/timeline'
+import type { TimelineEntry } from 'types/timeline'
 import {
   type EntryDraft,
   formatRange,
+  isKind,
   kindName,
   kinds,
   type Timeline,
@@ -40,7 +41,7 @@ const EntryFields: FC<EntryFieldsProps> = ({
       onChange={(event) =>
         setDraft({
           ...draft,
-          kind: (event.target.value || undefined) as Kind | undefined,
+          kind: isKind(event.target.value) ? event.target.value : undefined,
           ...(!event.target.value &&
             draft.parent &&
             timeline.entry(draft.parent)?.parent && { parent: undefined }),

@@ -3,6 +3,7 @@ import { type FC, useId, useState } from 'react'
 import { Alert, Button, Typography } from '@mui/material'
 import useVocabularyMutations, {
   PartlySavedError,
+  timelineVocabularyConfig,
 } from 'hooks/useVocabularyMutations'
 import {
   deleteEntry,
@@ -37,7 +38,9 @@ const EntryForm: FC<EntryFormProps> = ({
 }) => {
   const { classes } = useEntryPanelStyles()
   const titleId = useId()
-  const { state, apply, isPending } = useVocabularyMutations('timeline')
+  const { state, apply, isPending } = useVocabularyMutations(
+    timelineVocabularyConfig
+  )
   const [draft, setDraft] = useState(initial)
   const [error, setError] = useState<string>()
   const [confirmDelete, setConfirmDelete] = useState(false)

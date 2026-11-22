@@ -55,7 +55,7 @@ const TimelineChips: FC<TimelineChipsProps> = ({
         aria-label={timeline.pathLabel(parent)}
         className={classes.group}
         style={{
-          ['--era-color' as string]: eraColor({ timeline, id: parent }),
+          '--era-color': eraColor({ timeline, id: parent }),
         }}
       >
         <Typography variant="caption" aria-hidden>

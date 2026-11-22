@@ -34,7 +34,7 @@ export const timelineColDef = <TData extends TimelineItem>(
         ? left.length - right.length
         : (left[index] ?? -Infinity) - (right[index] ?? -Infinity)
     },
-    field: 'effectiveTimeline' as ColDef<TData, TimelineId[]>['field'],
+    valueGetter: ({ data }) => data?.effectiveTimeline,
     headerName: 'Timeline',
     filter: TimelineFilter,
     flex: 2,

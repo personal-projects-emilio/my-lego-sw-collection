@@ -46,7 +46,7 @@ const IgnoreListFields: FC<IgnoreListFieldsProps> = ({
       })}
       value={ignoreList[key]}
       onChange={(values) =>
-        onChange({ key, values: (values as string[] | null) ?? [] })
+        onChange({ key, values: Array.isArray(values) ? values : [] })
       }
       textFieldProps={{ label, size: 'small' }}
     />

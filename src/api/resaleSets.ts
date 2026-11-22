@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { skipToken, useMutation, useQuery } from '@tanstack/react-query'
 import { useAuth } from 'providers/AuthProvider'
 import type { ResaleSet, ResaleSetsList } from 'types/resale'
 
@@ -26,8 +26,7 @@ export const useResaleSetsQuery = () => {
   const { idToken } = useAuth()
   return useQuery({
     queryKey: [queryKeys.resaleSets],
-    queryFn: () => fetchResaleSets(idToken as string),
-    enabled: Boolean(idToken),
+    queryFn: idToken ? () => fetchResaleSets(idToken) : skipToken,
   })
 }
 

@@ -1,3 +1,4 @@
+import setAt from 'lodash/fp/set'
 import type { BricksetIgnoreList, BricksetRow } from 'types/brickset'
 import type { Set, SetsList } from 'types/sets'
 
@@ -262,25 +263,6 @@ export const newSetFromBricksetRow = ({
 export const changeKey = ({ id, field }: { id: Set['id']; field: string }) =>
   `${id}|${field}`
 
-const withValueAt = ({
-  object,
-  path: [key, ...path],
-  value,
-}: {
-  object: Record<string, unknown>
-  path: string[]
-  value: unknown
-}): Record<string, unknown> => ({
-  ...object,
-  [key]: path.length
-    ? withValueAt({
-        object: (object[key] ?? {}) as Record<string, unknown>,
-        path,
-        value,
-      })
-    : value,
-})
-
 /** The sets list to save, with the current value put back for every skipped change. */
 export const skipChanges = ({
   report: { setsList, updates },
@@ -296,13 +278,5 @@ export const skipChanges = ({
       .filter(({ field }) =>
         skippedKeys.includes(changeKey({ id: set.id, field }))
       )
-      .reduce(
-        (result, { field, from }) =>
-          withValueAt({
-            object: result,
-            path: field.split('.'),
-            value: from,
-          }) as Set,
-        set
-      )
+      .reduce((result, { field, from }) => setAt(field, from, result), set)
   })

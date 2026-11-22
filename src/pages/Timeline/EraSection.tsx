@@ -40,7 +40,7 @@ const EraSection: FC<EraSectionProps> = ({
       aria-labelledby={headingId}
       className={classes.section}
       style={{
-        ['--era-color' as string]: color,
+        '--era-color': color,
         gridTemplateRows: `auto ${rows
           .map(({ gap }) => (gap === undefined ? 'auto' : `${gap}px`))
           .join(' ')}`,

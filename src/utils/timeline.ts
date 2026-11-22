@@ -1,4 +1,3 @@
-import { isUndefined, omitBy } from 'lodash'
 import type { VocabularyState } from 'types/common'
 import type {
   InheritedTimeline,
@@ -10,8 +9,12 @@ import type {
 
 import { uniqueId } from './tags'
 import { buildTree, byLabel } from './tree'
+import { withoutUndefined } from './typescript'
 
 export const kinds: Kind[] = ['movie', 'show', 'game', 'book', 'other']
+
+export const isKind = (value: string): value is Kind =>
+  kinds.some((kind) => kind === value)
 
 export const kindName = (kind: Kind) => kind[0].toUpperCase() + kind.slice(1)
 
@@ -218,14 +221,11 @@ export const saveEntry = ({
   if (start !== undefined && end !== undefined && end < start)
     return { refused: 'The end comes before the start' }
   const existing = id !== undefined && timeline.has(id)
-  const entry = omitBy(
-    {
-      ...draft,
-      id: existing ? id : uniqueId({ list: state.timelineList, label }),
-      label,
-    },
-    isUndefined
-  ) as TimelineEntry
+  const entry: TimelineEntry = withoutUndefined({
+    ...draft,
+    id: existing ? id : uniqueId({ list: state.timelineList, label }),
+    label,
+  })
   return {
     state: {
       ...state,
@@ -268,12 +268,7 @@ export const deleteEntry = ({
         e.id === id
           ? []
           : e.parent === id
-            ? [
-                omitBy(
-                  { ...e, parent: entry.parent },
-                  isUndefined
-                ) as TimelineEntry,
-              ]
+            ? [withoutUndefined({ ...e, parent: entry.parent })]
             : [e]
       ),
       setsList: withoutTimelineEntry({ items: state.setsList, id }),

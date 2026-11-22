@@ -18,6 +18,11 @@ import {
   tagUsage,
   undoTagEdit,
 } from './tags.ts'
+import {
+  minifigFixture,
+  setFixture,
+  setMinifigFixture,
+} from './testFixtures.ts'
 
 const tagsList: TagsList = [
   {
@@ -125,12 +130,12 @@ const editState: TagsState = {
     { id: 'misc', label: 'Misc', parent: 'other' },
   ],
   setsList: [
-    { id: 1, name: 'X-wing', tags: ['x-wing', 'anh'] },
-    { id: 2, name: 'Falcon', tags: ['ot'] },
-  ] as TagsState['setsList'],
+    setFixture({ id: 1, name: 'X-wing', tags: ['x-wing', 'anh'] }),
+    setFixture({ id: 2, name: 'Falcon', tags: ['ot'] }),
+  ],
   minifigsList: [
-    { id: 'sw0001', name: 'Luke', tags: ['rebel-pilot'] },
-  ] as TagsState['minifigsList'],
+    minifigFixture({ id: 'sw0001', name: 'Luke', tags: ['rebel-pilot'] }),
+  ],
 }
 
 const stateOf = (edit: TagEdit) => {
@@ -333,10 +338,12 @@ test('deleteRoot moves its tags under the target root and keeps items', () => {
 })
 
 test('deleteRoot removes the root itself from items', () => {
-  const tagged = {
+  const tagged: TagsState = {
     ...editState,
-    setsList: [{ id: 3, name: 'Shuttle', tags: ['vehicle', 'x-wing'] }],
-  } as TagsState
+    setsList: [
+      setFixture({ id: 3, name: 'Shuttle', tags: ['vehicle', 'x-wing'] }),
+    ],
+  }
   const state = stateOf(
     deleteRoot({ state: tagged, id: 'vehicle', targetId: 'other' })
   )
@@ -356,21 +363,21 @@ test.for([
   { case: 'inherited root', id: 'anh', expected: ['sw0001', 'sw0002'] },
   { case: 'root that is not inherited', id: 'x-wing', expected: ['sw0001'] },
 ])('tagUsage counts minifigs inheriting from a $case', ({ id, expected }) => {
-  const state = {
+  const state: TagsState = {
     ...editState,
     setsList: [
-      {
+      setFixture({
         id: 1,
         name: 'X-wing',
         tags: ['x-wing', 'anh'],
-        content: { minifigs: [{ id: 'sw0002' }] },
-      },
+        content: { minifigs: [setMinifigFixture({ id: 'sw0002' })] },
+      }),
     ],
     minifigsList: [
-      { id: 'sw0001', name: 'Luke', tags: ['anh', 'x-wing'] },
-      { id: 'sw0002', name: 'Biggs', tags: [] },
+      minifigFixture({ id: 'sw0001', name: 'Luke', tags: ['anh', 'x-wing'] }),
+      minifigFixture({ id: 'sw0002', name: 'Biggs' }),
     ],
-  } as unknown as TagsState
+  }
   assert.deepEqual(
     tagUsage({ state, ids: [id] }).minifigs.map(({ id }) => id),
     expected

@@ -226,7 +226,10 @@ export const buildCollection = ({
     }
   })
 
-  const syncedList = setsList.reduce(
+  const syncedList = setsList.reduce<{
+    sets: CollectionSetsList
+    minifigs: CollectionMinifig[]
+  }>(
     ({ sets, minifigs }, currentSet) => {
       const updatedMinifigsList = [...minifigs]
       currentSet?.content?.minifigs?.forEach((setMinifig) => {
@@ -291,7 +294,7 @@ export const buildCollection = ({
         minifigs: updatedMinifigsList,
       }
     },
-    { sets: [] as CollectionSetsList, minifigs: cleanedMinifigsList }
+    { sets: [], minifigs: cleanedMinifigsList }
   )
 
   return {
