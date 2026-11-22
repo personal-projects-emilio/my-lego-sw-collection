@@ -47,19 +47,19 @@ const ColumnLayoutGrid = <TData,>({
     () => getTotalColumns(props.columnDefs),
     [props.columnDefs]
   )
-  const getRowTotals: GetTotalRow<TData> | undefined =
+  const buildTotalRow: GetTotalRow<TData> | undefined =
     getTotalRow ??
     (totalColumns.length > 0
       ? (params) => getColumnTotals({ ...params, totalColumns })
       : undefined)
   const totalRow = useTotalRow({
-    getTotalRow: getRowTotals,
+    getTotalRow: buildTotalRow,
     isTotalRowShown: layout.isTotalRowShown,
   })
   const [isChooserOpen, setIsChooserOpen] = useState(false)
   const [isResetOpen, setIsResetOpen] = useState(false)
   const { isTotalRowShown, toggleTotalRow } = layout
-  const hasTotalRow = !!getRowTotals
+  const hasTotalRow = !!buildTotalRow
   const actions = useMemo(
     () => ({
       openColumnChooser: () => setIsChooserOpen(true),

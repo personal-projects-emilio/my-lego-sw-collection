@@ -84,19 +84,51 @@ export const parseColumnLayout = (
       }
     : null
 
-export const hideExcluded = <TData>(
-  columnDefs: GridOptions<TData>['columnDefs']
-) =>
-  columnDefs?.map((columnDef) =>
-    isExcluded(columnDef) ? { ...columnDef, hide: true } : columnDef
+type ColumnDefs<TData> = GridOptions<TData>['columnDefs']
+
+export const getColId = <TData>(colDef: ColDef<TData>) =>
+  colDef.colId ?? colDef.field
+
+export const flattenColumnDefs = <TData>(
+  columnDefs: ColumnDefs<TData>
+): ColDef<TData>[] =>
+  (columnDefs ?? []).flatMap((columnDef) =>
+    'children' in columnDef
+      ? flattenColumnDefs(columnDef.children)
+      : [columnDef]
   )
 
-export const toExcludedColIds = <TData>(
-  columnDefs: GridOptions<TData>['columnDefs']
-): string[] =>
-  (columnDefs ?? []).flatMap((columnDef) =>
-    isExcluded(columnDef) ? [columnDef.colId ?? String(columnDef.field)] : []
+export const mapColumnDefs = <TData>({
+  columnDefs,
+  mapColDef,
+}: {
+  columnDefs: ColumnDefs<TData>
+  mapColDef: (colDef: ColDef<TData>) => ColDef<TData>
+}): ColumnDefs<TData> =>
+  columnDefs?.map((columnDef): ColDef<TData> | ColGroupDef<TData> =>
+    'children' in columnDef
+      ? {
+          ...columnDef,
+          children:
+            mapColumnDefs({ columnDefs: columnDef.children, mapColDef }) ?? [],
+        }
+      : mapColDef(columnDef)
   )
+
+export const hideExcluded = <TData>(columnDefs: ColumnDefs<TData>) =>
+  mapColumnDefs({
+    columnDefs,
+    mapColDef: (colDef) =>
+      isExcluded(colDef) ? { ...colDef, hide: true } : colDef,
+  })
+
+export const toExcludedColIds = <TData>(
+  columnDefs: ColumnDefs<TData>
+): string[] =>
+  flattenColumnDefs(columnDefs).flatMap((colDef) => {
+    const colId = getColId(colDef)
+    return colId && isExcluded(colDef) ? [colId] : []
+  })
 
 export const countSorts = (state: ColumnState[]) =>
   state.filter(({ sort }) => sort).length

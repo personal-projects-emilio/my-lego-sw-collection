@@ -15,7 +15,7 @@ type ValueTotal<TData> = {
 }
 
 export type ColumnTotal<TData> =
-  | { aggregation: 'count'; formatValue?: (total: number) => string }
+  | { aggregation: 'count' }
   | (ValueTotal<TData> & { aggregation: 'sum' })
   | (ValueTotal<TData> & {
       aggregation: 'weightedAverage'
@@ -24,10 +24,12 @@ export type ColumnTotal<TData> =
 
 export type TotalColumn<TData> = { colId: string; total: ColumnTotal<TData> }
 
-export type GetTotalRow<TData> = (params: {
+export type TotalRowParams<TData> = {
   rows: TData[]
   readCellValue: ReadCellValue<TData>
-}) => TotalRowData
+}
+
+export type GetTotalRow<TData> = (params: TotalRowParams<TData>) => TotalRowData
 
 export type TotalRowSwitch = {
   isShown: boolean

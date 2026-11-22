@@ -123,12 +123,13 @@ test.for<{
 }>([
   { name: 'no columns', columnDefs: undefined, expected: [] },
   {
-    name: 'columns with a total, by colId then field',
+    name: 'columns with a total, by colId then field, without excluded ones',
     columnDefs: [
       { field: 'id', context: { total: count } },
       { field: 'stock.quantity' },
       { colId: 'stockValue', context: { total: sum } },
       { colId: 'tags', context: { isExcluded: true } },
+      { field: 'price', context: { isExcluded: true, total: sum } },
     ],
     expected: [
       { colId: 'id', total: count },

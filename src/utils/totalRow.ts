@@ -3,12 +3,13 @@ import set from 'lodash/set'
 import sum from 'lodash/sum'
 import type {
   ColumnTotal,
-  ReadCellValue,
   TotalColumn,
   TotalRowData,
+  TotalRowParams,
   TotalRowValue,
 } from 'types/totalRow'
 
+import { flattenColumnDefs, getColId, isExcluded } from './columnLayout'
 import { formatFrNumber } from './format'
 
 export const totalRowId = 'total'
@@ -34,17 +35,11 @@ const computeColumnTotal = <TData>({
   columnTotal,
   rows,
   readCellValue,
-}: {
+}: TotalRowParams<TData> & {
   colId: string
   columnTotal: ColumnTotal<TData>
-  rows: TData[]
-  readCellValue: ReadCellValue<TData>
 }): TotalRowValue => {
-  if (columnTotal.aggregation === 'count')
-    return formatTotal({
-      total: rows.length,
-      formatValue: columnTotal.formatValue ?? formatFrNumber,
-    })
+  if (columnTotal.aggregation === 'count') return formatFrNumber(rows.length)
   const readValue = (row: TData) =>
     toNumber(
       columnTotal.getValue
@@ -74,10 +69,8 @@ export const getColumnTotals = <TData>({
   rows,
   totalColumns,
   readCellValue,
-}: {
-  rows: TData[]
+}: TotalRowParams<TData> & {
   totalColumns: TotalColumn<TData>[]
-  readCellValue: ReadCellValue<TData>
 }): TotalRowData =>
   totalColumns.reduce<TotalRowData>(
     (totalRow, { colId, total }) =>
@@ -97,10 +90,11 @@ const hasColumnTotal = <TData>(
 export const getTotalColumns = <TData>(
   columnDefs?: (ColDef<TData> | ColGroupDef<TData>)[] | null
 ): TotalColumn<TData>[] =>
-  (columnDefs ?? []).flatMap((columnDef) => {
-    if ('children' in columnDef) return getTotalColumns(columnDef.children)
-    const colId = columnDef.colId ?? columnDef.field
-    return colId && hasColumnTotal(columnDef)
-      ? [{ colId, total: columnDef.context.total }]
-      : []
-  })
+  flattenColumnDefs(columnDefs)
+    .filter((colDef) => !isExcluded(colDef))
+    .flatMap((colDef) => {
+      const colId = getColId(colDef)
+      return colId && hasColumnTotal(colDef)
+        ? [{ colId, total: colDef.context.total }]
+        : []
+    })

@@ -1,11 +1,11 @@
 import type {
   ColDef,
-  ColGroupDef,
   GridOptions,
   ValueFormatterParams,
   ValueGetterParams,
 } from 'ag-grid-community'
 import get from 'lodash/get'
+import { getColId, mapColumnDefs } from 'utils/columnLayout'
 import { isTotalRow } from 'utils/totalRow'
 
 import { OverflowTypographyCellRenderer } from '../column'
@@ -13,7 +13,7 @@ import { OverflowTypographyCellRenderer } from '../column'
 export const buildTotalRowColDef = <TData>(
   colDef: ColDef<TData>
 ): ColDef<TData> => {
-  const colId = colDef.colId ?? colDef.field
+  const colId = getColId(colDef)
   const {
     cellClass,
     cellRendererSelector,
@@ -60,14 +60,6 @@ export const buildTotalRowColDef = <TData>(
 
 const buildTotalRowColDefs = <TData>(
   columnDefs: GridOptions<TData>['columnDefs']
-): GridOptions<TData>['columnDefs'] =>
-  columnDefs?.map((columnDef): ColDef<TData> | ColGroupDef<TData> =>
-    'children' in columnDef
-      ? {
-          ...columnDef,
-          children: buildTotalRowColDefs(columnDef.children) ?? [],
-        }
-      : buildTotalRowColDef(columnDef)
-  )
+) => mapColumnDefs({ columnDefs, mapColDef: buildTotalRowColDef })
 
 export default buildTotalRowColDefs
