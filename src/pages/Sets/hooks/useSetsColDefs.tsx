@@ -48,6 +48,7 @@ const useSetsColDefs = () => {
         {
           field: 'id',
           headerName: 'Id',
+          initialPinned: 'left',
           cellDataType: 'text',
           comparator: compareIds,
           cellClass: [agGridClasses.flexAlignCenter, agGridClasses.gap1],

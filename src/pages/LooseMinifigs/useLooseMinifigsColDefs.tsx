@@ -50,6 +50,7 @@ const useLooseMinifigsColDefs = () => {
         } satisfies ItemIdCellRenderProps,
         field: 'id',
         headerName: 'Id',
+        initialPinned: 'left',
         initialSort: 'asc',
         width: 120,
       },
