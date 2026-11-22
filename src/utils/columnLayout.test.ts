@@ -1,6 +1,5 @@
 import type { ColDef, ColumnState } from 'ag-grid-community'
 import assert from 'node:assert/strict'
-import type { ColumnLayout } from 'types/columnLayout'
 import { test } from 'vitest'
 
 import {
@@ -9,70 +8,43 @@ import {
   countSorts,
   groupColumns,
   hideExcluded,
-  toColumnLayout,
   toExcludedColIds,
   toInitialState,
   toShowAllState,
 } from './columnLayout.ts'
 
-const layout: ColumnLayout = {
-  columnOrder: { orderedColIds: ['id', 'name', 'price'] },
-  columnPinning: { leftColIds: [], rightColIds: ['actions'] },
-  columnSizing: { columnSizingModel: [{ colId: 'name', flex: 1 }] },
-  columnVisibility: { hiddenColIds: ['name'] },
-  sort: { sortModel: [] },
-}
+test('toInitialState turns the saved column state into the grid initial state', () => {
+  const columnState: ColumnState[] = [
+    { colId: 'name', width: 200, hide: false, sort: 'desc', sortIndex: 1 },
+    { colId: 'id', width: 120, pinned: 'left', sort: 'asc', sortIndex: 0 },
+    { colId: 'year', flex: 1, hide: true },
+    { colId: 'price', width: 90, hide: false },
+    { colId: 'actions', width: 140, pinned: 'right' },
+  ]
 
-test.for([
-  {
-    name: 'fills the parts Firebase drops when empty',
-    input: {
-      state: {
-        columnOrder: layout.columnOrder,
-        columnPinning: { rightColIds: ['actions'] },
-        columnSizing: layout.columnSizing,
-        columnVisibility: layout.columnVisibility,
-      },
+  assert.deepEqual(toInitialState({ columnState, excludedColIds: ['price'] }), {
+    columnOrder: {
+      orderedColIds: ['name', 'id', 'year', 'price', 'actions'],
     },
-    expected: layout,
-  },
-  {
-    name: 'keeps the previous hidden flag of excluded columns',
-    input: {
-      state: { columnVisibility: { hiddenColIds: ['name', 'price'] } },
-      excludedColIds: ['price', 'year'],
-      previous: {
-        ...layout,
-        columnVisibility: { hiddenColIds: ['id', 'year'] },
-      },
+    columnPinning: { leftColIds: ['id'], rightColIds: ['actions'] },
+    columnSizing: {
+      columnSizingModel: [
+        { colId: 'name', width: 200, flex: undefined },
+        { colId: 'id', width: 120, flex: undefined },
+        { colId: 'year', width: undefined, flex: 1 },
+        { colId: 'price', width: 90, flex: undefined },
+        { colId: 'actions', width: 140, flex: undefined },
+      ],
     },
-    expected: {
-      ...toColumnLayout({ state: {} }),
-      columnVisibility: { hiddenColIds: ['name', 'year'] },
+    columnVisibility: { hiddenColIds: ['year', 'price'] },
+    sort: {
+      sortModel: [
+        { colId: 'id', sort: 'asc' },
+        { colId: 'name', sort: 'desc' },
+      ],
     },
-  },
-])('toColumnLayout $name', ({ input, expected }) => {
-  assert.deepEqual(toColumnLayout(input), expected)
+  })
 })
-
-test.for([
-  { saved: null, excludedColIds: ['price'], expected: undefined },
-  { saved: layout, excludedColIds: [], expected: ['name'] },
-  {
-    saved: layout,
-    excludedColIds: ['price', 'name'],
-    expected: ['name', 'price'],
-  },
-])(
-  'toInitialState with $excludedColIds excluded hides $expected',
-  ({ saved, excludedColIds, expected }) => {
-    assert.deepEqual(
-      toInitialState({ layout: saved, excludedColIds })?.columnVisibility
-        ?.hiddenColIds,
-      expected
-    )
-  }
-)
 
 const columnDefs: ColDef[] = [
   { field: 'name' },

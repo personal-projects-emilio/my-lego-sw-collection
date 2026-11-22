@@ -6,6 +6,7 @@ import {
 } from 'ag-grid-community'
 import { AgGridReact, type AgGridReactProps } from 'ag-grid-react'
 import type { ColumnLayoutId } from 'types/columnLayout'
+import type { GetTotalRow } from 'types/totalRow'
 
 import useAgGridTableStyles from './AgGridTable.styles'
 import ColumnLayoutGrid from './ColumnLayoutGrid'
@@ -23,11 +24,13 @@ const theme = themeMaterial.withPart(colorSchemeDark).withParams({
 type AgGridTableProps<TData> = AgGridReactProps<TData> & {
   className?: string
   columnLayoutId?: ColumnLayoutId
+  getTotalRow?: GetTotalRow<TData>
 }
 
 const AgGridTable = <TData,>({
   className,
   columnLayoutId,
+  getTotalRow,
   ...props
 }: AgGridTableProps<TData>) => {
   const { classes } = useAgGridTableStyles(undefined, {
@@ -39,6 +42,7 @@ const AgGridTable = <TData,>({
       <ColumnLayoutGrid
         className={classes.layout}
         columnLayoutId={columnLayoutId}
+        getTotalRow={getTotalRow}
         theme={theme}
         {...props}
       />

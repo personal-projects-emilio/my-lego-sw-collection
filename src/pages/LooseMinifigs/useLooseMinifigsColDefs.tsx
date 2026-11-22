@@ -8,6 +8,7 @@ import {
   type ExternalLinksCellRenderProps,
   ItemIdCellRenderer,
   type ItemIdCellRenderProps,
+  numberColDef,
   OverflowTypographyCellRenderer,
 } from 'components/AgGrid/column'
 import type { CollectionMinifig, LooseMinifig } from 'types/minifigs'
@@ -62,13 +63,11 @@ const useLooseMinifigsColDefs = () => {
         minWidth: 120,
       },
       {
-        cellDataType: 'number',
+        ...numberColDef,
         cellEditorParams: { min: 0, precision: 0 },
         editable: true,
         field: 'owned.loose.quantity',
-        filter: 'agNumberColumnFilter',
         headerName: 'Loose qty',
-        suppressFloatingFilterButton: false,
         valueSetter: createLooseValueSetter('quantity'),
         width: 120,
       },

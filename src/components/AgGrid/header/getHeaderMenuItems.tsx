@@ -4,6 +4,7 @@ import {
   MdArrowUpward,
   MdClose,
   MdFitScreen,
+  MdFunctions,
   MdPushPin,
   MdRemove,
   MdRestartAlt,
@@ -36,12 +37,16 @@ export const getHeaderMenuItems = ({
   openColumnChooser,
   requestReset,
   setSort,
+  isTotalRowShown,
+  toggleTotalRow,
 }: {
   api: GridApi
   column: Column
   setSort: CustomHeaderProps['setSort']
   openColumnChooser?: () => void
   requestReset?: () => void
+  isTotalRowShown?: boolean
+  toggleTotalRow?: () => void
 }): MenuItemDefinition[] => {
   const colId = column.getColId()
   const { lockPinned, lockVisible } = column.getColDef()
@@ -144,6 +149,18 @@ export const getHeaderMenuItems = ({
             icon: <MdViewColumn />,
             onClick: openColumnChooser,
           },
+          ...(toggleTotalRow
+            ? ([
+                {
+                  kind: 'switch',
+                  key: 'totalRow',
+                  label: 'Show total row',
+                  icon: <MdFunctions />,
+                  checked: !!isTotalRowShown,
+                  onClick: toggleTotalRow,
+                },
+              ] as const)
+            : []),
           {
             kind: 'action',
             key: 'resetColumns',

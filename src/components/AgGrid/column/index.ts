@@ -16,4 +16,5 @@ export {
   default as ItemIdCellRenderer,
   type ItemIdCellRenderProps,
 } from './ItemIdCellRenderer'
+export { numberColDef } from './numberColDef'
 export { default as OverflowTypographyCellRenderer } from './OverflowTypographyCellRenderer'

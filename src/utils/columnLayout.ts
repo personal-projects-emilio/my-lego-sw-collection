@@ -6,7 +6,6 @@ import type {
   GridOptions,
   GridState,
 } from 'ag-grid-community'
-import type { ColumnLayout, SavedColumnLayout } from 'types/columnLayout'
 
 export type Pinned = 'left' | 'right'
 
@@ -31,56 +30,47 @@ export const isExcluded = <TData>(
 ): columnDef is ColDef<TData> & { context: { isExcluded: true } } =>
   !('children' in columnDef) && !!columnDef.context?.isExcluded
 
-export const toColumnLayout = ({
-  state,
-  excludedColIds = [],
-  previous,
-}: {
-  state: SavedColumnLayout
-  excludedColIds?: string[]
-  previous?: ColumnLayout | null
-}): ColumnLayout => ({
-  columnOrder: { orderedColIds: state.columnOrder?.orderedColIds ?? [] },
-  columnPinning: {
-    leftColIds: state.columnPinning?.leftColIds ?? [],
-    rightColIds: state.columnPinning?.rightColIds ?? [],
-  },
-  columnSizing: {
-    columnSizingModel: state.columnSizing?.columnSizingModel ?? [],
-  },
-  columnVisibility: {
-    hiddenColIds: [
-      ...(state.columnVisibility?.hiddenColIds ?? []).filter(
-        (colId) => !excludedColIds.includes(colId)
-      ),
-      ...(previous?.columnVisibility.hiddenColIds ?? []).filter((colId) =>
-        excludedColIds.includes(colId)
-      ),
-    ],
-  },
-  sort: { sortModel: state.sort?.sortModel ?? [] },
-})
-
 export const toInitialState = ({
-  layout,
+  columnState,
   excludedColIds,
 }: {
-  layout?: ColumnLayout | null
+  columnState: ColumnState[]
   excludedColIds: string[]
-}): GridState | undefined =>
-  layout
-    ? {
-        ...layout,
-        columnVisibility: {
-          hiddenColIds: [
-            ...new Set([
-              ...layout.columnVisibility.hiddenColIds,
-              ...excludedColIds,
-            ]),
-          ],
-        },
-      }
-    : undefined
+}): GridState => {
+  const getPinnedColIds = (side: Pinned) =>
+    columnState
+      .filter(({ pinned }) => pinned === side)
+      .map(({ colId }) => colId)
+
+  return {
+    columnOrder: { orderedColIds: columnState.map(({ colId }) => colId) },
+    columnPinning: {
+      leftColIds: getPinnedColIds('left'),
+      rightColIds: getPinnedColIds('right'),
+    },
+    columnSizing: {
+      columnSizingModel: columnState.map(({ colId, width, flex }) => ({
+        colId,
+        width: width ?? undefined,
+        flex: flex ?? undefined,
+      })),
+    },
+    columnVisibility: {
+      hiddenColIds: [
+        ...new Set([
+          ...columnState.filter(({ hide }) => hide).map(({ colId }) => colId),
+          ...excludedColIds,
+        ]),
+      ],
+    },
+    sort: {
+      sortModel: columnState
+        .filter(({ sort }) => sort)
+        .sort((a, b) => (a.sortIndex ?? 0) - (b.sortIndex ?? 0))
+        .map(({ colId, sort }) => ({ colId, sort: sort ?? 'asc' })),
+    },
+  }
+}
 
 export const hideExcluded = <TData>(
   columnDefs: GridOptions<TData>['columnDefs']

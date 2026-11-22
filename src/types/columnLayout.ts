@@ -1,21 +1,11 @@
-import type { GridState } from 'ag-grid-community'
+import type { ColumnState } from 'ag-grid-community'
 
 export type ColumnLayoutId =
   'sets' | 'minifigs' | 'looseMinifigs' | 'resaleSets'
 
-export type ColumnLayout = Required<
-  Pick<
-    GridState,
-    | 'columnOrder'
-    | 'columnPinning'
-    | 'columnSizing'
-    | 'columnVisibility'
-    | 'sort'
-  >
->
-
-export type SavedColumnLayout = {
-  [Part in keyof ColumnLayout]?: Partial<ColumnLayout[Part]>
+export type ColumnLayout = {
+  columnState: ColumnState[]
+  showTotalRow: boolean
 }
 
 export type ColumnLayoutTarget = {

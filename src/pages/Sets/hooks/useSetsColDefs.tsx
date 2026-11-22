@@ -17,6 +17,7 @@ import {
   ItemActionsCellRenderer,
   ItemIdCellRenderer,
   type ItemIdCellRenderProps,
+  numberColDef,
   OverflowTypographyCellRenderer,
   type SetActionsCellRendererProps,
 } from 'components/AgGrid/column'
@@ -77,6 +78,7 @@ const useSetsColDefs = () => {
         buildTimelineColDef<CollectionSet>(timeline),
         buildTagsColDef<CollectionSet>({ tagsVocabulary, itemType: 'sets' }),
         {
+          cellDataType: 'number',
           field: 'releaseYear',
           headerName: 'Release',
           width: 80,
@@ -99,10 +101,9 @@ const useSetsColDefs = () => {
           width: 110,
         },
         {
+          ...numberColDef,
           field: 'content.partsQuantity',
           headerName: 'Parts Qty',
-          filter: 'agNumberColumnFilter',
-          suppressFloatingFilterButton: false,
           width: 100,
         },
         {
@@ -177,10 +178,9 @@ const useSetsColDefs = () => {
           cellRenderer: OverflowTypographyCellRenderer,
         },
         {
+          ...numberColDef,
           field: 'ownedQuantity',
           headerName: 'Owned Quantity',
-          filter: 'agNumberColumnFilter',
-          suppressFloatingFilterButton: false,
           width: 100,
         },
         {
