@@ -49,7 +49,7 @@ const useColumnLayout = <TData>({
   const [api, setApi] = useState<GridApi<TData>>()
   const [saveError, setSaveError] = useState<string>()
   const [isResetting, setIsResetting] = useState(false)
-  const isApplying = useRef(false)
+  const lastLayoutKey = useRef<string>(undefined)
   const appliedFor = useRef<string>(undefined)
   const previousExcluded = useRef<string[]>([])
   const pendingWrite =
@@ -60,23 +60,33 @@ const useColumnLayout = <TData>({
   )
   const excludedKey = excludedColIds.join()
 
-  const applySilently = (apply: () => void) => {
-    isApplying.current = true
-    try {
-      apply()
-    } finally {
-      isApplying.current = false
-    }
+  const applySilently = ({
+    gridApi,
+    apply,
+  }: {
+    gridApi: GridApi<TData>
+    apply: () => void
+  }) => {
+    apply()
+    lastLayoutKey.current = JSON.stringify(
+      toColumnLayout({
+        state: gridApi.getColumnState(),
+        excludedColIds,
+        saved: layout,
+      })
+    )
   }
 
   const applySaved = (gridApi: GridApi<TData>) => {
     appliedFor.current = userId
     if (layout)
-      applySilently(() =>
-        gridApi.applyColumnState(
-          toApplyColumnStateParams({ layout, excludedColIds })
-        )
-      )
+      applySilently({
+        gridApi,
+        apply: () =>
+          gridApi.applyColumnState(
+            toApplyColumnStateParams({ layout, excludedColIds })
+          ),
+      })
   }
 
   const onGridReady = ({ api: readyApi }: GridReadyEvent<TData>) => {
@@ -103,11 +113,17 @@ const useColumnLayout = <TData>({
       (colId) => previous.includes(colId) !== excludedColIds.includes(colId)
     )
     if (changed.length)
-      applySilently(() =>
-        api.applyColumnState({
-          state: toVisibilityState({ colIds: changed, excludedColIds, layout }),
-        })
-      )
+      applySilently({
+        gridApi: api,
+        apply: () =>
+          api.applyColumnState({
+            state: toVisibilityState({
+              colIds: changed,
+              excludedColIds,
+              layout,
+            }),
+          }),
+      })
   })
 
   useEffect(() => syncExcluded(), [api, excludedKey])
@@ -144,10 +160,12 @@ const useColumnLayout = <TData>({
     )
     pendingWrite.current = debouncedWrite
     const onChange = (event: { source: string; finished?: boolean }) => {
-      if (isApplying.current || skippedSources.has(event.source)) return
-      if (event.finished === false) return
+      if (skippedSources.has(event.source) || event.finished === false) return
       const next = buildLayout()
-      if (next) debouncedWrite(next)
+      const key = JSON.stringify(next)
+      if (!next || key === lastLayoutKey.current) return
+      lastLayoutKey.current = key
+      debouncedWrite(next)
     }
     layoutEvents.forEach((type) => api.addEventListener(type, onChange))
     return () => {
@@ -160,11 +178,14 @@ const useColumnLayout = <TData>({
   const reset = async () => {
     if (!api) return
     pendingWrite.current?.cancel()
-    applySilently(() => {
-      api.resetColumnState()
-      api.applyColumnState({
-        state: toVisibilityState({ colIds: excludedColIds, excludedColIds }),
-      })
+    applySilently({
+      gridApi: api,
+      apply: () => {
+        api.resetColumnState()
+        api.applyColumnState({
+          state: toVisibilityState({ colIds: excludedColIds, excludedColIds }),
+        })
+      },
     })
     if (!userId) return
     setIsResetting(true)
