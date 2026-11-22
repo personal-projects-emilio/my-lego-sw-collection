@@ -12,7 +12,7 @@ import useColumnSort from './useColumnSort'
 import useHeaderMenuTriggers from './useHeaderMenuTriggers'
 
 export type ColumnHeaderParams = {
-  endAdornment?: ComponentType<{ className?: string }>
+  labelAdornment?: ComponentType<{ className?: string }>
 }
 
 const ColumnHeader: FC<CustomHeaderProps & ColumnHeaderParams> = ({
@@ -22,7 +22,8 @@ const ColumnHeader: FC<CustomHeaderProps & ColumnHeaderParams> = ({
   eGridHeader,
   enableSorting,
   progressSort,
-  endAdornment: EndAdornment,
+  setSort,
+  labelAdornment: LabelAdornment,
 }) => {
   const { classes } = useColumnHeaderStyles()
   const actions = useColumnLayoutActions()
@@ -37,7 +38,10 @@ const ColumnHeader: FC<CustomHeaderProps & ColumnHeaderParams> = ({
         className={classes.header}
         data-sortable={enableSorting || undefined}
         onClick={(event) => {
-          if (!enableSorting || (event.target as Element).closest('button'))
+          if (
+            !enableSorting ||
+            (event.target instanceof Element && event.target.closest('button'))
+          )
             return
           progressSort(event.shiftKey)
         }}
@@ -49,7 +53,7 @@ const ColumnHeader: FC<CustomHeaderProps & ColumnHeaderParams> = ({
             {position}
           </span>
         )}
-        {EndAdornment && <EndAdornment className={classes.adornment} />}
+        {LabelAdornment && <LabelAdornment className={classes.adornment} />}
         <IconButton
           ref={buttonRef}
           aria-expanded={!!anchor}
@@ -65,7 +69,7 @@ const ColumnHeader: FC<CustomHeaderProps & ColumnHeaderParams> = ({
       {anchor && (
         <Menu
           anchor={anchor}
-          items={headerMenuItems({ api, column, ...actions })}
+          items={headerMenuItems({ api, column, setSort, ...actions })}
           onClose={() => setAnchor(undefined)}
         />
       )}

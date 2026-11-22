@@ -8,13 +8,13 @@ import type {
 } from 'ag-grid-community'
 import { useAgGridStyles } from 'components/AgGrid'
 import {
+  actionsColDef,
   ExternalLinksCellRenderer,
   type ExternalLinksCellRenderProps,
   ItemActionsCellRenderer,
   ItemIdCellRenderer,
   type ItemIdCellRenderProps,
   listValueFormatter,
-  lockedActionsColDef,
   OverflowTypographyCellRenderer,
   type SetActionsCellRendererProps,
   tagsColDef,
@@ -29,6 +29,12 @@ import { isSetRetired } from 'utils/lego'
 
 import { SetMinifigsCellRenderer } from '../components'
 import useSetsMutations from './useSetsMutations'
+
+const priceColDefs = [
+  { field: 'prices.bought', headerName: 'Bought' },
+  { field: 'prices.marketValue', headerName: 'Market Value' },
+  { field: 'prices.storeValue', headerName: 'Store Value' },
+] as const satisfies ColDef<CollectionSet>[]
 
 const useSetsColDefs = () => {
   const { classes: agGridClasses } = useAgGridStyles()
@@ -125,13 +131,7 @@ const useSetsColDefs = () => {
             ),
           width: 100,
         },
-        ...(
-          [
-            { field: 'prices.bought', headerName: 'Bought' },
-            { field: 'prices.marketValue', headerName: 'Market Value' },
-            { field: 'prices.storeValue', headerName: 'Store Value' },
-          ] as const
-        ).map((priceColDef): ColDef<CollectionSet> => ({
+        ...priceColDefs.map((priceColDef): ColDef<CollectionSet> => ({
           ...priceColDef,
           context: { isExcluded: idToken === undefined },
           filter: 'agNumberColumnFilter',
@@ -154,11 +154,8 @@ const useSetsColDefs = () => {
           sortable: false,
           width: 100,
         },
-        {
-          ...lockedActionsColDef,
-          colId: 'actions',
+        actionsColDef<CollectionSet>({
           field: 'id',
-          headerName: 'Actions',
           cellClass: [agGridClasses.flexAlignCenter, agGridClasses.gap1],
           cellRenderer: ItemActionsCellRenderer,
           cellRendererParams: {
@@ -166,12 +163,8 @@ const useSetsColDefs = () => {
             isPending,
             variant: 'set',
           } satisfies SetActionsCellRendererProps,
-          filter: false,
-          floatingFilter: false,
-          resizable: false,
-          sortable: false,
           width: 140,
-        },
+        }),
         {
           field: 'location',
           headerName: 'Location',

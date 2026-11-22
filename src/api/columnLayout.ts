@@ -1,6 +1,11 @@
-import { useQuery } from '@tanstack/react-query'
+import { skipToken, useQuery } from '@tanstack/react-query'
 import { useAuth } from 'providers/AuthProvider'
-import type { ColumnLayout, ColumnLayoutId } from 'types/columnLayout'
+import type {
+  ColumnLayout,
+  ColumnLayoutId,
+  SavedColumnLayout,
+} from 'types/columnLayout'
+import { toColumnLayout } from 'utils/columnLayout'
 
 import { columnLayoutEndPoint, queryKeys } from './api.constants'
 import { api, queryClient } from './index'
@@ -21,22 +26,19 @@ const fetchColumnLayout = ({
   ...target
 }: ColumnLayoutTarget & { idToken: string }) =>
   api
-    .get<ColumnLayout | null>(columnLayoutEndPoint(target), {
+    .get<SavedColumnLayout | null>(columnLayoutEndPoint(target), {
       params: { auth: idToken },
     })
-    .then(({ data }) => data)
+    .then(({ data }) => (data ? toColumnLayout({ state: data }) : null))
 
 export const useColumnLayoutQuery = (columnLayoutId?: ColumnLayoutId) => {
   const { idToken, userId } = useAuth()
   return useQuery({
     queryKey: columnLayoutQueryKey({ userId, columnLayoutId }),
-    queryFn: () =>
-      fetchColumnLayout({
-        idToken: idToken as string,
-        userId: userId as string,
-        columnLayoutId: columnLayoutId as ColumnLayoutId,
-      }),
-    enabled: Boolean(columnLayoutId && userId && idToken),
+    queryFn:
+      columnLayoutId && userId && idToken
+        ? () => fetchColumnLayout({ idToken, userId, columnLayoutId })
+        : skipToken,
   })
 }
 

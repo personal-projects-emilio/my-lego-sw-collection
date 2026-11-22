@@ -13,27 +13,10 @@ import {
   MdWidthNormal,
 } from 'react-icons/md'
 
-import type {
-  Column,
-  ColumnState,
-  GridApi,
-  SortDirection,
-} from 'ag-grid-community'
+import type { Column, GridApi } from 'ag-grid-community'
+import type { CustomHeaderProps } from 'ag-grid-react'
 import type { MenuItemDefinition } from 'components/Menu'
-import {
-  addSortBy,
-  clearSorts,
-  countSorts,
-  type Pinned,
-  sortBy,
-  toPinned,
-} from 'utils/columnLayout'
-
-type SortTransform = (params: {
-  state: ColumnState[]
-  colId: string
-  sort: SortDirection
-}) => ColumnState[]
+import { countSorts, type Pinned, toPinned } from 'utils/columnLayout'
 
 const directions = [
   { sort: 'asc', label: 'Ascending', icon: <MdArrowUpward /> },
@@ -52,9 +35,11 @@ export const headerMenuItems = ({
   column,
   openColumnChooser,
   requestReset,
+  setSort,
 }: {
   api: GridApi
   column: Column
+  setSort: CustomHeaderProps['setSort']
   openColumnChooser?: () => void
   requestReset?: () => void
 }): MenuItemDefinition[] => {
@@ -70,10 +55,10 @@ export const headerMenuItems = ({
 
   const sortItems = ({
     key,
-    transform,
+    multiSort,
   }: {
     key: string
-    transform: SortTransform
+    multiSort: boolean
   }): MenuItemDefinition[] =>
     directions.map(({ sort, label, icon }) => ({
       kind: 'radio',
@@ -81,10 +66,7 @@ export const headerMenuItems = ({
       label,
       icon,
       checked: current === sort,
-      onClick: () =>
-        api.applyColumnState({
-          state: transform({ state: api.getColumnState(), colId, sort }),
-        }),
+      onClick: () => setSort(sort, multiSort),
     }))
 
   return [
@@ -95,7 +77,7 @@ export const headerMenuItems = ({
       icon: <MdSwapVert />,
       shortcut: 'Click',
       disabled: !column.isSortable(),
-      items: sortItems({ key: 'sortBy', transform: sortBy }),
+      items: sortItems({ key: 'sortBy', multiSort: false }),
     },
     {
       kind: 'submenu',
@@ -104,7 +86,7 @@ export const headerMenuItems = ({
       icon: <MdAdd />,
       shortcut: 'Shift+Click',
       disabled: !column.isSortable() || !isSortedElsewhere,
-      items: sortItems({ key: 'addSortBy', transform: addSortBy }),
+      items: sortItems({ key: 'addSortBy', multiSort: true }),
     },
     {
       kind: 'action',
@@ -113,8 +95,7 @@ export const headerMenuItems = ({
       icon: <MdClose />,
       destructive: true,
       disabled: sortCount === 0,
-      onClick: () =>
-        api.applyColumnState({ state: clearSorts(api.getColumnState()) }),
+      onClick: () => api.applyColumnState({ defaultState: { sort: null } }),
     },
     { kind: 'divider', key: 'pinDivider' },
     {

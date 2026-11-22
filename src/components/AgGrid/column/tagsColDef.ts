@@ -23,7 +23,7 @@ export const tagsColDef = <TData extends TaggedItem>({
   field: 'effectiveTags' as ColDef<TData, TagId[]>['field'],
   headerName: 'Tags',
   headerComponentParams: {
-    endAdornment: TagsDrawerButton,
+    labelAdornment: TagsDrawerButton,
   } satisfies ColumnHeaderParams,
   filter: TagsFilter,
   filterParams: { itemType } satisfies TagsFilterProps,

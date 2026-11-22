@@ -32,7 +32,7 @@ const ConfirmDialog: FC<ConfirmDialogProps> = ({
   return (
     <Dialog
       aria-labelledby={titleId}
-      maxWidth="md"
+      maxWidth="xs"
       onClose={() => !isPending && onClose()}
       open={open}
     >

@@ -1,3 +1,4 @@
+export { actionsColDef } from './actionsColDef'
 export { listValueFormatter } from './column.valueFormatters'
 export {
   default as ExternalLinksCellRenderer,
@@ -13,7 +14,6 @@ export {
   default as ItemIdCellRenderer,
   type ItemIdCellRenderProps,
 } from './ItemIdCellRenderer'
-export { lockedActionsColDef } from './lockedActionsColDef'
 export { default as OverflowTypographyCellRenderer } from './OverflowTypographyCellRenderer'
 export { tagsColDef } from './tagsColDef'
 export { timelineColDef } from './timelineColDef'

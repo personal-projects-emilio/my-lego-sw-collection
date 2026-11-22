@@ -6,7 +6,6 @@ import {
   Button,
   Checkbox,
   Divider,
-  FormControlLabel,
   IconButton,
   Typography,
 } from '@mui/material'
@@ -44,7 +43,7 @@ const ColumnChooser = <TData,>({
 
   return (
     <>
-      <div className={classes.header}>
+      <header className={classes.header}>
         <Typography
           className={classes.title}
           component="h2"
@@ -56,7 +55,7 @@ const ColumnChooser = <TData,>({
         <IconButton aria-label="Close the column chooser" onClick={onClose}>
           <MdClose />
         </IconButton>
-      </div>
+      </header>
       {saveError && (
         <Alert
           className={classes.alert}
@@ -66,36 +65,39 @@ const ColumnChooser = <TData,>({
           {saveError}
         </Alert>
       )}
-      <div className={classes.controls}>
+      <search className={classes.search}>
+        <Checkbox
+          checked={showAll === 'checked'}
+          indeterminate={showAll === 'indeterminate'}
+          onChange={() =>
+            api.setColumnsVisible(
+              toggleableColIds(columns),
+              showAll !== 'checked'
+            )
+          }
+          size="small"
+          slotProps={{
+            input: {
+              'aria-label': 'Show all columns',
+              ref: (input: HTMLInputElement | null) => {
+                if (input) input.indeterminate = showAll === 'indeterminate'
+              },
+            },
+          }}
+        />
         <SearchField
           label="Search columns"
           onChange={setSearch}
           value={search}
         />
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={showAll === 'checked'}
-              indeterminate={showAll === 'indeterminate'}
-              onChange={() =>
-                api.setColumnsVisible(
-                  toggleableColIds(columns),
-                  showAll !== 'checked'
-                )
-              }
-              size="small"
-            />
-          }
-          label="Show all"
-        />
-      </div>
+      </search>
       <Divider />
       <ColumnChooserList api={api} columns={columns} search={search} />
-      <div className={classes.footer}>
+      <footer className={classes.footer}>
         <Button color="error" onClick={onReset} startIcon={<MdRestartAlt />}>
           Reset columns
         </Button>
-      </div>
+      </footer>
     </>
   )
 }

@@ -1,3 +1,5 @@
+import { useId } from 'react'
+
 import {
   closestCenter,
   DndContext,
@@ -42,6 +44,7 @@ const ColumnChooserList = <TData,>({
   search,
 }: ColumnChooserListProps<TData>) => {
   const { classes } = useColumnChooserStyles()
+  const headingId = useId()
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, {
@@ -78,8 +81,13 @@ const ColumnChooserList = <TData,>({
           )
           if (!items.length) return null
           return (
-            <section key={group} aria-label={label}>
-              <Typography className={classes.subheader} variant="overline">
+            <section key={group} aria-labelledby={`${headingId}-${group}`}>
+              <Typography
+                className={classes.subheader}
+                component="h3"
+                id={`${headingId}-${group}`}
+                variant="overline"
+              >
                 {label}
               </Typography>
               <SortableContext

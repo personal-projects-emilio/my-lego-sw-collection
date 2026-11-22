@@ -1,14 +1,19 @@
+import type { GridState } from 'ag-grid-community'
+
 export type ColumnLayoutId =
   'sets' | 'minifigs' | 'looseMinifigs' | 'resaleSets'
 
-export type SavedColumnState = {
-  colId: string
-  hide?: boolean
-  width?: number
-  flex?: number
-  pinned?: 'left' | 'right'
-  sort?: 'asc' | 'desc'
-  sortIndex?: number
-}
+export type ColumnLayout = Required<
+  Pick<
+    GridState,
+    | 'columnOrder'
+    | 'columnPinning'
+    | 'columnSizing'
+    | 'columnVisibility'
+    | 'sort'
+  >
+>
 
-export type ColumnLayout = SavedColumnState[]
+export type SavedColumnLayout = {
+  [Part in keyof ColumnLayout]?: Partial<ColumnLayout[Part]>
+}

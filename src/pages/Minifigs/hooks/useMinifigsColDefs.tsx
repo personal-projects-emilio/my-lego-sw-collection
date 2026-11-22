@@ -4,12 +4,12 @@ import { PiLegoSmiley } from 'react-icons/pi'
 import type { ColDef, GetQuickFilterTextParams } from 'ag-grid-community'
 import { useAgGridStyles } from 'components/AgGrid'
 import {
+  actionsColDef,
   ExternalLinksCellRenderer,
   type ExternalLinksCellRenderProps,
   ItemActionsCellRenderer,
   ItemIdCellRenderer,
   type ItemIdCellRenderProps,
-  lockedActionsColDef,
   type MinifigActionsCellRendererProps,
   OverflowTypographyCellRenderer,
   tagsColDef,
@@ -89,7 +89,7 @@ const useMinifigsColDefs = () => {
           sortable: false,
           width: 100,
         },
-        {
+        actionsColDef<CollectionMinifig>({
           cellClass: [agGridClasses.flexAlignCenter, agGridClasses.gap1],
           cellRenderer: ItemActionsCellRenderer,
           cellRendererParams: {
@@ -97,16 +97,9 @@ const useMinifigsColDefs = () => {
             isPending,
             variant: 'minifig',
           } satisfies MinifigActionsCellRendererProps,
-          ...lockedActionsColDef,
-          colId: 'actions',
           field: 'id',
-          filter: false,
-          floatingFilter: false,
-          headerName: 'Actions',
-          resizable: false,
-          sortable: false,
           width: 140,
-        },
+        }),
       ] as const satisfies Array<ColDef<CollectionMinifig>>,
     [agGridClasses, deleteMinifig, isPending, tagsVocabulary, timeline]
   )

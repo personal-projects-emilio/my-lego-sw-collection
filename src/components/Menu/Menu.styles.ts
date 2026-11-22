@@ -26,7 +26,6 @@ export default makeStyles({ name: 'Menu' })((theme) => {
     },
     item: {
       '&[data-destructive]': {
-        color: theme.palette.error.main,
         '& .MuiListItemIcon-root': {
           color: theme.palette.error.main,
         },

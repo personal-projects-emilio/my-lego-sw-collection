@@ -1,121 +1,83 @@
 import type { ColumnState } from 'ag-grid-community'
 import assert from 'node:assert/strict'
+import type { ColumnLayout } from 'types/columnLayout'
 import { test } from 'vitest'
 
 import {
-  addSortBy,
   type ChooserColumn,
-  clearSorts,
   countSorts,
   groupColumns,
+  hideExcluded,
   moveColumn,
-  sortBy,
-  toApplyColumnStateParams,
   toColumnLayout,
   toExcludedColIds,
-  toSavedColumnState,
+  toInitialState,
   toShowAllState,
-  toVisibilityState,
 } from './columnLayout.ts'
 
-test.for([
-  {
-    name: 'drops empty fields',
-    state: { colId: 'name', hide: false, width: 120, flex: null, sort: null },
-    expected: { colId: 'name', hide: false, width: 120 },
-  },
-  {
-    name: 'keeps sort and its index',
-    state: { colId: 'id', hide: null, flex: 1, sort: 'asc', sortIndex: 2 },
-    expected: { colId: 'id', hide: false, flex: 1, sort: 'asc', sortIndex: 2 },
-  },
-  {
-    name: 'drops a sort index without a sort',
-    state: { colId: 'id', sort: null, sortIndex: 0 },
-    expected: { colId: 'id', hide: false },
-  },
-  {
-    name: 'turns pinned true into left',
-    state: { colId: 'id', pinned: true },
-    expected: { colId: 'id', hide: false, pinned: 'left' },
-  },
-] satisfies { name: string; state: ColumnState; expected: object }[])(
-  'toSavedColumnState $name',
-  ({ state, expected }) => {
-    assert.deepEqual(toSavedColumnState(state), expected)
-  }
-)
+const layout: ColumnLayout = {
+  columnOrder: { orderedColIds: ['id', 'name', 'price'] },
+  columnPinning: { leftColIds: [], rightColIds: ['actions'] },
+  columnSizing: { columnSizingModel: [{ colId: 'name', flex: 1 }] },
+  columnVisibility: { hiddenColIds: ['name'] },
+  sort: { sortModel: [] },
+}
 
-test.for([
-  {
-    name: 'keeps the last saved state of an excluded column',
-    saved: [{ colId: 'price', hide: false, width: 200 }],
-    expected: [
-      { colId: 'id', hide: false, width: 100 },
-      { colId: 'price', hide: false, width: 200 },
-    ],
-  },
-  {
-    name: 'shows an excluded column that was never saved',
-    saved: null,
-    expected: [
-      { colId: 'id', hide: false, width: 100 },
-      { colId: 'price', hide: false, width: 80 },
-    ],
-  },
-])('toColumnLayout $name', ({ saved, expected }) => {
+test('toColumnLayout fills the parts Firebase drops when empty', () => {
   assert.deepEqual(
     toColumnLayout({
-      state: [
-        { colId: 'id', hide: false, width: 100 },
-        { colId: 'price', hide: true, width: 80 },
-      ],
-      excludedColIds: ['price'],
-      saved,
+      state: {
+        columnOrder: layout.columnOrder,
+        columnPinning: { rightColIds: ['actions'] },
+        columnSizing: layout.columnSizing,
+        columnVisibility: layout.columnVisibility,
+      },
     }),
-    expected
+    layout
   )
 })
 
-test('toApplyColumnStateParams forces excluded columns hidden', () => {
+test('toColumnLayout leaves excluded columns out of the hidden ones', () => {
   assert.deepEqual(
-    toApplyColumnStateParams({
-      layout: [
-        { colId: 'price', hide: false, width: 90 },
-        { colId: 'id', hide: false, flex: 1, sort: 'asc', sortIndex: 0 },
-      ],
-      excludedColIds: ['price', 'cost'],
-    }),
-    {
-      state: [
-        { colId: 'price', flex: null, hide: true, width: 90 },
-        { colId: 'id', flex: 1, hide: false, sort: 'asc', sortIndex: 0 },
-        { colId: 'cost', hide: true },
-      ],
-      applyOrder: true,
-      defaultState: { hide: false, pinned: null, sort: null, sortIndex: null },
-    }
+    toColumnLayout({
+      state: { columnVisibility: { hiddenColIds: ['name', 'price'] } },
+      excludedColIds: ['price'],
+    }).columnVisibility,
+    { hiddenColIds: ['name'] }
   )
 })
 
 test.for([
-  { colId: 'price', excludedColIds: ['price'], layout: null, hide: true },
-  { colId: 'price', excludedColIds: [], layout: null, hide: false },
+  { saved: null, excludedColIds: ['price'], expected: undefined },
+  { saved: layout, excludedColIds: [], expected: ['name'] },
   {
-    colId: 'price',
-    excludedColIds: [],
-    layout: [{ colId: 'price', hide: true }],
-    hide: true,
+    saved: layout,
+    excludedColIds: ['price', 'name'],
+    expected: ['name', 'price'],
   },
 ])(
-  'toVisibilityState of $colId excluded by $excludedColIds is hidden: $hide',
-  ({ colId, excludedColIds, layout, hide }) => {
+  'toInitialState with $excludedColIds excluded hides $expected',
+  ({ saved, excludedColIds, expected }) => {
     assert.deepEqual(
-      toVisibilityState({ colIds: [colId], excludedColIds, layout }),
-      [{ colId, hide }]
+      toInitialState({ layout: saved, excludedColIds })?.columnVisibility
+        ?.hiddenColIds,
+      expected
     )
   }
 )
+
+test('hideExcluded hides only the excluded column definitions', () => {
+  assert.deepEqual(
+    hideExcluded([
+      { field: 'name' },
+      { field: 'prices.bought', context: { isExcluded: true } },
+    ]),
+    [
+      { field: 'name' },
+      { field: 'prices.bought', context: { isExcluded: true }, hide: true },
+    ]
+  )
+})
 
 test('toExcludedColIds uses colId, then field', () => {
   assert.deepEqual(
@@ -129,81 +91,13 @@ test('toExcludedColIds uses colId, then field', () => {
   )
 })
 
-const sortState: ColumnState[] = [
-  { colId: 'id', sort: 'asc', sortIndex: 1 },
-  { colId: 'name', sort: null, sortIndex: null },
-  { colId: 'year', sort: 'desc', sortIndex: 0 },
-]
-
-const sortsOf = (state: ColumnState[]) =>
-  state.map(({ colId, sort, sortIndex }) => [colId, sort, sortIndex])
-
-test.for([
-  {
-    name: 'replaces every sort',
-    colId: 'name',
-    sort: 'desc',
-    expected: [
-      ['id', null, null],
-      ['name', 'desc', 0],
-      ['year', null, null],
-    ],
-  },
-  {
-    name: 'clears every sort with none',
-    colId: 'id',
-    sort: null,
-    expected: [
-      ['id', null, null],
-      ['name', null, null],
-      ['year', null, null],
-    ],
-  },
-] as const)('sortBy $name', ({ colId, sort, expected }) => {
-  assert.deepEqual(sortsOf(sortBy({ state: sortState, colId, sort })), expected)
-})
-
-test.for([
-  {
-    name: 'appends a new column',
-    colId: 'name',
-    sort: 'asc',
-    expected: [
-      ['id', 'asc', 1],
-      ['name', 'asc', 2],
-      ['year', 'desc', 0],
-    ],
-  },
-  {
-    name: 'changes the direction in place',
-    colId: 'year',
-    sort: 'asc',
-    expected: [
-      ['id', 'asc', 1],
-      ['name', null, null],
-      ['year', 'asc', 0],
-    ],
-  },
-  {
-    name: 'removes a column and reindexes',
-    colId: 'year',
-    sort: null,
-    expected: [
-      ['id', 'asc', 0],
-      ['name', null, null],
-      ['year', null, null],
-    ],
-  },
-] as const)('addSortBy $name', ({ colId, sort, expected }) => {
-  assert.deepEqual(
-    sortsOf(addSortBy({ state: sortState, colId, sort })),
-    expected
-  )
-})
-
-test('clearSorts and countSorts', () => {
-  assert.equal(countSorts(sortState), 2)
-  assert.equal(countSorts(clearSorts(sortState)), 0)
+test('countSorts counts the sorted columns', () => {
+  const state: ColumnState[] = [
+    { colId: 'id', sort: 'asc', sortIndex: 1 },
+    { colId: 'name', sort: null, sortIndex: null },
+    { colId: 'year', sort: 'desc', sortIndex: 0 },
+  ]
+  assert.equal(countSorts(state), 2)
 })
 
 const column = ({

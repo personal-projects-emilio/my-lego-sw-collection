@@ -58,11 +58,18 @@ const ColumnLayoutGrid = <TData,>({
         <div className={classes.layout}>
           <div className={classes.grid}>
             <AgGridReact
+              key={layout.gridKey}
               {...props}
+              columnDefs={layout.columnDefs}
               defaultColDef={columnLayoutDefaultColDef}
+              initialState={layout.initialState}
               onGridReady={(event) => {
                 layout.onGridReady(event)
                 props.onGridReady?.(event)
+              }}
+              onStateUpdated={(event) => {
+                layout.onStateUpdated(event)
+                props.onStateUpdated?.(event)
               }}
             />
           </div>

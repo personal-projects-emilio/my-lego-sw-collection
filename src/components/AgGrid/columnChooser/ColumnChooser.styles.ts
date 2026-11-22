@@ -1,9 +1,11 @@
 import { makeStyles } from 'tss-react/mui'
 
+import { gridColors } from '../table/gridColors'
+
 export default makeStyles({ name: 'ColumnChooser' })((theme) => ({
   panel: {
-    backgroundColor: theme.palette.background.paper,
-    borderLeft: `1px solid ${theme.palette.divider}`,
+    backgroundColor: gridColors.chrome,
+    borderLeft: `1px solid ${gridColors.border}`,
     display: 'flex',
     flexDirection: 'column',
     flexShrink: 0,
@@ -12,6 +14,8 @@ export default makeStyles({ name: 'ColumnChooser' })((theme) => ({
     position: 'relative',
   },
   paper: {
+    backgroundColor: gridColors.chrome,
+    backgroundImage: 'none',
     display: 'flex',
     flexDirection: 'column',
     maxWidth: '100vw',
@@ -42,11 +46,14 @@ export default makeStyles({ name: 'ColumnChooser' })((theme) => ({
   alert: {
     margin: theme.spacing(0, 2, 1),
   },
-  controls: {
+  search: {
+    alignItems: 'center',
     display: 'flex',
-    flexDirection: 'column',
     gap: theme.spacing(0.5),
-    padding: theme.spacing(0, 2, 1),
+    padding: theme.spacing(1, 2, 1, 1),
+    '& .MuiTextField-root': {
+      flex: 1,
+    },
   },
   groups: {
     flex: 1,
@@ -66,7 +73,7 @@ export default makeStyles({ name: 'ColumnChooser' })((theme) => ({
   },
   row: {
     alignItems: 'center',
-    backgroundColor: theme.palette.background.paper,
+    backgroundColor: gridColors.chrome,
     borderRadius: theme.shape.borderRadius,
     display: 'flex',
     gap: theme.spacing(0.5),
@@ -88,7 +95,7 @@ export default makeStyles({ name: 'ColumnChooser' })((theme) => ({
     fontSize: theme.typography.pxToRem(18),
     padding: 5,
     touchAction: 'none',
-    '&:hover': {
+    '&:hover:not([data-disabled])': {
       backgroundColor: theme.palette.action.hover,
     },
     '&:focus-visible': {
@@ -114,8 +121,11 @@ export default makeStyles({ name: 'ColumnChooser' })((theme) => ({
     padding: theme.spacing(1, 2),
   },
   tab: {
-    alignSelf: 'flex-start',
+    alignSelf: 'stretch',
+    backgroundColor: gridColors.chrome,
+    borderLeft: `1px solid ${gridColors.border}`,
     borderRadius: 0,
+    justifyContent: 'flex-start',
     flexShrink: 0,
     minWidth: 0,
     padding: theme.spacing(1, 0.5),

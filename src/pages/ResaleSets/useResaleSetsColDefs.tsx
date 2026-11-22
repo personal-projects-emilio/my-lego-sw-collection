@@ -4,10 +4,10 @@ import { PiLego } from 'react-icons/pi'
 import type { ColDef } from 'ag-grid-community'
 import { useAgGridStyles } from 'components/AgGrid'
 import {
+  actionsColDef,
   ItemActionsCellRenderer,
   ItemIdCellRenderer,
   type ItemIdCellRenderProps,
-  lockedActionsColDef,
   OverflowTypographyCellRenderer,
   type ResaleSetActionsCellRendererProps,
 } from 'components/AgGrid/column'
@@ -87,7 +87,7 @@ const useResaleSetsColDefs = () => {
           headerName: 'French name',
           width: 150,
         },
-        {
+        actionsColDef<ResaleSetRow>({
           cellClass: [agGridClasses.flexAlignCenter, agGridClasses.gap1],
           cellDataType: false,
           cellRendererSelector: ({ node }) =>
@@ -101,16 +101,9 @@ const useResaleSetsColDefs = () => {
                     variant: 'resale',
                   } satisfies ResaleSetActionsCellRendererProps,
                 },
-          ...lockedActionsColDef,
-          colId: 'actions',
-          filter: false,
-          floatingFilter: false,
-          headerName: 'Actions',
-          resizable: false,
-          sortable: false,
           valueGetter: ({ data, node }) => (node?.rowPinned ? null : data?.id),
           width: 110,
-        },
+        }),
         {
           cellDataType: 'boolean',
           cellRendererSelector: ({ node }) =>

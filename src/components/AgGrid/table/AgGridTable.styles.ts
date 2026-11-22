@@ -1,5 +1,7 @@
 import { makeStyles } from 'tss-react/mui'
 
+import { gridColors } from './gridColors'
+
 export default makeStyles({ name: 'AgGridTable' })((theme) => ({
   container: {
     boxSizing: 'border-box',
@@ -10,8 +12,12 @@ export default makeStyles({ name: 'AgGridTable' })((theme) => ({
     width: '100%',
   },
   layout: {
+    border: `1px solid ${gridColors.border}`,
+    borderRadius: theme.shape.borderRadius,
+    boxSizing: 'border-box',
     display: 'flex',
     height: '100%',
+    overflow: 'hidden',
   },
   grid: {
     flex: 1,
