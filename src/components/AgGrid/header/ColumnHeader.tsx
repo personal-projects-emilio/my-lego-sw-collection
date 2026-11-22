@@ -32,32 +32,36 @@ const ColumnHeader: FC<CustomHeaderProps & ColumnHeaderParams> = ({
   useHeaderMenuTriggers({ eGridHeader, buttonRef, open: setAnchor })
 
   return (
-    <div className={classes.header}>
-      <span
-        className={classes.label}
+    <>
+      <div
+        className={classes.header}
         data-sortable={enableSorting || undefined}
-        onClick={(event) => enableSorting && progressSort(event.shiftKey)}
+        onClick={(event) => {
+          if (!enableSorting || (event.target as Element).closest('button'))
+            return
+          progressSort(event.shiftKey)
+        }}
       >
-        {displayName}
-      </span>
-      {direction && (
-        <span aria-hidden className={classes.sort}>
-          {direction === 'asc' ? <MdArrowUpward /> : <MdArrowDownward />}
-          {position}
-        </span>
-      )}
-      {EndAdornment && <EndAdornment className={classes.adornment} />}
-      <IconButton
-        ref={buttonRef}
-        aria-expanded={!!anchor}
-        aria-haspopup="menu"
-        aria-label={`${displayName} column menu`}
-        className={classes.menuButton}
-        onClick={(event) => setAnchor(event.currentTarget)}
-        size="small"
-      >
-        <MdMoreVert fontSize="inherit" />
-      </IconButton>
+        <span className={classes.label}>{displayName}</span>
+        {direction && (
+          <span aria-hidden className={classes.sort}>
+            {direction === 'asc' ? <MdArrowUpward /> : <MdArrowDownward />}
+            {position}
+          </span>
+        )}
+        {EndAdornment && <EndAdornment className={classes.adornment} />}
+        <IconButton
+          ref={buttonRef}
+          aria-expanded={!!anchor}
+          aria-haspopup="menu"
+          aria-label={`${displayName} column menu`}
+          className={classes.menuButton}
+          onClick={(event) => setAnchor(event.currentTarget)}
+          size="small"
+        >
+          <MdMoreVert fontSize="inherit" />
+        </IconButton>
+      </div>
       {anchor && (
         <Menu
           anchor={anchor}
@@ -65,7 +69,7 @@ const ColumnHeader: FC<CustomHeaderProps & ColumnHeaderParams> = ({
           onClose={() => setAnchor(undefined)}
         />
       )}
-    </div>
+    </>
   )
 }
 

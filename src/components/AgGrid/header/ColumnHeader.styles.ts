@@ -5,16 +5,17 @@ export default makeStyles({ name: 'ColumnHeader' })((theme) => ({
     alignItems: 'center',
     display: 'flex',
     gap: theme.spacing(0.5),
+    height: '100%',
     minWidth: 0,
     width: '100%',
+    '&[data-sortable]': {
+      cursor: 'pointer',
+    },
   },
   label: {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
-    '&[data-sortable]': {
-      cursor: 'pointer',
-    },
   },
   sort: {
     alignItems: 'center',
