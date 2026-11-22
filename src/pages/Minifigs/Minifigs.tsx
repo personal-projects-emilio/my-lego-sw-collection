@@ -7,10 +7,7 @@ import ModuleHeader from 'components/ModuleHeader/ModuleHeader'
 import { useCollection } from 'hooks'
 
 import { useMinifigsColDefs } from './hooks'
-import {
-  defaultMinifigsColumnDefs,
-  mapMinifigColIdsToTotals,
-} from './Minifigs.constants'
+import { defaultMinifigsColumnDefs } from './Minifigs.constants'
 
 const Minifigs: FC = () => {
   const { minifigsList, isLoading } = useCollection()
@@ -32,7 +29,6 @@ const Minifigs: FC = () => {
         columnLayoutId="minifigs"
         columnDefs={minifigsColumnDefs}
         defaultColDef={defaultMinifigsColumnDefs}
-        mapColIdsToTotals={mapMinifigColIdsToTotals}
         quickFilterText={deferredQuickFilter}
         rowData={structuredClone(minifigsList)}
       />

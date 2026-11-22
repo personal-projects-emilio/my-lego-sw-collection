@@ -5,8 +5,13 @@ import { Button, Skeleton } from '@mui/material'
 import { AgGridReact, type AgGridReactProps } from 'ag-grid-react'
 import ConfirmDialog from 'components/ConfirmDialog'
 import type { ColumnLayoutId } from 'types/columnLayout'
-import type { GetTotalRow, MapColIdsToTotals } from 'types/totalRow'
-import { getColumnTotals, isTotalRow, totalRowId } from 'utils/totalRow'
+import type { GetTotalRow } from 'types/totalRow'
+import {
+  getColumnTotals,
+  getTotalColumns,
+  isTotalRow,
+  totalRowId,
+} from 'utils/totalRow'
 
 import { ColumnChooserDrawer } from '../columnChooser'
 import { ColumnHeader, suppressHeaderKeyboardEvent } from '../header'
@@ -22,7 +27,6 @@ type ColumnLayoutGridProps<TData> = AgGridReactProps<TData> & {
   className: string
   columnLayoutId: ColumnLayoutId
   getTotalRow?: GetTotalRow<TData>
-  mapColIdsToTotals?: MapColIdsToTotals<TData>
 }
 
 const ColumnLayoutGrid = <TData,>({
@@ -31,7 +35,6 @@ const ColumnLayoutGrid = <TData,>({
   defaultColDef,
   getRowId,
   getTotalRow,
-  mapColIdsToTotals,
   ...props
 }: ColumnLayoutGridProps<TData>) => {
   const { classes } = useAgGridTableStyles()
@@ -40,10 +43,15 @@ const ColumnLayoutGrid = <TData,>({
     columnLayoutId,
     columnDefs: props.columnDefs,
   })
+  const totalColumns = useMemo(
+    () => getTotalColumns(props.columnDefs),
+    [props.columnDefs]
+  )
   const getRowTotals: GetTotalRow<TData> | undefined =
     getTotalRow ??
-    (mapColIdsToTotals &&
-      ((params) => getColumnTotals({ ...params, mapColIdsToTotals })))
+    (totalColumns.length > 0
+      ? (params) => getColumnTotals({ ...params, totalColumns })
+      : undefined)
   const totalRow = useTotalRow({
     getTotalRow: getRowTotals,
     isTotalRowShown: layout.isTotalRowShown,

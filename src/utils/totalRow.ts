@@ -1,10 +1,10 @@
-import type { IRowNode } from 'ag-grid-community'
+import type { ColDef, ColGroupDef, IRowNode } from 'ag-grid-community'
 import set from 'lodash/set'
 import sum from 'lodash/sum'
 import type {
   ColumnTotal,
-  MapColIdsToTotals,
   ReadCellValue,
+  TotalColumn,
   TotalRowData,
   TotalRowValue,
 } from 'types/totalRow'
@@ -72,19 +72,35 @@ const computeColumnTotal = <TData>({
 
 export const getColumnTotals = <TData>({
   rows,
-  mapColIdsToTotals,
+  totalColumns,
   readCellValue,
 }: {
   rows: TData[]
-  mapColIdsToTotals: MapColIdsToTotals<TData>
+  totalColumns: TotalColumn<TData>[]
   readCellValue: ReadCellValue<TData>
 }): TotalRowData =>
-  Object.entries(mapColIdsToTotals).reduce<TotalRowData>(
-    (totalRow, [colId, columnTotal]) =>
+  totalColumns.reduce<TotalRowData>(
+    (totalRow, { colId, total }) =>
       set(
         totalRow,
         colId,
-        computeColumnTotal({ colId, columnTotal, rows, readCellValue })
+        computeColumnTotal({ colId, columnTotal: total, rows, readCellValue })
       ),
     {}
   )
+
+const hasColumnTotal = <TData>(
+  columnDef: ColDef<TData>
+): columnDef is ColDef<TData> & { context: { total: ColumnTotal<TData> } } =>
+  !!columnDef.context?.total
+
+export const getTotalColumns = <TData>(
+  columnDefs?: (ColDef<TData> | ColGroupDef<TData>)[] | null
+): TotalColumn<TData>[] =>
+  (columnDefs ?? []).flatMap((columnDef) => {
+    if ('children' in columnDef) return getTotalColumns(columnDef.children)
+    const colId = columnDef.colId ?? columnDef.field
+    return colId && hasColumnTotal(columnDef)
+      ? [{ colId, total: columnDef.context.total }]
+      : []
+  })

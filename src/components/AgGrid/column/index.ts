@@ -1,6 +1,7 @@
 export { buildActionsColDef } from './buildActionsColDef'
 export { buildTagsColDef } from './buildTagsColDef'
 export { buildTimelineColDef } from './buildTimelineColDef'
+export { buildTotalContext } from './buildTotalContext'
 export {
   default as ExternalLinksCellRenderer,
   type ExternalLinksCellRenderProps,

@@ -1,22 +1,5 @@
 import type { ColDef } from 'ag-grid-community'
-import sumBy from 'lodash/sumBy'
-import type { CollectionSet, Set } from 'types/sets'
-import type { MapColIdsToTotals } from 'types/totalRow'
-import { formatFrNumber } from 'utils/format'
-
-export const mapSetColIdsToTotals = {
-  id: { aggregation: 'count' },
-  'content.partsQuantity': { aggregation: 'sum' },
-  'content.minifigs': {
-    aggregation: 'sum',
-    getValue: ({ content }) => sumBy(content.minifigs ?? [], 'quantity'),
-    formatValue: formatFrNumber,
-  },
-  'prices.bought': { aggregation: 'sum' },
-  'prices.marketValue': { aggregation: 'sum' },
-  'prices.storeValue': { aggregation: 'sum' },
-  ownedQuantity: { aggregation: 'sum' },
-} as const satisfies MapColIdsToTotals<CollectionSet>
+import type { Set } from 'types/sets'
 
 export const defaultSetsColumnDefs = {
   filter: true,

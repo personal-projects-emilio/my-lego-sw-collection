@@ -11,6 +11,7 @@ import {
   buildActionsColDef,
   buildTagsColDef,
   buildTimelineColDef,
+  buildTotalContext,
   ExternalLinksCellRenderer,
   type ExternalLinksCellRenderProps,
   formatListValue,
@@ -22,10 +23,15 @@ import {
   type SetActionsCellRendererProps,
 } from 'components/AgGrid/column'
 import { useTagsVocabulary, useTimeline } from 'hooks'
+import sumBy from 'lodash/sumBy'
 import { useAuth } from 'providers/AuthProvider'
 import type { CollectionSet } from 'types/sets'
 import { compareIds } from 'utils/array'
-import { formatFrDate, formatFrEuroCurrency } from 'utils/format'
+import {
+  formatFrDate,
+  formatFrEuroCurrency,
+  formatFrNumber,
+} from 'utils/format'
 import { isSetRetired } from 'utils/lego'
 
 import { SetMinifigsCellRenderer } from '../components'
@@ -52,6 +58,7 @@ const useSetsColDefs = () => {
           initialPinned: 'left',
           cellDataType: 'text',
           comparator: compareIds,
+          context: buildTotalContext({ aggregation: 'count' }),
           cellClass: [agGridClasses.flexAlignCenter, agGridClasses.gap1],
           cellRenderer: ItemIdCellRenderer,
           cellRendererParams: {
@@ -104,11 +111,18 @@ const useSetsColDefs = () => {
           ...numberColDef,
           field: 'content.partsQuantity',
           headerName: 'Parts Qty',
+          context: buildTotalContext({ aggregation: 'sum' }),
           width: 100,
         },
         {
           field: 'content.minifigs',
           headerName: 'Minifigs',
+          context: buildTotalContext<CollectionSet>({
+            aggregation: 'sum',
+            getValue: ({ content }) =>
+              sumBy(content.minifigs ?? [], 'quantity'),
+            formatValue: formatFrNumber,
+          }),
           valueFormatter: ({
             value,
           }: ValueFormatterParams<
@@ -135,7 +149,10 @@ const useSetsColDefs = () => {
         },
         ...priceColDefs.map((priceColDef): ColDef<CollectionSet> => ({
           ...priceColDef,
-          context: { isExcluded: idToken === undefined },
+          context: {
+            isExcluded: idToken === undefined,
+            ...buildTotalContext({ aggregation: 'sum' }),
+          },
           filter: 'agNumberColumnFilter',
           suppressFloatingFilterButton: false,
           valueFormatter: ({ value }) => formatFrEuroCurrency(value),
@@ -181,6 +198,7 @@ const useSetsColDefs = () => {
           ...numberColDef,
           field: 'ownedQuantity',
           headerName: 'Owned Quantity',
+          context: buildTotalContext({ aggregation: 'sum' }),
           width: 100,
         },
         {

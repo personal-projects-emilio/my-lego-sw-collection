@@ -5,10 +5,7 @@ import { Navigate, Outlet } from '@tanstack/react-router'
 import { AgGridTable } from 'components/AgGrid/table'
 import ModuleHeader from 'components/ModuleHeader/ModuleHeader'
 import { useCollection } from 'hooks'
-import {
-  defaultMinifigsColumnDefs,
-  mapLooseMinifigColIdsToTotals,
-} from 'pages/Minifigs/Minifigs.constants'
+import { defaultMinifigsColumnDefs } from 'pages/Minifigs/Minifigs.constants'
 import { useAuth } from 'providers/AuthProvider'
 
 import useLooseMinifigsColDefs from './useLooseMinifigsColDefs'
@@ -42,7 +39,6 @@ const LooseMinifigs: FC = () => {
         columnDefs={columnDefs}
         defaultColDef={defaultMinifigsColumnDefs}
         getRowId={({ data }) => data.id}
-        mapColIdsToTotals={mapLooseMinifigColIdsToTotals}
         quickFilterText={deferredQuickFilter}
         rowData={looseMinifigs}
       />

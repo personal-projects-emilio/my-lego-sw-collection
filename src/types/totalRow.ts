@@ -22,7 +22,7 @@ export type ColumnTotal<TData> =
       getWeight: (row: TData) => number
     })
 
-export type MapColIdsToTotals<TData> = Record<string, ColumnTotal<TData>>
+export type TotalColumn<TData> = { colId: string; total: ColumnTotal<TData> }
 
 export type GetTotalRow<TData> = (params: {
   rows: TData[]

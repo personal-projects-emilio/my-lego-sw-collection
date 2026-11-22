@@ -7,7 +7,7 @@ import ModuleHeader from 'components/ModuleHeader/ModuleHeader'
 import { useCollection } from 'hooks'
 
 import { useSetsColDefs } from './hooks'
-import { defaultSetsColumnDefs, mapSetColIdsToTotals } from './Sets.constants'
+import { defaultSetsColumnDefs } from './Sets.constants'
 
 const Sets: FC = () => {
   const { setsList, isLoading } = useCollection()
@@ -29,7 +29,6 @@ const Sets: FC = () => {
         columnLayoutId="sets"
         columnDefs={setsColumnDefs}
         defaultColDef={defaultSetsColumnDefs}
-        mapColIdsToTotals={mapSetColIdsToTotals}
         quickFilterText={deferredQuickFilter}
         rowData={setsList}
       />
