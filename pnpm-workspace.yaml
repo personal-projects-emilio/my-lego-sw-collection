@@ -5,6 +5,8 @@ minimumReleaseAge: 1440
 allowBuilds:
   '@swc/core': false
   esbuild: false
+  '@firebase/util': false
+  protobufjs: false
 
 overrides:
   'minimatch@>=7.0.0 <11.0.1': ^11.0.6
