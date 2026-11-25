@@ -14,18 +14,3 @@ export const authValidationSchema = z.object({
 
 export type LoginInputs = z.infer<typeof authValidationSchema>
 
-export type LoginData = {
-  email: string
-  expiresIn: string
-  idToken: string
-  localId: string
-  refreshToken: string
-}
-
-export type RefreshTokenData = {
-  expires_in: string
-  id_token: string
-  refresh_token: string
-  token_type: string
-  user_id: string
-}

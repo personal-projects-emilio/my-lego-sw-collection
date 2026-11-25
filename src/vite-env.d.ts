@@ -3,8 +3,9 @@
 interface ImportMetaEnv {
   readonly VITE_BASE_URL: string
   readonly VITE_API_BASE_URL: string
-  readonly VITE_APP_AUTH_BASE_URL: string
-  readonly VITE_APP_REFRESH_AUTH_BASE_URL: string
+  readonly VITE_FIREBASE_API_KEY: string
+  readonly VITE_FIREBASE_AUTH_DOMAIN: string
+  readonly VITE_FIREBASE_PROJECT_ID: string
 }
 
 interface ImportMeta {
