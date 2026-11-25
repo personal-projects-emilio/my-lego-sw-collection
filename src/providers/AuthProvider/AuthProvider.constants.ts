@@ -1,12 +1,13 @@
 import { createContext, useContext } from 'react'
 
 import type { UseMutateFunction } from '@tanstack/react-query'
-import type { LoginData, LoginInputs } from 'types/auth'
+import type { UserCredential } from 'firebase/auth'
+import type { LoginInputs } from 'types/auth'
 
 type Auth = {
-  idToken?: LoginData['idToken']
-  userId?: LoginData['localId']
-  login: UseMutateFunction<LoginData, unknown, LoginInputs, unknown>
+  idToken?: string
+  userId?: string
+  login: UseMutateFunction<UserCredential, unknown, LoginInputs, unknown>
   logout: () => void
   isLoading: boolean
 }
