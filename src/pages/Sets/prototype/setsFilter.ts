@@ -17,7 +17,11 @@ export type SetsFilter = {
 
 export type SetsFilterField = keyof SetsFilter
 
-export type FilterRequest = { field: SetsFilterField; requestedAt: number }
+export type FilterRequest = {
+  anchorElement?: Element | null
+  field: SetsFilterField
+  requestedAt: number
+}
 
 export const emptySetsFilter: SetsFilter = {
   search: '',
@@ -149,10 +153,12 @@ export const formatFieldValue = ({
 }
 
 export type FilterVariantProps = {
+  disabledFields: SetsFilterField[]
   filter: SetsFilter
   getTagLabel: (id: TagId) => string
   getTimelineLabel: (id: TimelineId) => string
   onChange: (filter: SetsFilter) => void
+  onToggleField: (field: SetsFilterField) => void
   request?: FilterRequest
   subthemeOptions: string[]
 }

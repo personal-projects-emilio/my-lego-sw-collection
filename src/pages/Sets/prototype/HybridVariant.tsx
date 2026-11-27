@@ -1,12 +1,13 @@
-import { type FC, useId, useRef, useState } from 'react'
+import { type FC, useEffect, useId, useRef, useState } from 'react'
 import { MdFilterAlt } from 'react-icons/md'
 
-import { Badge, Button, Chip, Popover, Tooltip } from '@mui/material'
+import { Button, Popover } from '@mui/material'
 import { SearchField } from 'components/inputs'
 import ModuleHeader from 'components/ModuleHeader/ModuleHeader'
 import { makeStyles } from 'tss-react/mui'
 
 import FieldEditor from './FieldEditor'
+import FilterChip from './FilterChip'
 import FilterDrawer from './FilterDrawer'
 import {
   emptySetsFilter,
@@ -33,61 +34,73 @@ const useHybridStyles = makeStyles({ name: 'HybridVariant' })((theme) => ({
     gap: theme.spacing(1),
     padding: theme.spacing(1),
   },
-  chip: { maxWidth: 220 },
-  filtersButton: { height: 32 },
+  filtersButton: { height: 40 },
   editor: { padding: theme.spacing(2), width: 360 },
 }))
 
 type HybridVariantProps = FilterVariantProps & { layout: 'oneRow' | 'twoRows' }
 
+type Editing = { field: SetsFilterField; top: number; left: number }
+
+const getEditing = ({
+  anchorElement,
+  field,
+}: {
+  anchorElement: Element
+  field: SetsFilterField
+}): Editing => {
+  const { bottom, left } = anchorElement.getBoundingClientRect()
+  return { field, top: bottom + 4, left }
+}
+
 const HybridVariant: FC<HybridVariantProps> = ({ layout, ...props }) => {
-  const { filter, onChange } = props
+  const { disabledFields, filter, onChange, onToggleField, request } = props
   const { classes } = useHybridStyles()
-  const drawer = useFilterDrawer(props.request)
+  const drawer = useFilterDrawer()
   const editorId = useId()
-  const chipRefs = useRef<Partial<Record<SetsFilterField, HTMLDivElement>>>({})
-  const [openField, setOpenField] = useState<SetsFilterField>()
+  const filtersButtonRef = useRef<HTMLButtonElement>(null)
+  const editorRef = useRef<HTMLDivElement>(null)
+  const [editing, setEditing] = useState<Editing>()
   const chipFields = getActiveFields(filter).filter(
     (field) => field !== 'search'
   )
 
+  useEffect(() => {
+    const anchorElement = request?.anchorElement ?? filtersButtonRef.current
+    if (request && anchorElement)
+      setEditing(getEditing({ anchorElement, field: request.field }))
+  }, [request])
+
   const filterControls = (
     <>
-      <Badge badgeContent={chipFields.length} color="primary">
-        <Button
-          aria-controls={drawer.panelId}
-          aria-expanded={drawer.isOpen}
-          onClick={drawer.toggle}
-          className={classes.filtersButton}
-          size="small"
-          startIcon={<MdFilterAlt />}
-          variant="outlined"
-        >
-          Filters
-        </Button>
-      </Badge>
-      {chipFields.map((field) => {
-        const label = `${getFieldLabel(field)}: ${formatFieldValue({ ...props, field })}`
-        return (
-          <Tooltip key={field} title={label}>
-            <Chip
-              ref={(element) => {
-                if (element) chipRefs.current[field] = element
-              }}
-              aria-controls={openField === field ? editorId : undefined}
-              aria-expanded={openField === field}
-              aria-haspopup="dialog"
-              className={classes.chip}
-              color="primary"
-              label={label}
-              onClick={() => setOpenField(field)}
-              onDelete={() =>
-                onChange({ ...filter, [field]: emptySetsFilter[field] })
-              }
-            />
-          </Tooltip>
-        )
-      })}
+      <Button
+        ref={filtersButtonRef}
+        aria-controls={drawer.panelId}
+        aria-expanded={drawer.isOpen}
+        className={classes.filtersButton}
+        onClick={drawer.toggle}
+        startIcon={<MdFilterAlt />}
+        variant="outlined"
+      >
+        {chipFields.length ? `Filters · ${chipFields.length}` : 'Filters'}
+      </Button>
+      {chipFields.map((field) => (
+        <FilterChip
+          key={field}
+          category={getFieldLabel(field)}
+          editorId={editorId}
+          isEditing={editing?.field === field}
+          isEnabled={!disabledFields.includes(field)}
+          onDelete={() =>
+            onChange({ ...filter, [field]: emptySetsFilter[field] })
+          }
+          onEdit={(anchorElement) =>
+            setEditing(getEditing({ anchorElement, field }))
+          }
+          onToggle={() => onToggleField(field)}
+          value={formatFieldValue({ ...props, field })}
+        />
+      ))}
       {chipFields.length > 0 && (
         <Button
           onClick={() =>
@@ -110,7 +123,6 @@ const HybridVariant: FC<HybridVariantProps> = ({ layout, ...props }) => {
           aria-label="Filter sets"
         >
           <SearchField
-            isCompact
             value={filter.search}
             onChange={(search) => onChange({ ...filter, search })}
           />
@@ -123,19 +135,26 @@ const HybridVariant: FC<HybridVariantProps> = ({ layout, ...props }) => {
         </div>
       )}
       <Popover
-        anchorEl={openField ? chipRefs.current[openField] : null}
-        anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
-        onClose={() => setOpenField(undefined)}
-        open={!!openField}
-        slotProps={{ paper: { id: editorId, role: 'dialog' } }}
+        anchorPosition={editing}
+        anchorReference="anchorPosition"
+        onClose={() => setEditing(undefined)}
+        open={!!editing}
+        slotProps={{
+          paper: { id: editorId, role: 'dialog' },
+          transition: {
+            onEntered: () =>
+              editorRef.current
+                ?.querySelector<HTMLElement>('input, button')
+                ?.focus(),
+          },
+        }}
       >
-        {openField && (
-          <div className={classes.editor}>
+        {editing && (
+          <div ref={editorRef} className={classes.editor}>
             <FieldEditor
               {...props}
-              autoFocus
-              field={openField}
-              id={`${editorId}-${openField}`}
+              field={editing.field}
+              id={`${editorId}-${editing.field}`}
             />
           </div>
         )}
