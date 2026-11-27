@@ -1,7 +1,15 @@
 import type { FC } from 'react'
-import { MdClose } from 'react-icons/md'
+import { MdClose, MdExpandMore } from 'react-icons/md'
 
-import { Button, Divider, Drawer, IconButton, Typography } from '@mui/material'
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Button,
+  Drawer,
+  IconButton,
+  Typography,
+} from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
 import FieldEditor from './FieldEditor'
@@ -35,13 +43,11 @@ const useFilterDrawerStyles = makeStyles({ name: 'FilterDrawer' })((theme) => ({
     display: 'flex',
     padding: theme.spacing(1, 1, 1, 2),
   },
-  body: {
-    display: 'grid',
-    gap: theme.spacing(3),
-    gridTemplateColumns: 'minmax(0, 1fr)',
-    overflowX: 'hidden',
-    overflowY: 'auto',
-    padding: theme.spacing(2),
+  body: { overflowX: 'hidden', overflowY: 'auto' },
+  accordion: {
+    background: 'transparent',
+    borderBottom: `1px solid ${theme.palette.divider}`,
+    '&::before': { display: 'none' },
   },
   group: {
     display: 'grid',
@@ -97,24 +103,35 @@ const FilterDrawer: FC<FilterDrawerProps> = ({
         </div>
         <div className={classes.body}>
           {filterCategories.map(({ category, title }) => (
-            <section key={title} aria-label={title} className={classes.group}>
-              <Divider textAlign="left">{title}</Divider>
-              {setsFilterFields
-                .filter(
-                  (definition) =>
-                    definition.category === category &&
-                    !excludedFields.includes(definition.field)
-                )
-                .map(({ categoryLabel, field }) => (
-                  <FieldEditor
-                    key={field}
-                    {...props}
-                    field={field}
-                    id={`${panelId}-${field}`}
-                    label={categoryLabel}
-                  />
-                ))}
-            </section>
+            <Accordion
+              key={title}
+              className={classes.accordion}
+              defaultExpanded
+              disableGutters
+              elevation={0}
+              square
+            >
+              <AccordionSummary expandIcon={<MdExpandMore />}>
+                <Typography variant="subtitle2">{title}</Typography>
+              </AccordionSummary>
+              <AccordionDetails className={classes.group}>
+                {setsFilterFields
+                  .filter(
+                    (definition) =>
+                      definition.category === category &&
+                      !excludedFields.includes(definition.field)
+                  )
+                  .map(({ categoryLabel, field }) => (
+                    <FieldEditor
+                      key={field}
+                      {...props}
+                      field={field}
+                      id={`${panelId}-${field}`}
+                      label={categoryLabel}
+                    />
+                  ))}
+              </AccordionDetails>
+            </Accordion>
           ))}
         </div>
       </section>
