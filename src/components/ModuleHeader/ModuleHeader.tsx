@@ -19,12 +19,12 @@ type ModuleHeaderProps = {
 
 const useModuleHeaderStyles = makeStyles({ name: 'ModuleHeader' })((theme) => ({
   header: {
-    alignItems: 'center',
+    alignItems: 'start',
     display: 'grid',
     gap: theme.spacing(1),
     gridAutoColumns: 'max-content',
     gridAutoFlow: 'column',
-    gridTemplateColumns: '1fr',
+    gridTemplateColumns: 'minmax(0, 1fr)',
     justifyItems: 'baseline',
     padding: theme.spacing(1),
     borderBottom: '1px solid',

@@ -15,6 +15,13 @@ const variants = [
     ),
   },
   {
+    key: 'F',
+    name: 'Scrolling chips in header row',
+    component: (props: FilterVariantProps) => (
+      <HybridVariant {...props} layout="scroll" />
+    ),
+  },
+  {
     key: 'E',
     name: 'Filters on their own row',
     component: (props: FilterVariantProps) => (

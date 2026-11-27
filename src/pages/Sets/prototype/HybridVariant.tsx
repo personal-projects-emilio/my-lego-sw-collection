@@ -1,4 +1,11 @@
-import { type FC, useEffect, useId, useRef, useState } from 'react'
+import {
+  type FC,
+  type ReactNode,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from 'react'
 import { MdFilterAlt, MdFilterAltOff } from 'react-icons/md'
 
 import { Button, IconButton, Popover, Tooltip } from '@mui/material'
@@ -27,6 +34,11 @@ const useHybridStyles = makeStyles({ name: 'HybridVariant' })((theme) => ({
     display: 'flex',
     flexWrap: 'wrap',
     gap: theme.spacing(1),
+    '&[data-layout="scroll"]': {
+      alignItems: 'flex-start',
+      flexWrap: 'nowrap',
+      width: '100%',
+    },
   },
   filterRow: {
     alignItems: 'center',
@@ -36,23 +48,41 @@ const useHybridStyles = makeStyles({ name: 'HybridVariant' })((theme) => ({
     gap: theme.spacing(1),
     padding: theme.spacing(1),
   },
-  filtersButton: { height: 40 },
+  chipScroller: {
+    display: 'flex',
+    flex: 1,
+    gap: theme.spacing(1),
+    minWidth: 0,
+    overflowX: 'auto',
+    scrollbarWidth: 'thin',
+    '& > *': { flexShrink: 0 },
+  },
+  filtersButton: { flexShrink: 0, height: 40 },
   editor: { padding: theme.spacing(2), width: 360 },
 }))
 
-type HybridVariantProps = FilterVariantProps & { layout: 'oneRow' | 'twoRows' }
+type HybridVariantProps = FilterVariantProps & {
+  layout: 'oneRow' | 'scroll' | 'twoRows'
+}
 
-type Editing = { field: SetsFilterField; top: number; left: number }
+type Editing = {
+  field: SetsFilterField
+  hasChip: boolean
+  left: number
+  top: number
+}
 
 const getEditing = ({
   anchorElement,
   field,
+  hasChip,
 }: {
   anchorElement: Element
   field: SetsFilterField
+  hasChip: boolean
 }): Editing => {
   const { bottom, left } = anchorElement.getBoundingClientRect()
-  return { field, top: bottom + 4, left }
+  return { field, hasChip, left, top: bottom + 4 }
 }
 
 const HybridVariant: FC<HybridVariantProps> = ({ layout, ...props }) => {
@@ -69,15 +99,28 @@ const HybridVariant: FC<HybridVariantProps> = ({ layout, ...props }) => {
     (field) => field !== 'search'
   )
   const chipFields =
-    editing && !activeFields.includes(editing.field)
+    editing?.hasChip && !activeFields.includes(editing.field)
       ? [...activeFields, editing.field]
       : activeFields
 
   useEffect(() => {
     const anchorElement = request?.anchorElement ?? filtersButtonRef.current
     if (request && anchorElement)
-      setEditing(getEditing({ anchorElement, field: request.field }))
+      setEditing(
+        getEditing({
+          anchorElement,
+          field: request.field,
+          hasChip: activeFields.includes(request.field),
+        })
+      )
   }, [request])
+
+  const wrapChips = (chips: ReactNode) =>
+    layout === 'scroll' ? (
+      <div className={classes.chipScroller}>{chips}</div>
+    ) : (
+      chips
+    )
 
   const filterControls = (
     <>
@@ -92,30 +135,32 @@ const HybridVariant: FC<HybridVariantProps> = ({ layout, ...props }) => {
       >
         {activeFields.length ? `Filters (${activeFields.length})` : 'Filters'}
       </Button>
-      {chipFields.map((field) => (
-        <FilterChip
-          key={field}
-          category={getFieldLabel(field)}
-          editorId={editorId}
-          isEditing={editing?.field === field}
-          isEnabled={!disabledFields.includes(field)}
-          onDelete={() =>
-            onChange({ ...filter, [field]: emptySetsFilter[field] })
-          }
-          onEdit={(anchorElement) =>
-            setEditing(getEditing({ anchorElement, field }))
-          }
-          onToggle={() => onToggleField(field)}
-          tooltip={
-            field === 'tags' ? (
-              <TreeView ids={filter.tags} tree={tagsVocabulary} />
-            ) : field === 'timeline' ? (
-              <TreeView ids={filter.timeline} tree={timeline} />
-            ) : undefined
-          }
-          value={formatFieldValue({ ...props, field }) || 'Any'}
-        />
-      ))}
+      {wrapChips(
+        chipFields.map((field) => (
+          <FilterChip
+            key={field}
+            category={getFieldLabel(field)}
+            editorId={editorId}
+            isEditing={editing?.field === field}
+            isEnabled={!disabledFields.includes(field)}
+            onDelete={() =>
+              onChange({ ...filter, [field]: emptySetsFilter[field] })
+            }
+            onEdit={(anchorElement) =>
+              setEditing(getEditing({ anchorElement, field, hasChip: true }))
+            }
+            onToggle={() => onToggleField(field)}
+            tooltip={
+              field === 'tags' ? (
+                <TreeView ids={filter.tags} tree={tagsVocabulary} />
+              ) : field === 'timeline' ? (
+                <TreeView ids={filter.timeline} tree={timeline} />
+              ) : undefined
+            }
+            value={formatFieldValue({ ...props, field }) || 'Any'}
+          />
+        ))
+      )}
       {activeFields.length > 0 && (
         <Tooltip title="Clear all filters">
           <IconButton
@@ -136,6 +181,7 @@ const HybridVariant: FC<HybridVariantProps> = ({ layout, ...props }) => {
       <ModuleHeader addLabel="Add set" addTo="/sets/add">
         <div
           className={classes.controls}
+          data-layout={layout}
           role="search"
           aria-label="Filter sets"
         >
@@ -143,7 +189,7 @@ const HybridVariant: FC<HybridVariantProps> = ({ layout, ...props }) => {
             value={filter.search}
             onChange={(search) => onChange({ ...filter, search })}
           />
-          {layout === 'oneRow' && filterControls}
+          {layout !== 'twoRows' && filterControls}
         </div>
       </ModuleHeader>
       {layout === 'twoRows' && (
