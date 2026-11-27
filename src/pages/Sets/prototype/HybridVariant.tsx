@@ -15,6 +15,7 @@ import {
   formatFieldValue,
   getActiveFields,
   getFieldLabel,
+  isFieldActive,
   type SetsFilterField,
 } from './setsFilter'
 import useFilterDrawer from './useFilterDrawer'
@@ -155,6 +156,14 @@ const HybridVariant: FC<HybridVariantProps> = ({ layout, ...props }) => {
               {...props}
               field={editing.field}
               id={`${editorId}-${editing.field}`}
+              onChange={(next) => {
+                onChange(next)
+                if (
+                  isFieldActive({ filter, field: editing.field }) &&
+                  !isFieldActive({ filter: next, field: editing.field })
+                )
+                  setEditing(undefined)
+              }}
             />
           </div>
         )}

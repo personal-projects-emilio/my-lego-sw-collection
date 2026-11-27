@@ -56,7 +56,7 @@ export const setsFilterFields: {
   { field: 'timeline', label: 'Timeline', category: 'shared' },
   { field: 'setId', label: 'Set ID', categoryLabel: 'ID', category: 'set' },
   { field: 'subthemes', label: 'Subtheme', category: 'set' },
-  { field: 'characterName', label: 'Character', category: 'set' },
+  { field: 'characterName', label: 'Character', category: 'minifig' },
   {
     field: 'minifigId',
     label: 'Minifig ID',

@@ -38,10 +38,16 @@ const useFilterDrawerStyles = makeStyles({ name: 'FilterDrawer' })((theme) => ({
   body: {
     display: 'grid',
     gap: theme.spacing(3),
+    gridTemplateColumns: 'minmax(0, 1fr)',
+    overflowX: 'hidden',
     overflowY: 'auto',
     padding: theme.spacing(2),
   },
-  group: { display: 'grid', gap: theme.spacing(2) },
+  group: {
+    display: 'grid',
+    gap: theme.spacing(2),
+    gridTemplateColumns: 'minmax(0, 1fr)',
+  },
   title: { flex: 1 },
 }))
 

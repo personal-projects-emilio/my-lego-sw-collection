@@ -81,6 +81,7 @@ const FieldEditor: FC<FieldEditorProps> = ({
   if (field === 'subthemes')
     return (
       <Autocomplete
+        disableCloseOnSelect
         multiple
         size="small"
         options={subthemeOptions}

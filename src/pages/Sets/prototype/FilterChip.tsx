@@ -1,5 +1,5 @@
 import type { FC, MouseEvent } from 'react'
-import { MdClose, MdToggleOff, MdToggleOn } from 'react-icons/md'
+import { MdClose, MdVisibility, MdVisibilityOff } from 'react-icons/md'
 
 import { ButtonBase, IconButton, Tooltip, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
@@ -20,7 +20,7 @@ const useFilterChipStyles = makeStyles({ name: 'FilterChip' })((theme) => ({
     alignItems: 'center',
     background: theme.palette.primary.main,
     border: `1px solid ${theme.palette.primary.main}`,
-    borderRadius: 20,
+    borderRadius: theme.shape.borderRadius,
     color: theme.palette.primary.contrastText,
     display: 'inline-flex',
     height: 40,
@@ -80,7 +80,7 @@ const FilterChip: FC<FilterChipProps> = ({
           onClick={onToggle}
           size="small"
         >
-          {isEnabled ? <MdToggleOn /> : <MdToggleOff />}
+          {isEnabled ? <MdVisibility /> : <MdVisibilityOff />}
         </IconButton>
       </Tooltip>
       <Tooltip title={`${category}: ${value}`}>
