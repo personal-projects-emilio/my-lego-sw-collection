@@ -83,7 +83,7 @@ const HybridVariant: FC<HybridVariantProps> = ({ layout, ...props }) => {
         startIcon={<MdFilterAlt />}
         variant="outlined"
       >
-        {chipFields.length ? `Filters · ${chipFields.length}` : 'Filters'}
+        {chipFields.length ? `Filters (${chipFields.length})` : 'Filters'}
       </Button>
       {chipFields.map((field) => (
         <FilterChip
