@@ -97,7 +97,9 @@ export const doesSetPass = ({
       hasText({ value: set.id, text: filter.search })) &&
     (!filter.setId || hasText({ value: set.id, text: filter.setId })) &&
     (!filter.minifigId ||
-      minifigs.some(({ id }) => hasText({ value: id, text: filter.minifigId }))) &&
+      minifigs.some(({ id }) =>
+        hasText({ value: id, text: filter.minifigId })
+      )) &&
     (!filter.characterName ||
       minifigs.some(({ characterName }) =>
         hasText({ value: characterName, text: filter.characterName })

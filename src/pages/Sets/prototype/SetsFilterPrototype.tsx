@@ -4,7 +4,6 @@ import { useNavigate, useSearch } from '@tanstack/react-router'
 import ModuleHeader from 'components/ModuleHeader/ModuleHeader'
 import PrototypeSwitcher from 'components/PrototypeSwitcher'
 
-import ChipBarVariant from './ChipBarVariant'
 import HybridVariant from './HybridVariant'
 import { type FilterVariantProps, getActiveFields } from './setsFilter'
 import SidePanelVariant from './SidePanelVariant'
@@ -22,18 +21,17 @@ const withHeader = (Variant: FC<FilterVariantProps>) => {
 }
 
 const variants = [
-  { key: 'A', name: 'Chip bar', component: withHeader(ChipBarVariant) },
   { key: 'B', name: 'Side panel', component: withHeader(SidePanelVariant) },
   {
     key: 'D',
-    name: 'Header row + drawer, chips inline',
+    name: 'Filters in header row',
     component: (props: FilterVariantProps) => (
       <HybridVariant {...props} layout="oneRow" />
     ),
   },
   {
     key: 'E',
-    name: 'Header row + drawer, chips below',
+    name: 'Filters on their own row',
     component: (props: FilterVariantProps) => (
       <HybridVariant {...props} layout="twoRows" />
     ),
@@ -63,7 +61,10 @@ const SetsFilterPrototype: FC<SetsFilterPrototypeProps> = ({
         current={current.key}
         details={`${matchedCount} of ${totalCount} sets · ${activeFields.length ? activeFields.map((field) => `${field}=${JSON.stringify(props.filter[field])}`).join(' ') : 'no filter'}`}
         onSelect={(key) =>
-          void navigate({ search: (previous) => ({ ...previous, variant: key }), replace: true })
+          void navigate({
+            search: (previous) => ({ ...previous, variant: key }),
+            replace: true,
+          })
         }
         variants={variants}
       />

@@ -15,7 +15,8 @@ const useFilterDrawer = (request?: FilterRequest) => {
     if (!focusRequest) return
     setIsOpen(true)
     const timeout = setTimeout(
-      () => document.getElementById(`${panelId}-${focusRequest.field}`)?.focus(),
+      () =>
+        document.getElementById(`${panelId}-${focusRequest.field}`)?.focus(),
       250
     )
     return () => clearTimeout(timeout)

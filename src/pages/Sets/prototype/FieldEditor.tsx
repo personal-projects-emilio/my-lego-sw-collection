@@ -10,7 +10,11 @@ import {
 import { TagsAutocomplete } from 'components/inputs'
 import { TimelineField } from 'components/Timeline'
 
-import { getFieldLabel, type SetsFilter, type SetsFilterField } from './setsFilter'
+import {
+  getFieldLabel,
+  type SetsFilter,
+  type SetsFilterField,
+} from './setsFilter'
 
 export type FieldEditorProps = {
   autoFocus?: boolean
