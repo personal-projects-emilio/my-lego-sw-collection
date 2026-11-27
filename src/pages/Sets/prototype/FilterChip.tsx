@@ -1,7 +1,8 @@
-import type { FC, MouseEvent } from 'react'
+import type { FC, MouseEvent, ReactNode } from 'react'
 import { MdClose, MdVisibility, MdVisibilityOff } from 'react-icons/md'
 
 import { ButtonBase, IconButton, Tooltip, Typography } from '@mui/material'
+import OverflowTypography from 'components/OverflowTypography'
 import { makeStyles } from 'tss-react/mui'
 
 type FilterChipProps = {
@@ -12,6 +13,7 @@ type FilterChipProps = {
   onDelete: () => void
   onEdit: (anchorElement: HTMLElement) => void
   onToggle: () => void
+  tooltip?: ReactNode
   value: string
 }
 
@@ -60,6 +62,7 @@ const FilterChip: FC<FilterChipProps> = ({
   onDelete,
   onEdit,
   onToggle,
+  tooltip,
   value,
 }) => {
   const { classes } = useFilterChipStyles()
@@ -83,25 +86,28 @@ const FilterChip: FC<FilterChipProps> = ({
           {isEnabled ? <MdVisibility /> : <MdVisibilityOff />}
         </IconButton>
       </Tooltip>
-      <Tooltip title={`${category}: ${value}`}>
-        <ButtonBase
-          aria-controls={isEditing ? editorId : undefined}
-          aria-expanded={isEditing}
-          aria-haspopup="dialog"
-          aria-label={`Edit ${category} filter: ${value}`}
-          className={classes.main}
-          onClick={(event: MouseEvent<HTMLElement>) =>
-            onEdit(event.currentTarget.parentElement ?? event.currentTarget)
-          }
+      <ButtonBase
+        aria-controls={isEditing ? editorId : undefined}
+        aria-expanded={isEditing}
+        aria-haspopup="dialog"
+        aria-label={`Edit ${category} filter: ${value}`}
+        className={classes.main}
+        onClick={(event: MouseEvent<HTMLElement>) =>
+          onEdit(event.currentTarget.parentElement ?? event.currentTarget)
+        }
+      >
+        <Typography className={classes.category} variant="caption">
+          {category}
+        </Typography>
+        <OverflowTypography
+          key={value}
+          className={classes.value}
+          tooltipTitle={tooltip}
+          variant="body2"
         >
-          <Typography className={classes.category} variant="caption">
-            {category}
-          </Typography>
-          <Typography className={classes.value} variant="body2">
-            {value}
-          </Typography>
-        </ButtonBase>
-      </Tooltip>
+          {value}
+        </OverflowTypography>
+      </ButtonBase>
       <IconButton
         aria-label={`Remove ${category} filter`}
         className={classes.iconButton}

@@ -11,7 +11,10 @@ import { TagsAutocomplete } from 'components/inputs'
 import { TimelineField } from 'components/Timeline'
 
 import {
+  type FilterOption,
   getFieldLabel,
+  type ListFilterField,
+  listFilterFields,
   type SetsFilter,
   type SetsFilterField,
 } from './setsFilter'
@@ -23,7 +26,7 @@ export type FieldEditorProps = {
   id: string
   label?: string
   onChange: (filter: SetsFilter) => void
-  subthemeOptions: string[]
+  mapFieldsToOptions: Record<ListFilterField, FilterOption[]>
 }
 
 const booleanChoices = [
@@ -41,8 +44,8 @@ const FieldEditor: FC<FieldEditorProps> = ({
   filter,
   id,
   label: labelOverride,
+  mapFieldsToOptions,
   onChange,
-  subthemeOptions,
 }) => {
   const label = labelOverride ?? getFieldLabel(field)
 
@@ -78,20 +81,29 @@ const FieldEditor: FC<FieldEditorProps> = ({
       </div>
     )
 
-  if (field === 'subthemes')
+  const listField = listFilterFields.find((candidate) => candidate === field)
+  if (listField) {
+    const options = mapFieldsToOptions[listField]
+    const mapValuesToLabels = new Map(
+      options.map((option) => [option.value, option.label])
+    )
     return (
       <Autocomplete
         disableCloseOnSelect
+        getOptionLabel={(value) => mapValuesToLabels.get(value) ?? value}
         multiple
         size="small"
-        options={subthemeOptions}
-        value={filter.subthemes}
-        onChange={(_event, subthemes) => onChange({ ...filter, subthemes })}
+        options={options.map(({ value }) => value)}
+        value={filter[listField]}
+        onChange={(_event, values) =>
+          onChange({ ...filter, [listField]: values })
+        }
         renderInput={(params) => (
           <TextField {...params} autoFocus={autoFocus} id={id} label={label} />
         )}
       />
     )
+  }
 
   if (field === 'tags')
     return (

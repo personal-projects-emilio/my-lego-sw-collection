@@ -5,9 +5,9 @@ import { isSetRetired } from 'utils/lego'
 
 export type SetsFilter = {
   search: string
-  setId: string
-  minifigId: string
-  characterName: string
+  setId: string[]
+  minifigId: string[]
+  characterName: string[]
   owned: boolean | null
   retired: boolean | null
   subthemes: string[]
@@ -17,6 +17,18 @@ export type SetsFilter = {
 
 export type SetsFilterField = keyof SetsFilter
 
+export type ListFilterField =
+  'characterName' | 'minifigId' | 'setId' | 'subthemes'
+
+export const listFilterFields: ListFilterField[] = [
+  'characterName',
+  'minifigId',
+  'setId',
+  'subthemes',
+]
+
+export type FilterOption = { label: string; value: string }
+
 export type FilterRequest = {
   anchorElement?: Element | null
   field: SetsFilterField
@@ -25,9 +37,9 @@ export type FilterRequest = {
 
 export const emptySetsFilter: SetsFilter = {
   search: '',
-  setId: '',
-  minifigId: '',
-  characterName: '',
+  setId: [],
+  minifigId: [],
+  characterName: [],
   owned: null,
   retired: null,
   subthemes: [],
@@ -113,14 +125,12 @@ export const doesSetPass = ({
     (!filter.search ||
       hasText({ value: set.name, text: filter.search }) ||
       hasText({ value: set.id, text: filter.search })) &&
-    (!filter.setId || hasText({ value: set.id, text: filter.setId })) &&
-    (!filter.minifigId ||
-      minifigs.some(({ id }) =>
-        hasText({ value: id, text: filter.minifigId })
-      )) &&
-    (!filter.characterName ||
+    (!filter.setId.length || filter.setId.includes(String(set.id))) &&
+    (!filter.minifigId.length ||
+      minifigs.some(({ id }) => filter.minifigId.includes(id))) &&
+    (!filter.characterName.length ||
       minifigs.some(({ characterName }) =>
-        hasText({ value: characterName, text: filter.characterName })
+        filter.characterName.includes(characterName)
       )) &&
     (filter.owned === null || set.ownedQuantity > 0 === filter.owned) &&
     (filter.retired === null || isSetRetired(set) === filter.retired) &&
@@ -148,8 +158,8 @@ export const formatFieldValue = ({
   if (field === 'tags') return filter.tags.map(getTagLabel).join(', ')
   if (field === 'timeline')
     return filter.timeline.map(getTimelineLabel).join(', ')
-  if (field === 'subthemes') return filter.subthemes.join(', ')
-  return filter[field]
+  const value = filter[field]
+  return Array.isArray(value) ? value.join(', ') : value
 }
 
 export type FilterVariantProps = {
@@ -160,5 +170,5 @@ export type FilterVariantProps = {
   onChange: (filter: SetsFilter) => void
   onToggleField: (field: SetsFilterField) => void
   request?: FilterRequest
-  subthemeOptions: string[]
+  mapFieldsToOptions: Record<ListFilterField, FilterOption[]>
 }

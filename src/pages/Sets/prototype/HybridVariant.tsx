@@ -4,6 +4,8 @@ import { MdFilterAlt } from 'react-icons/md'
 import { Button, Popover } from '@mui/material'
 import { SearchField } from 'components/inputs'
 import ModuleHeader from 'components/ModuleHeader/ModuleHeader'
+import TreeView from 'components/TreeView'
+import { useTagsVocabulary, useTimeline } from 'hooks'
 import { makeStyles } from 'tss-react/mui'
 
 import FieldEditor from './FieldEditor'
@@ -59,6 +61,8 @@ const HybridVariant: FC<HybridVariantProps> = ({ layout, ...props }) => {
   const { classes } = useHybridStyles()
   const drawer = useFilterDrawer()
   const editorId = useId()
+  const tagsVocabulary = useTagsVocabulary()
+  const timeline = useTimeline()
   const filtersButtonRef = useRef<HTMLButtonElement>(null)
   const editorRef = useRef<HTMLDivElement>(null)
   const [editing, setEditing] = useState<Editing>()
@@ -99,6 +103,13 @@ const HybridVariant: FC<HybridVariantProps> = ({ layout, ...props }) => {
             setEditing(getEditing({ anchorElement, field }))
           }
           onToggle={() => onToggleField(field)}
+          tooltip={
+            field === 'tags' ? (
+              <TreeView ids={filter.tags} tree={tagsVocabulary} />
+            ) : field === 'timeline' ? (
+              <TreeView ids={filter.timeline} tree={timeline} />
+            ) : undefined
+          }
           value={formatFieldValue({ ...props, field })}
         />
       ))}
