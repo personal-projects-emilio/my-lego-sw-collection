@@ -7,27 +7,7 @@ import HybridVariant from './HybridVariant'
 import { type FilterVariantProps, getActiveFields } from './setsFilter'
 
 const variants = [
-  {
-    key: 'D',
-    name: 'Filters in header row',
-    component: (props: FilterVariantProps) => (
-      <HybridVariant {...props} layout="oneRow" />
-    ),
-  },
-  {
-    key: 'F',
-    name: 'Scrolling chips in header row',
-    component: (props: FilterVariantProps) => (
-      <HybridVariant {...props} layout="scroll" />
-    ),
-  },
-  {
-    key: 'E',
-    name: 'Filters on their own row',
-    component: (props: FilterVariantProps) => (
-      <HybridVariant {...props} layout="twoRows" />
-    ),
-  },
+  { key: 'D', name: 'Filters in header row', component: HybridVariant },
 ]
 
 type SetsFilterPrototypeProps = FilterVariantProps & {
