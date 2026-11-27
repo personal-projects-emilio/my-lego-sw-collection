@@ -4,7 +4,6 @@ import { Skeleton } from '@mui/material'
 import { Outlet } from '@tanstack/react-router'
 import { AgGridTable } from 'components/AgGrid/table'
 import { ColumnFilterContext } from 'components/AgGrid/table/columnFilterContext'
-import ModuleHeader from 'components/ModuleHeader/ModuleHeader'
 import { useCollection } from 'hooks'
 
 import { useSetsColDefs } from './hooks'
@@ -33,9 +32,6 @@ const Sets: FC = () => {
 
   return (
     <ColumnFilterContext.Provider value={columnFilterActions}>
-      <ModuleHeader addTo="/sets/add">
-        <span />
-      </ModuleHeader>
       <SetsFilterPrototype {...prototype} />
       <AgGridTable
         columnLayoutId="sets"

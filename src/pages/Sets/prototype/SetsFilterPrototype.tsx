@@ -1,17 +1,43 @@
 import type { FC } from 'react'
 
 import { useNavigate, useSearch } from '@tanstack/react-router'
+import ModuleHeader from 'components/ModuleHeader/ModuleHeader'
 import PrototypeSwitcher from 'components/PrototypeSwitcher'
 
 import ChipBarVariant from './ChipBarVariant'
-import SearchTokensVariant from './SearchTokensVariant'
+import HybridVariant from './HybridVariant'
 import { type FilterVariantProps, getActiveFields } from './setsFilter'
 import SidePanelVariant from './SidePanelVariant'
 
+const withHeader = (Variant: FC<FilterVariantProps>) => {
+  const VariantWithHeader: FC<FilterVariantProps> = (props) => (
+    <>
+      <ModuleHeader addTo="/sets/add">
+        <span />
+      </ModuleHeader>
+      <Variant {...props} />
+    </>
+  )
+  return VariantWithHeader
+}
+
 const variants = [
-  { key: 'A', name: 'Chip bar', component: ChipBarVariant },
-  { key: 'B', name: 'Side panel', component: SidePanelVariant },
-  { key: 'C', name: 'Search tokens', component: SearchTokensVariant },
+  { key: 'A', name: 'Chip bar', component: withHeader(ChipBarVariant) },
+  { key: 'B', name: 'Side panel', component: withHeader(SidePanelVariant) },
+  {
+    key: 'D',
+    name: 'Header row + drawer, chips inline',
+    component: (props: FilterVariantProps) => (
+      <HybridVariant {...props} layout="oneRow" />
+    ),
+  },
+  {
+    key: 'E',
+    name: 'Header row + drawer, chips below',
+    component: (props: FilterVariantProps) => (
+      <HybridVariant {...props} layout="twoRows" />
+    ),
+  },
 ]
 
 type SetsFilterPrototypeProps = FilterVariantProps & {
@@ -24,7 +50,7 @@ const SetsFilterPrototype: FC<SetsFilterPrototypeProps> = ({
   totalCount,
   ...props
 }) => {
-  const { variant = 'A' } = useSearch({ from: '/sets' })
+  const { variant = 'D' } = useSearch({ from: '/sets' })
   const navigate = useNavigate({ from: '/sets' })
   const current = variants.find(({ key }) => key === variant) ?? variants[0]
   const Variant = current.component
