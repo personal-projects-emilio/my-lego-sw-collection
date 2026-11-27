@@ -23,7 +23,7 @@ import ResaleSetFormModal from 'pages/ResaleSets/ResaleSetFormModal'
 import Sets from 'pages/Sets'
 import { AddSetFormModal, EditSetFormModal } from 'pages/Sets/components'
 import Timeline from 'pages/Timeline'
-import { looseObject } from 'zod'
+import { looseObject, string } from 'zod'
 
 const basePath = import.meta.env.BASE_URL
 
@@ -64,6 +64,7 @@ const setsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/sets',
   component: Sets,
+  validateSearch: looseObject({ variant: string().optional() }),
 })
 
 const setEditRoute = createRoute({

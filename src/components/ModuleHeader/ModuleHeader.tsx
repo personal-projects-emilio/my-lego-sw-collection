@@ -10,8 +10,8 @@ import ImportBricksetCsv from './ImportBricksetCsv'
 
 type ModuleHeaderProps = {
   addTo: NonNullable<LinkProps['to']>
-  quickFilter: string
-  setQuickFilter: (value: string) => void
+  quickFilter?: string
+  setQuickFilter?: (value: string) => void
 }
 
 const useModuleHeaderStyles = makeStyles({ name: 'ModuleHeader' })((theme) => ({
@@ -38,7 +38,9 @@ const ModuleHeader: FC<PropsWithChildren<ModuleHeaderProps>> = ({
   const { classes } = useModuleHeaderStyles()
   return (
     <header className={classes.header}>
-      <SearchField value={quickFilter} onChange={setQuickFilter} />
+      {quickFilter !== undefined && setQuickFilter && (
+        <SearchField value={quickFilter} onChange={setQuickFilter} />
+      )}
       {children}
       <DisplayIfAuthenticated>
         <ImportBricksetCsv />
