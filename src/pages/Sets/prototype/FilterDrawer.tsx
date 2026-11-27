@@ -75,7 +75,12 @@ const FilterDrawer: FC<FilterDrawerProps> = ({
       anchor="right"
       onClose={onClose}
       open={isOpen}
-      slotProps={{ paper: { className: classes.drawerPaper } }}
+      slotProps={{
+        paper: { className: classes.drawerPaper },
+        transition: {
+          onEntered: () => document.getElementById(panelId)?.focus(),
+        },
+      }}
       variant="persistent"
     >
       <section
@@ -85,6 +90,7 @@ const FilterDrawer: FC<FilterDrawerProps> = ({
         onKeyDown={(event) => {
           if (event.key === 'Escape' && !event.defaultPrevented) onClose()
         }}
+        tabIndex={-1}
       >
         <div className={classes.panelHeader}>
           <Typography className={classes.title} component="h2" variant="h6">
