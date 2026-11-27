@@ -6,6 +6,7 @@ import { IconButton, InputAdornment, TextField } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
 type SearchFieldProps = {
+  isCompact?: boolean
   label?: string
   onChange: (value: string) => void
   value: string
@@ -13,9 +14,11 @@ type SearchFieldProps = {
 
 const useSearchFieldStyles = makeStyles({ name: 'SearchField' })({
   hidden: { visibility: 'hidden' },
+  compactInput: { height: 32 },
 })
 
 const SearchField: FC<SearchFieldProps> = ({
+  isCompact,
   label = 'Search',
   onChange,
   value,
@@ -31,14 +34,17 @@ const SearchField: FC<SearchFieldProps> = ({
   return (
     <TextField
       inputRef={inputRef}
-      label={label}
+      label={isCompact ? undefined : label}
+      placeholder={isCompact ? label : undefined}
       onChange={(event) => onChange(event.target.value)}
       onKeyDown={(event) => {
         if (event.key === 'Escape' && value) clear()
       }}
       size="small"
       slotProps={{
+        htmlInput: isCompact ? { 'aria-label': label } : undefined,
         input: {
+          className: isCompact ? classes.compactInput : undefined,
           startAdornment: (
             <InputAdornment position="start">
               <FaSearch />

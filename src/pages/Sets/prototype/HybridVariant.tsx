@@ -34,6 +34,7 @@ const useHybridStyles = makeStyles({ name: 'HybridVariant' })((theme) => ({
     padding: theme.spacing(1),
   },
   chip: { maxWidth: 220 },
+  filtersButton: { height: 32 },
   editor: { padding: theme.spacing(2), width: 360 },
 }))
 
@@ -57,6 +58,7 @@ const HybridVariant: FC<HybridVariantProps> = ({ layout, ...props }) => {
           aria-controls={drawer.panelId}
           aria-expanded={drawer.isOpen}
           onClick={drawer.toggle}
+          className={classes.filtersButton}
           size="small"
           startIcon={<MdFilterAlt />}
           variant="outlined"
@@ -82,7 +84,6 @@ const HybridVariant: FC<HybridVariantProps> = ({ layout, ...props }) => {
               onDelete={() =>
                 onChange({ ...filter, [field]: emptySetsFilter[field] })
               }
-              size="small"
             />
           </Tooltip>
         )
@@ -109,6 +110,7 @@ const HybridVariant: FC<HybridVariantProps> = ({ layout, ...props }) => {
           aria-label="Filter sets"
         >
           <SearchField
+            isCompact
             value={filter.search}
             onChange={(search) => onChange({ ...filter, search })}
           />

@@ -7,6 +7,7 @@ import { makeStyles } from 'tss-react/mui'
 import FieldEditor from './FieldEditor'
 import {
   emptySetsFilter,
+  filterCategories,
   type FilterVariantProps,
   getActiveFields,
   type SetsFilterField,
@@ -21,21 +22,28 @@ type FilterDrawerProps = FilterVariantProps & {
 }
 
 const useFilterDrawerStyles = makeStyles({ name: 'FilterDrawer' })((theme) => ({
-  drawerPaper: { height: 'calc(100% - 48px)', top: 48 },
+  drawerPaper: { height: 'calc(100% - 48px)', overflow: 'hidden', top: 48 },
   panel: {
-    display: 'grid',
-    gap: theme.spacing(2),
-    padding: theme.spacing(2),
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100%',
     width: 360,
   },
-  panelHeader: { alignItems: 'center', display: 'flex' },
+  panelHeader: {
+    alignItems: 'center',
+    borderBottom: `1px solid ${theme.palette.divider}`,
+    display: 'flex',
+    padding: theme.spacing(1, 1, 1, 2),
+  },
+  body: {
+    display: 'grid',
+    gap: theme.spacing(3),
+    overflowY: 'auto',
+    padding: theme.spacing(2),
+  },
+  group: { display: 'grid', gap: theme.spacing(2) },
   title: { flex: 1 },
 }))
-
-const groups = [
-  { title: 'Shared with other pages', isShared: true },
-  { title: 'Sets only', isShared: false },
-]
 
 const FilterDrawer: FC<FilterDrawerProps> = ({
   excludedFields = [],
@@ -81,25 +89,28 @@ const FilterDrawer: FC<FilterDrawerProps> = ({
             <MdClose />
           </IconButton>
         </div>
-        {groups.map(({ title, isShared }) => (
-          <section key={title} aria-label={title} className={classes.panel}>
-            <Divider textAlign="left">{title}</Divider>
-            {setsFilterFields
-              .filter(
-                (definition) =>
-                  definition.isShared === isShared &&
-                  !excludedFields.includes(definition.field)
-              )
-              .map(({ field }) => (
-                <FieldEditor
-                  key={field}
-                  {...props}
-                  field={field}
-                  id={`${panelId}-${field}`}
-                />
-              ))}
-          </section>
-        ))}
+        <div className={classes.body}>
+          {filterCategories.map(({ category, title }) => (
+            <section key={title} aria-label={title} className={classes.group}>
+              <Divider textAlign="left">{title}</Divider>
+              {setsFilterFields
+                .filter(
+                  (definition) =>
+                    definition.category === category &&
+                    !excludedFields.includes(definition.field)
+                )
+                .map(({ categoryLabel, field }) => (
+                  <FieldEditor
+                    key={field}
+                    {...props}
+                    field={field}
+                    id={`${panelId}-${field}`}
+                    label={categoryLabel}
+                  />
+                ))}
+            </section>
+          ))}
+        </div>
       </section>
     </Drawer>
   )

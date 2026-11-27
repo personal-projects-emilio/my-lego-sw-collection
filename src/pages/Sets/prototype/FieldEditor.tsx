@@ -21,6 +21,7 @@ export type FieldEditorProps = {
   field: SetsFilterField
   filter: SetsFilter
   id: string
+  label?: string
   onChange: (filter: SetsFilter) => void
   subthemeOptions: string[]
 }
@@ -39,10 +40,11 @@ const FieldEditor: FC<FieldEditorProps> = ({
   field,
   filter,
   id,
+  label: labelOverride,
   onChange,
   subthemeOptions,
 }) => {
-  const label = getFieldLabel(field)
+  const label = labelOverride ?? getFieldLabel(field)
 
   if (field === 'owned' || field === 'retired')
     return (

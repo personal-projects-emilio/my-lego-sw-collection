@@ -31,20 +31,34 @@ export const emptySetsFilter: SetsFilter = {
   timeline: [],
 }
 
+export type FilterCategory = 'shared' | 'set' | 'minifig'
+
+export const filterCategories: { category: FilterCategory; title: string }[] = [
+  { category: 'shared', title: 'Shared' },
+  { category: 'set', title: 'Set' },
+  { category: 'minifig', title: 'Minifig' },
+]
+
 export const setsFilterFields: {
   field: SetsFilterField
   label: string
-  isShared: boolean
+  categoryLabel?: string
+  category: FilterCategory
 }[] = [
-  { field: 'search', label: 'Search', isShared: true },
-  { field: 'owned', label: 'Owned', isShared: true },
-  { field: 'retired', label: 'Retired', isShared: true },
-  { field: 'subthemes', label: 'Subtheme', isShared: false },
-  { field: 'tags', label: 'Tags', isShared: true },
-  { field: 'timeline', label: 'Timeline', isShared: true },
-  { field: 'characterName', label: 'Character', isShared: true },
-  { field: 'setId', label: 'Set ID', isShared: true },
-  { field: 'minifigId', label: 'Minifig ID', isShared: true },
+  { field: 'search', label: 'Search', category: 'shared' },
+  { field: 'owned', label: 'Owned', category: 'shared' },
+  { field: 'retired', label: 'Retired', category: 'shared' },
+  { field: 'tags', label: 'Tags', category: 'shared' },
+  { field: 'timeline', label: 'Timeline', category: 'shared' },
+  { field: 'setId', label: 'Set ID', categoryLabel: 'ID', category: 'set' },
+  { field: 'subthemes', label: 'Subtheme', category: 'set' },
+  { field: 'characterName', label: 'Character', category: 'set' },
+  {
+    field: 'minifigId',
+    label: 'Minifig ID',
+    categoryLabel: 'ID',
+    category: 'minifig',
+  },
 ]
 
 export const mapColumnIdsToFilterFields: Record<string, SetsFilterField> = {

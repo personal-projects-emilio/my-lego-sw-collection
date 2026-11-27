@@ -1,27 +1,12 @@
 import type { FC } from 'react'
 
 import { useNavigate, useSearch } from '@tanstack/react-router'
-import ModuleHeader from 'components/ModuleHeader/ModuleHeader'
 import PrototypeSwitcher from 'components/PrototypeSwitcher'
 
 import HybridVariant from './HybridVariant'
 import { type FilterVariantProps, getActiveFields } from './setsFilter'
-import SidePanelVariant from './SidePanelVariant'
-
-const withHeader = (Variant: FC<FilterVariantProps>) => {
-  const VariantWithHeader: FC<FilterVariantProps> = (props) => (
-    <>
-      <ModuleHeader addTo="/sets/add">
-        <span />
-      </ModuleHeader>
-      <Variant {...props} />
-    </>
-  )
-  return VariantWithHeader
-}
 
 const variants = [
-  { key: 'B', name: 'Side panel', component: withHeader(SidePanelVariant) },
   {
     key: 'D',
     name: 'Filters in header row',
