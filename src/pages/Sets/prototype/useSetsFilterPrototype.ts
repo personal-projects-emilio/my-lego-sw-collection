@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useDeferredValue, useMemo, useState } from 'react'
 
 import type { IRowNode } from 'ag-grid-community'
 import { useTagsVocabulary, useTimeline } from 'hooks'
@@ -22,14 +22,15 @@ const useSetsFilterPrototype = (setsList: CollectionSet[] = []) => {
   const [filter, setFilter] = useState<SetsFilter>(emptySetsFilter)
   const [request, setRequest] = useState<FilterRequest>()
   const [disabledFields, setDisabledFields] = useState<SetsFilterField[]>([])
+  const deferredFilter = useDeferredValue(filter)
   const appliedFilter = useMemo(
     () => ({
-      ...filter,
+      ...deferredFilter,
       ...Object.fromEntries(
         disabledFields.map((field) => [field, emptySetsFilter[field]])
       ),
     }),
-    [disabledFields, filter]
+    [deferredFilter, disabledFields]
   )
   const activeFields = getActiveFields(appliedFilter)
 
