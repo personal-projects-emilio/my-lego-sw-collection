@@ -21,6 +21,7 @@ const Minifigs: FC = () => {
   return (
     <>
       <ModuleHeader
+        addLabel="Add minifig"
         addTo="/minifigs/add"
         quickFilter={quickFilter}
         setQuickFilter={setQuickFilter}

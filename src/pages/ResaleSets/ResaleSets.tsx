@@ -41,6 +41,7 @@ const ResaleSets: FC = () => {
   return (
     <>
       <ModuleHeader
+        addLabel="Add resale set"
         addTo="/resale-sets/add"
         quickFilter={quickFilter}
         setQuickFilter={setQuickFilter}

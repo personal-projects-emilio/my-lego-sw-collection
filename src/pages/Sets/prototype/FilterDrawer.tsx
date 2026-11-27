@@ -78,7 +78,14 @@ const FilterDrawer: FC<FilterDrawerProps> = ({
       slotProps={{ paper: { className: classes.drawerPaper } }}
       variant="persistent"
     >
-      <section aria-label="Filters" className={classes.panel} id={panelId}>
+      <section
+        aria-label="Filters"
+        className={classes.panel}
+        id={panelId}
+        onKeyDown={(event) => {
+          if (event.key === 'Escape' && !event.defaultPrevented) onClose()
+        }}
+      >
         <div className={classes.panelHeader}>
           <Typography className={classes.title} component="h2" variant="h6">
             Filters
@@ -121,13 +128,13 @@ const FilterDrawer: FC<FilterDrawerProps> = ({
                       definition.category === category &&
                       !excludedFields.includes(definition.field)
                   )
-                  .map(({ categoryLabel, field }) => (
+                  .map(({ field, label }) => (
                     <FieldEditor
                       key={field}
                       {...props}
                       field={field}
                       id={`${panelId}-${field}`}
-                      label={categoryLabel}
+                      label={label}
                     />
                   ))}
               </AccordionDetails>

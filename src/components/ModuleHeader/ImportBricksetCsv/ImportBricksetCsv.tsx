@@ -8,6 +8,8 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  IconButton,
+  Tooltip,
   Typography,
 } from '@mui/material'
 import {
@@ -172,14 +174,14 @@ const ImportBricksetCsv: FC = () => {
 
   return (
     <>
-      <Button
-        size="small"
-        variant="outlined"
-        startIcon={<MdUpload />}
-        onClick={() => setOpen(true)}
-      >
-        Import CSV
-      </Button>
+      <Tooltip title="Import Brickset CSV">
+        <IconButton
+          aria-label="Import Brickset CSV"
+          onClick={() => setOpen(true)}
+        >
+          <MdUpload />
+        </IconButton>
+      </Tooltip>
       {open && (
         <Dialog
           open

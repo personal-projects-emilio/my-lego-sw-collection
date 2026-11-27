@@ -58,7 +58,6 @@ export const filterCategories: { category: FilterCategory; title: string }[] = [
 export const setsFilterFields: {
   field: SetsFilterField
   label: string
-  categoryLabel?: string
   category: FilterCategory
 }[] = [
   { field: 'search', label: 'Search', category: 'shared' },
@@ -66,15 +65,10 @@ export const setsFilterFields: {
   { field: 'retired', label: 'Retired', category: 'shared' },
   { field: 'tags', label: 'Tags', category: 'shared' },
   { field: 'timeline', label: 'Timeline', category: 'shared' },
-  { field: 'setId', label: 'Set ID', categoryLabel: 'ID', category: 'set' },
+  { field: 'setId', label: 'ID', category: 'set' },
   { field: 'subthemes', label: 'Subtheme', category: 'set' },
   { field: 'characterName', label: 'Character', category: 'minifig' },
-  {
-    field: 'minifigId',
-    label: 'Minifig ID',
-    categoryLabel: 'ID',
-    category: 'minifig',
-  },
+  { field: 'minifigId', label: 'ID', category: 'minifig' },
 ]
 
 export const mapColumnIdsToFilterFields: Record<string, SetsFilterField> = {
@@ -88,9 +82,18 @@ export const mapColumnIdsToFilterFields: Record<string, SetsFilterField> = {
   'content.minifigs': 'minifigId',
 }
 
-export const getFieldLabel = (field: SetsFilterField) =>
-  setsFilterFields.find((definition) => definition.field === field)?.label ??
-  field
+export const getFieldLabel = (field: SetsFilterField) => {
+  const definition = setsFilterFields.find(
+    (candidate) => candidate.field === field
+  )
+  if (!definition) return field
+  const categoryTitle = filterCategories.find(
+    ({ category }) => category === definition.category
+  )?.title
+  return definition.category === 'shared'
+    ? definition.label
+    : `${categoryTitle} ${definition.label}`
+}
 
 export const isFieldActive = ({
   filter,

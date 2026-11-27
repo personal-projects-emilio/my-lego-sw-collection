@@ -1,6 +1,8 @@
 import type { FC, PropsWithChildren } from 'react'
 
-import { Button } from '@mui/material'
+import { MdAdd } from 'react-icons/md'
+
+import { IconButton, Tooltip } from '@mui/material'
 import { Link, type LinkProps } from '@tanstack/react-router'
 import DisplayIfAuthenticated from 'components/DisplayIfAuthenticated'
 import { SearchField } from 'components/inputs'
@@ -9,6 +11,7 @@ import { makeStyles } from 'tss-react/mui'
 import ImportBricksetCsv from './ImportBricksetCsv'
 
 type ModuleHeaderProps = {
+  addLabel: string
   addTo: NonNullable<LinkProps['to']>
   quickFilter?: string
   setQuickFilter?: (value: string) => void
@@ -33,6 +36,7 @@ const ModuleHeader: FC<PropsWithChildren<ModuleHeaderProps>> = ({
   children,
   quickFilter,
   setQuickFilter,
+  addLabel,
   addTo,
 }) => {
   const { classes } = useModuleHeaderStyles()
@@ -45,9 +49,16 @@ const ModuleHeader: FC<PropsWithChildren<ModuleHeaderProps>> = ({
       <DisplayIfAuthenticated>
         <ImportBricksetCsv />
       </DisplayIfAuthenticated>
-      <Button size="small" component={Link} to={addTo} variant="contained">
-        Add
-      </Button>
+      <Tooltip title={addLabel}>
+        <IconButton
+          aria-label={addLabel}
+          color="primary"
+          component={Link}
+          to={addTo}
+        >
+          <MdAdd />
+        </IconButton>
+      </Tooltip>
     </header>
   )
 }

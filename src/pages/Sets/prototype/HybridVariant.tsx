@@ -1,7 +1,7 @@
 import { type FC, useEffect, useId, useRef, useState } from 'react'
-import { MdFilterAlt } from 'react-icons/md'
+import { MdFilterAlt, MdFilterAltOff } from 'react-icons/md'
 
-import { Button, Popover } from '@mui/material'
+import { Button, IconButton, Popover, Tooltip } from '@mui/material'
 import { SearchField } from 'components/inputs'
 import ModuleHeader from 'components/ModuleHeader/ModuleHeader'
 import TreeView from 'components/TreeView'
@@ -114,21 +114,23 @@ const HybridVariant: FC<HybridVariantProps> = ({ layout, ...props }) => {
         />
       ))}
       {chipFields.length > 0 && (
-        <Button
-          onClick={() =>
-            onChange({ ...emptySetsFilter, search: filter.search })
-          }
-          size="small"
-        >
-          Clear all
-        </Button>
+        <Tooltip title="Clear all filters">
+          <IconButton
+            aria-label="Clear all filters"
+            onClick={() =>
+              onChange({ ...emptySetsFilter, search: filter.search })
+            }
+          >
+            <MdFilterAltOff />
+          </IconButton>
+        </Tooltip>
       )}
     </>
   )
 
   return (
     <>
-      <ModuleHeader addTo="/sets/add">
+      <ModuleHeader addLabel="Add set" addTo="/sets/add">
         <div
           className={classes.controls}
           role="search"
@@ -183,7 +185,10 @@ const HybridVariant: FC<HybridVariantProps> = ({ layout, ...props }) => {
         {...props}
         excludedFields={['search']}
         isOpen={drawer.isOpen}
-        onClose={drawer.onClose}
+        onClose={() => {
+          drawer.onClose()
+          filtersButtonRef.current?.focus()
+        }}
         panelId={drawer.panelId}
       />
     </>

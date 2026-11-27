@@ -30,6 +30,7 @@ const LooseMinifigs: FC = () => {
   return (
     <>
       <ModuleHeader
+        addLabel="Add loose minifig"
         addTo="/loose-minifigs/add"
         quickFilter={quickFilter}
         setQuickFilter={setQuickFilter}
