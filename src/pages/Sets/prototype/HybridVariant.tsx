@@ -17,7 +17,6 @@ import {
   formatFieldValue,
   getActiveFields,
   getFieldLabel,
-  isFieldActive,
   type SetsFilterField,
 } from './setsFilter'
 import useFilterDrawer from './useFilterDrawer'
@@ -66,9 +65,13 @@ const HybridVariant: FC<HybridVariantProps> = ({ layout, ...props }) => {
   const filtersButtonRef = useRef<HTMLButtonElement>(null)
   const editorRef = useRef<HTMLDivElement>(null)
   const [editing, setEditing] = useState<Editing>()
-  const chipFields = getActiveFields(filter).filter(
+  const activeFields: SetsFilterField[] = getActiveFields(filter).filter(
     (field) => field !== 'search'
   )
+  const chipFields =
+    editing && !activeFields.includes(editing.field)
+      ? [...activeFields, editing.field]
+      : activeFields
 
   useEffect(() => {
     const anchorElement = request?.anchorElement ?? filtersButtonRef.current
@@ -87,7 +90,7 @@ const HybridVariant: FC<HybridVariantProps> = ({ layout, ...props }) => {
         startIcon={<MdFilterAlt />}
         variant="outlined"
       >
-        {chipFields.length ? `Filters (${chipFields.length})` : 'Filters'}
+        {activeFields.length ? `Filters (${activeFields.length})` : 'Filters'}
       </Button>
       {chipFields.map((field) => (
         <FilterChip
@@ -110,10 +113,10 @@ const HybridVariant: FC<HybridVariantProps> = ({ layout, ...props }) => {
               <TreeView ids={filter.timeline} tree={timeline} />
             ) : undefined
           }
-          value={formatFieldValue({ ...props, field })}
+          value={formatFieldValue({ ...props, field }) || 'Any'}
         />
       ))}
-      {chipFields.length > 0 && (
+      {activeFields.length > 0 && (
         <Tooltip title="Clear all filters">
           <IconButton
             aria-label="Clear all filters"
@@ -169,14 +172,6 @@ const HybridVariant: FC<HybridVariantProps> = ({ layout, ...props }) => {
               {...props}
               field={editing.field}
               id={`${editorId}-${editing.field}`}
-              onChange={(next) => {
-                onChange(next)
-                if (
-                  isFieldActive({ filter, field: editing.field }) &&
-                  !isFieldActive({ filter: next, field: editing.field })
-                )
-                  setEditing(undefined)
-              }}
             />
           </div>
         )}
