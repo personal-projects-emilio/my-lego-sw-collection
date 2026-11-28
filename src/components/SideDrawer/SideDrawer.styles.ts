@@ -10,6 +10,16 @@ export default makeStyles({ name: 'SideDrawer' })((theme) => ({
     maxWidth: '100vw',
     outline: 'none',
   },
+  docked: {
+    backgroundColor: theme.palette.background.paper,
+    borderLeft: `1px solid ${theme.palette.divider}`,
+    display: 'flex',
+    flexDirection: 'column',
+    flexShrink: 0,
+    maxWidth: '50vw',
+    minHeight: 0,
+    position: 'relative',
+  },
   resizeHandle: {
     bottom: 0,
     cursor: 'col-resize',

@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { MdClose, MdRestartAlt } from 'react-icons/md'
+import { MdRestartAlt } from 'react-icons/md'
 
-import { Alert, Button, Checkbox, IconButton, Typography } from '@mui/material'
+import { Alert, Button, Checkbox } from '@mui/material'
 import type { GridApi } from 'ag-grid-community'
 import SearchField from 'components/inputs/SearchField'
 import { getToggleableColIds, toShowAllState } from 'utils/columnLayout'
@@ -13,18 +13,14 @@ import useChooserColumns from './useChooserColumns'
 export type ColumnChooserProps<TData> = {
   api: GridApi<TData>
   saveError?: string
-  titleId: string
   onClearSaveError: () => void
-  onClose: () => void
   onReset: () => void
 }
 
 const ColumnChooser = <TData,>({
   api,
   saveError,
-  titleId,
   onClearSaveError,
-  onClose,
   onReset,
 }: ColumnChooserProps<TData>) => {
   const { classes } = useColumnChooserStyles()
@@ -33,24 +29,7 @@ const ColumnChooser = <TData,>({
   const showAll = toShowAllState(columns)
 
   return (
-    <>
-      <header className={classes.header}>
-        <Typography
-          className={classes.title}
-          component="h2"
-          id={titleId}
-          variant="subtitle2"
-        >
-          Columns
-        </Typography>
-        <IconButton
-          aria-label="Close the column chooser"
-          onClick={onClose}
-          size="small"
-        >
-          <MdClose />
-        </IconButton>
-      </header>
+    <div className={classes.chooser}>
       {saveError && (
         <Alert
           className={classes.alert}
@@ -93,7 +72,7 @@ const ColumnChooser = <TData,>({
           Reset columns
         </Button>
       </footer>
-    </>
+    </div>
   )
 }
 

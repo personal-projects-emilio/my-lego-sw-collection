@@ -11,7 +11,9 @@ type SideDrawerProps = PropsWithChildren<{
   defaultWidth: number
   id?: string
   isCloseDisabled?: boolean
+  isDocked?: boolean
   isOpen?: boolean
+  maxWidth?: number
   minWidth: number
   onClose: () => void
   storageKey: string
@@ -24,7 +26,9 @@ const SideDrawer: FC<SideDrawerProps> = ({
   defaultWidth,
   id,
   isCloseDisabled,
+  isDocked,
   isOpen = true,
+  maxWidth,
   minWidth,
   onClose,
   storageKey,
@@ -36,27 +40,14 @@ const SideDrawer: FC<SideDrawerProps> = ({
     storageKey,
     defaultWidth,
     minWidth,
+    maxWidth,
   })
   const close = () => {
     if (!isCloseDisabled) onClose()
   }
 
-  return (
-    <Drawer
-      anchor="right"
-      className={classes.drawer}
-      onClose={close}
-      open={isOpen}
-      slotProps={{
-        paper: {
-          'aria-labelledby': titleId,
-          className: classes.paper,
-          id,
-          role: 'dialog',
-          style: { width },
-        },
-      }}
-    >
+  const frame = (
+    <>
       <div className={classes.resizeHandle} {...handleProps} />
       <div className={classes.header}>
         <Typography
@@ -77,6 +68,38 @@ const SideDrawer: FC<SideDrawerProps> = ({
         </IconButton>
       </div>
       {children}
+    </>
+  )
+
+  if (isDocked)
+    return (
+      <aside
+        aria-labelledby={titleId}
+        className={classes.docked}
+        id={id}
+        style={{ width }}
+      >
+        {frame}
+      </aside>
+    )
+
+  return (
+    <Drawer
+      anchor="right"
+      className={classes.drawer}
+      onClose={close}
+      open={isOpen}
+      slotProps={{
+        paper: {
+          'aria-labelledby': titleId,
+          className: classes.paper,
+          id,
+          role: 'dialog',
+          style: { width },
+        },
+      }}
+    >
+      {frame}
     </Drawer>
   )
 }
