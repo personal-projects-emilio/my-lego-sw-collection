@@ -58,7 +58,7 @@ const minifigEditRoute = createRoute({
   getParentRoute: () => minifigsRoute,
   path: '/edit/$minifigId',
   component: () => <EditMinifigFormModal />,
-  // zod 4 types object({}) as Record<string, never>, which breaks ToOptions unions
+  // zod 4 types object({}) as Record<string, never>, which breaks ToOptions unions; the middleware strips params anyway
   validateSearch: looseObject({}),
 })
 

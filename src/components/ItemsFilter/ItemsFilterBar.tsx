@@ -146,7 +146,12 @@ const ItemsFilterBar: FC<ItemsFilterBarProps> = (props) => {
           <IconButton
             aria-label="Clear all filters"
             onClick={() =>
-              onChange({ ...emptyItemsFilter, search: filter.search })
+              onChange({
+                ...filter,
+                ...Object.fromEntries(
+                  fields.map((field) => [field, emptyItemsFilter[field]])
+                ),
+              })
             }
           >
             <MdFilterAltOff />
