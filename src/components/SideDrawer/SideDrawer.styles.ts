@@ -1,3 +1,4 @@
+import { gridColors } from 'components/AgGrid/table/gridColors'
 import { makeStyles } from 'tss-react/mui'
 
 export default makeStyles({ name: 'SideDrawer' })((theme) => ({
@@ -11,8 +12,8 @@ export default makeStyles({ name: 'SideDrawer' })((theme) => ({
     outline: 'none',
   },
   docked: {
-    backgroundColor: theme.palette.background.paper,
-    borderLeft: `1px solid ${theme.palette.divider}`,
+    backgroundColor: gridColors.chrome,
+    borderLeft: `1px solid ${gridColors.border}`,
     display: 'flex',
     flexDirection: 'column',
     flexShrink: 0,

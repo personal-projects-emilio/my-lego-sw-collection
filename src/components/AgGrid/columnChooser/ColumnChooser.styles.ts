@@ -1,5 +1,7 @@
 import { makeStyles } from 'tss-react/mui'
 
+import { gridColors } from '../table/gridColors'
+
 export default makeStyles({ name: 'ColumnChooser' })((theme) => {
   const fullRow = { gridColumn: '1 / -1' }
   return {
@@ -51,7 +53,7 @@ export default makeStyles({ name: 'ColumnChooser' })((theme) => {
       gap: theme.spacing(0.5),
       minHeight: 36,
       '&[data-dragging]': {
-        backgroundColor: theme.palette.background.paper,
+        backgroundColor: gridColors.chrome,
         boxShadow: theme.shadows[4],
         outline: `1px solid ${theme.palette.primary.main}`,
         position: 'relative',
