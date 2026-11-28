@@ -26,9 +26,7 @@ const useModuleHeaderStyles = makeStyles({ name: 'ModuleHeader' })((theme) => ({
     gridAutoFlow: 'column',
     gridTemplateColumns: 'minmax(0, 1fr)',
     justifyItems: 'baseline',
-    padding: theme.spacing(1),
-    borderBottom: '1px solid',
-    borderColor: theme.palette.divider,
+    padding: theme.spacing(2, 1),
   },
 }))
 
