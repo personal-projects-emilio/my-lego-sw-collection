@@ -39,6 +39,7 @@ export default makeStyles({ name: 'TimelineField' })((theme) => ({
     },
   },
   lock: { opacity: 0.8 },
+  more: { margin: theme.spacing(0.5) },
   chevron: {
     transition: 'transform 150ms',
     '&[data-open]': { transform: 'rotate(180deg)' },

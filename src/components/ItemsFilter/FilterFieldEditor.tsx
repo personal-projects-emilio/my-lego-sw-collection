@@ -28,6 +28,8 @@ type FilterFieldEditorProps = {
   onChange: (filter: ItemsFilter) => void
 }
 
+const visibleChipsLimit = 3
+
 const booleanChoices = [
   { value: 'any', label: 'Any' },
   { value: 'yes', label: 'Yes' },
@@ -81,6 +83,7 @@ const FilterFieldEditor: FC<FilterFieldEditorProps> = ({
     return (
       <TagsAutocomplete
         itemType={itemType}
+        limitTags={visibleChipsLimit}
         mode="filter"
         onChange={(tags) => onChange({ ...filter, tags })}
         textFieldProps={{ id, label, size: 'small' }}
@@ -92,6 +95,7 @@ const FilterFieldEditor: FC<FilterFieldEditorProps> = ({
     return (
       <TimelineField
         label={label}
+        limitTags={visibleChipsLimit}
         onChange={(timeline) => onChange({ ...filter, timeline })}
         size="small"
         value={filter.timeline}
@@ -106,6 +110,7 @@ const FilterFieldEditor: FC<FilterFieldEditorProps> = ({
     <Autocomplete
       disableCloseOnSelect
       getOptionLabel={(value) => mapValuesToLabels.get(value) ?? value}
+      limitTags={visibleChipsLimit}
       multiple
       onChange={(_event, values) => onChange({ ...filter, [field]: values })}
       options={options.map(({ value }) => value)}

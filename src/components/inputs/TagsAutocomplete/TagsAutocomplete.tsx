@@ -26,6 +26,7 @@ type TagsAutocompleteProps = {
   disabled?: boolean
   inheritedTags?: InheritedTags
   itemType: TagTarget
+  limitTags?: number
   mode?: 'store' | 'filter'
   name?: string
   onBlur?: () => void
@@ -44,6 +45,7 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
       disabled,
       inheritedTags = noInheritedTags,
       itemType,
+      limitTags,
       mode = 'store',
       name,
       onBlur,
@@ -92,6 +94,7 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
         getOptionDisabled={(id) => isInherited(id) || isCovered(id)}
         getOptionLabel={tagsVocabulary.getPathLabel}
         groupBy={(id) => tagsVocabulary.getRoot(id)?.label ?? ''}
+        limitTags={limitTags}
         multiple
         onBlur={onBlur}
         onChange={(_event, ids) =>

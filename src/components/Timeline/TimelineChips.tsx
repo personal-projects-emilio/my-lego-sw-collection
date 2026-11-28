@@ -15,12 +15,14 @@ type TimelineChipsProps = {
   ids: TimelineId[]
   inherited: InheritedTimeline
   getItemProps: AutocompleteRenderValueGetItemProps<true>
+  limit?: number
 }
 
 const TimelineChips: FC<TimelineChipsProps> = ({
   ids,
   inherited,
   getItemProps,
+  limit,
 }) => {
   const { classes } = useTimelineFieldStyles()
   const timeline = useTimeline()
@@ -47,7 +49,7 @@ const TimelineChips: FC<TimelineChipsProps> = ({
     )
   }
 
-  return groups.map(({ parent, ids: members }) =>
+  const chips = groups.flatMap(({ parent, ids: members }) =>
     parent && members.length > 1 ? (
       <div
         key={`group-${parent}`}
@@ -67,6 +69,13 @@ const TimelineChips: FC<TimelineChipsProps> = ({
       members.map((id) => renderChip({ id, label: timeline.getPathLabel(id) }))
     )
   )
+  if (limit === undefined || chips.length <= limit) return chips
+  return [
+    ...chips.slice(0, limit),
+    <Typography key="more" className={classes.more} component="span">
+      +{chips.length - limit}
+    </Typography>,
+  ]
 }
 
 export default TimelineChips
