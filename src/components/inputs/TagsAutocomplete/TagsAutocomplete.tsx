@@ -17,6 +17,7 @@ import { useTagsVocabulary } from 'hooks'
 import type { InheritedTags, TagId, TagTarget } from 'types/tags'
 import { filterTagsAfterPick, getStoredTagsAfterPick } from 'utils/tags'
 
+import renderLimitedChips from '../renderLimitedChips'
 import nestOptions, { isOptionElement } from './nestOptions'
 import useTagsAutocompleteStyles from './TagsAutocomplete.styles'
 import useTagNotes from './useTagNotes'
@@ -94,7 +95,6 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
         getOptionDisabled={(id) => isInherited(id) || isCovered(id)}
         getOptionLabel={tagsVocabulary.getPathLabel}
         groupBy={(id) => tagsVocabulary.getRoot(id)?.label ?? ''}
-        limitTags={limitTags}
         multiple
         onBlur={onBlur}
         onChange={(_event, ids) =>
@@ -202,7 +202,7 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
                 return groupNote ? [[id, groupNote]] : []
               })
             )
-          return tagsVocabulary
+          const groupChips = tagsVocabulary
             .getSiblingGroups(ids)
             .map(({ parent, ids: group }) => {
               if (parent)
@@ -248,6 +248,11 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
                 </Tooltip>
               )
             })
+          return renderLimitedChips({
+            chips: groupChips,
+            limit: limitTags,
+            title: <TreeView ids={ids} tree={tagsVocabulary} />,
+          })
         }}
         value={chips}
       />

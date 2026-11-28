@@ -4,6 +4,8 @@ import {
   type AutocompleteRenderValueGetItemProps,
   Typography,
 } from '@mui/material'
+import renderLimitedChips from 'components/inputs/renderLimitedChips'
+import TreeView from 'components/TreeView'
 import { useTimeline } from 'hooks'
 import type { InheritedTimeline, TimelineId } from 'types/timeline'
 
@@ -69,13 +71,11 @@ const TimelineChips: FC<TimelineChipsProps> = ({
       members.map((id) => renderChip({ id, label: timeline.getPathLabel(id) }))
     )
   )
-  if (limit === undefined || chips.length <= limit) return chips
-  return [
-    ...chips.slice(0, limit),
-    <Typography key="more" className={classes.more} component="span">
-      +{chips.length - limit}
-    </Typography>,
-  ]
+  return renderLimitedChips({
+    chips,
+    limit,
+    title: <TreeView ids={ids} tree={timeline} />,
+  })
 }
 
 export default TimelineChips

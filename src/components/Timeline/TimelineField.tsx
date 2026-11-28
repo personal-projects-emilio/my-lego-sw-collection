@@ -164,7 +164,7 @@ const TimelineField: FC<TimelineFieldProps> = ({
               ids={values}
               inherited={inherited}
               getItemProps={getItemProps}
-              limit={open ? undefined : limitTags}
+              limit={limitTags}
             />
           )}
         />

@@ -2,12 +2,14 @@ import type { FC, ReactNode } from 'react'
 
 import {
   Autocomplete,
+  Chip,
   TextField,
   ToggleButton,
   ToggleButtonGroup,
   Typography,
 } from '@mui/material'
 import { TagsAutocomplete } from 'components/inputs'
+import renderLimitedChips from 'components/inputs/renderLimitedChips'
 import { TimelineField } from 'components/Timeline'
 import type {
   FilterField,
@@ -110,11 +112,29 @@ const FilterFieldEditor: FC<FilterFieldEditorProps> = ({
     <Autocomplete
       disableCloseOnSelect
       getOptionLabel={(value) => mapValuesToLabels.get(value) ?? value}
-      limitTags={visibleChipsLimit}
       multiple
       onChange={(_event, values) => onChange({ ...filter, [field]: values })}
       options={options.map(({ value }) => value)}
       renderInput={(params) => <TextField {...params} id={id} label={label} />}
+      renderValue={(values, getItemProps) =>
+        renderLimitedChips({
+          chips: values.map((value, index) => {
+            const { key, ...itemProps } = getItemProps({ index })
+            return (
+              <Chip
+                key={key}
+                {...itemProps}
+                label={mapValuesToLabels.get(value) ?? value}
+                size="small"
+              />
+            )
+          }),
+          limit: visibleChipsLimit,
+          title: values
+            .map((value) => mapValuesToLabels.get(value) ?? value)
+            .join(', '),
+        })
+      }
       size="small"
       value={filter[field]}
     />
