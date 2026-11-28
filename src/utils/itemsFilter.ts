@@ -18,17 +18,27 @@ type FilterFieldDefinition = {
 }
 
 export const filterCategories: { category: FilterCategory; title: string }[] = [
+  { category: 'set', title: 'Set' },
+  { category: 'minifig', title: 'Minifig' },
   { category: 'shared', title: 'Shared' },
-  { category: 'page', title: 'This page' },
 ]
 
 export const filterFieldDefinitions: FilterFieldDefinition[] = [
-  { field: 'setId', label: 'Set ID', category: 'shared', param: 'setId' },
+  { field: 'setId', label: 'Set ID', category: 'set', param: 'setId' },
+  { field: 'retired', label: 'Retired', category: 'set', param: 'retired' },
+  { field: 'subtheme', label: 'Subtheme', category: 'set', param: 'subtheme' },
+  { field: 'location', label: 'Location', category: 'set', param: 'location' },
   {
     field: 'minifigId',
     label: 'Minifig ID',
-    category: 'shared',
+    category: 'minifig',
     param: 'minifigId',
+  },
+  {
+    field: 'characterName',
+    label: 'Character',
+    category: 'minifig',
+    param: 'character',
   },
   { field: 'tags', label: 'Tags', category: 'shared', param: 'tags' },
   {
@@ -38,15 +48,6 @@ export const filterFieldDefinitions: FilterFieldDefinition[] = [
     param: 'timeline',
   },
   { field: 'owned', label: 'Owned', category: 'shared', param: 'owned' },
-  { field: 'retired', label: 'Retired', category: 'page', param: 'retired' },
-  { field: 'subtheme', label: 'Subtheme', category: 'page', param: 'subtheme' },
-  { field: 'location', label: 'Location', category: 'page', param: 'location' },
-  {
-    field: 'characterName',
-    label: 'Character',
-    category: 'page',
-    param: 'character',
-  },
 ]
 
 export const booleanFilterFields: BooleanFilterField[] = ['owned', 'retired']
@@ -55,18 +56,6 @@ export const filterParams: FilterParam[] = [
   'q',
   'off',
   ...filterFieldDefinitions.map(({ param }) => param),
-]
-
-const sharedFields: FilterField[] = filterFieldDefinitions
-  .filter(({ category }) => category === 'shared')
-  .map(({ field }) => field)
-
-const sharedParams: FilterParam[] = [
-  'q',
-  'off',
-  ...filterFieldDefinitions
-    .filter(({ field }) => sharedFields.includes(field))
-    .map(({ param }) => param),
 ]
 
 export const emptyItemsFilter: ItemsFilter = {
@@ -147,21 +136,6 @@ export const pickFilterSearch = (search: FilterSearch): FilterSearch =>
       search[param] === undefined ? [] : [[param, search[param]]]
     )
   )
-
-export const keepSharedFilterSearch = (search: FilterSearch): FilterSearch => {
-  const disabledFields = splitList(search.off).filter((field) =>
-    sharedFields.some((sharedField) => sharedField === field)
-  )
-  return {
-    ...Object.fromEntries(
-      filterParams.map((param) => [
-        param,
-        sharedParams.includes(param) ? search[param] : undefined,
-      ])
-    ),
-    off: disabledFields.length ? disabledFields.join(listSeparator) : undefined,
-  }
-}
 
 export const isFieldActive = ({
   field,

@@ -182,7 +182,6 @@ const ItemsFilterBar: FC<ItemsFilterBarProps> = (props) => {
       </Popover>
       <FilterDrawer
         {...props}
-        hasActiveFields={activeFields.length > 0}
         id={drawerId}
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}

@@ -15,7 +15,6 @@ const Sets: FC = () => {
   const { setsList, isLoading } = useCollection()
   const setsColumnDefs = useSetsColDefs()
   const itemsFilter = useItemsFilter({
-    columnLayoutId: 'sets',
     config: setsFilterConfig,
     items: setsList,
   })

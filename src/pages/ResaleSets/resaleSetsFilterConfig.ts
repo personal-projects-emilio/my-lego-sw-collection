@@ -9,6 +9,7 @@ export const resaleSetsFilterConfig: ItemsFilterConfig<ResaleSet> = {
     location: ({ location }) => toFilterOptions(location ? [location] : []),
     setId: ({ id, name }) => [{ label: `${id} · ${name}`, value: String(id) }],
   },
+  itemType: 'sets',
   mapColumnIdsToFields: {
     id: 'setId',
     location: 'location',

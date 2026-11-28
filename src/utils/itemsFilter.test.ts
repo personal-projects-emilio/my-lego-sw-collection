@@ -11,7 +11,6 @@ import {
   getFieldLabel,
   getFilterOptions,
   hasFilterSearch,
-  keepSharedFilterSearch,
   parseFilterSearch,
   pickFilterSearch,
   removeInactiveDisabledFields,
@@ -122,25 +121,6 @@ test.for([
   }
 )
 
-test.for([
-  {
-    search: { q: 'x', setId: '1', owned: true, character: 'Han Solo' },
-    expected: { q: 'x', setId: '1', owned: true },
-  },
-  {
-    search: { tags: 'a', subtheme: 'b', off: 'tags,subtheme' },
-    expected: { tags: 'a', off: 'tags' },
-  },
-  { search: { location: 'Shelf', off: 'location' }, expected: {} },
-] satisfies { search: FilterSearch; expected: FilterSearch }[])(
-  'keepSharedFilterSearch keeps $expected from $search',
-  ({ search, expected }) => {
-    const shared = keepSharedFilterSearch(search)
-    assert.deepEqual(pickFilterSearch(shared), expected)
-    assert.ok(Object.keys(search).every((key) => key in shared))
-  }
-)
-
 test('removeInactiveDisabledFields drops fields that are no longer set', () => {
   assert.deepEqual(
     removeInactiveDisabledFields({
@@ -165,10 +145,10 @@ test('getActiveFields lists the set fields of a page', () => {
 test('getConfigFields keeps the canonical order', () => {
   assert.deepEqual(getConfigFields(config), [
     'setId',
+    'subtheme',
     'minifigId',
     'tags',
     'owned',
-    'subtheme',
   ])
 })
 

@@ -23,7 +23,6 @@ const LooseMinifigs: FC = () => {
   )
 
   const itemsFilter = useItemsFilter({
-    columnLayoutId: 'looseMinifigs',
     config: looseMinifigsFilterConfig,
     items: looseMinifigs,
   })

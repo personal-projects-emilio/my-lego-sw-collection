@@ -2,7 +2,6 @@ import { useCallback, useDeferredValue, useMemo, useState } from 'react'
 
 import { useNavigate, useSearch } from '@tanstack/react-router'
 import type { IRowNode } from 'ag-grid-community'
-import type { ColumnLayoutId } from 'types/columnLayout'
 import type {
   ColumnFilterActions,
   FilterRequest,
@@ -26,11 +25,9 @@ import {
 import useSavedFilterSync from './useSavedFilterSync'
 
 const useItemsFilter = <Item>({
-  columnLayoutId,
   config,
   items = [],
 }: {
-  columnLayoutId: ColumnLayoutId
   config: ItemsFilterConfig<Item>
   items?: Item[]
 }) => {
@@ -59,7 +56,7 @@ const useItemsFilter = <Item>({
     [setFilterSearch]
   )
 
-  useSavedFilterSync({ columnLayoutId, filterSearch, setFilterSearch })
+  useSavedFilterSync({ filterSearch, setFilterSearch })
 
   const fields = useMemo(() => getConfigFields(config), [config])
   const deferredFilter = useDeferredValue(filter)

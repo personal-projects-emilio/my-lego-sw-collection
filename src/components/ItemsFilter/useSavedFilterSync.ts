@@ -3,23 +3,20 @@ import { useEffect, useRef, useState } from 'react'
 import { saveFilter, useSavedFilterQuery } from 'api/savedFilter'
 import debounce from 'lodash/debounce'
 import { useAuth } from 'providers/AuthProvider'
-import type { ColumnLayoutId } from 'types/columnLayout'
 import type { FilterSearch } from 'types/itemsFilter'
 import { hasFilterSearch, pickFilterSearch } from 'utils/itemsFilter'
 
 const saveDelay = 400
 
 const useSavedFilterSync = ({
-  columnLayoutId,
   filterSearch,
   setFilterSearch,
 }: {
-  columnLayoutId: ColumnLayoutId
   filterSearch: FilterSearch
   setFilterSearch: (search: FilterSearch) => void
 }) => {
   const { idToken, userId } = useAuth()
-  const { data: saved, isSuccess } = useSavedFilterQuery(columnLayoutId)
+  const { data: saved, isSuccess } = useSavedFilterQuery()
   const restoredUserId = useRef<string>(undefined)
   const lastSaved = useRef<string>(undefined)
   const [debouncedSave] = useState(() =>
@@ -45,9 +42,8 @@ const useSavedFilterSync = ({
     const key = JSON.stringify(filterSearch)
     if (key === lastSaved.current) return
     lastSaved.current = key
-    debouncedSave({ columnLayoutId, filter: filterSearch, idToken, userId })
+    debouncedSave({ filter: filterSearch, idToken, userId })
   }, [
-    columnLayoutId,
     debouncedSave,
     filterSearch,
     idToken,

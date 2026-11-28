@@ -31,7 +31,6 @@ const ResaleSets: FC = () => {
   )
 
   const itemsFilter = useItemsFilter({
-    columnLayoutId: 'resaleSets',
     config: resaleSetsFilterConfig,
     items: rows,
   })

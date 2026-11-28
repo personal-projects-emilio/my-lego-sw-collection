@@ -15,7 +15,6 @@ const Minifigs: FC = () => {
   const minifigsColumnDefs = useMinifigsColDefs()
   const minifigsFilterConfig = useMinifigsFilterConfig()
   const itemsFilter = useItemsFilter({
-    columnLayoutId: 'minifigs',
     config: minifigsFilterConfig,
     items: minifigsList,
   })

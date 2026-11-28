@@ -28,8 +28,5 @@ export const getColumnLayoutEndPoint = ({
 }: ColumnLayoutTarget) =>
   `/userPreferences/${userId}/grids/${columnLayoutId}.json`
 
-export const getSavedFilterEndPoint = ({
-  userId,
-  columnLayoutId,
-}: ColumnLayoutTarget) =>
-  `/userPreferences/${userId}/grids/${columnLayoutId}/filter.json`
+export const getSavedFilterEndPoint = (userId: string) =>
+  `/userPreferences/${userId}/filter.json`

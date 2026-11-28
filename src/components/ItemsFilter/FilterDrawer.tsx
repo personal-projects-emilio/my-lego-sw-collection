@@ -14,13 +14,13 @@ import {
   emptyItemsFilter,
   filterCategories,
   filterFieldDefinitions,
+  getActiveFields,
 } from 'utils/itemsFilter'
 
 import FilterFieldEditor from './FilterFieldEditor'
 import type { ItemsFilterBarProps } from './ItemsFilterBar'
 
 type FilterDrawerProps = Omit<ItemsFilterBarProps, 'request'> & {
-  hasActiveFields: boolean
   id: string
   isOpen: boolean
   onClose: () => void
@@ -38,12 +38,12 @@ const useFilterDrawerStyles = makeStyles({ name: 'FilterDrawer' })((theme) => ({
     gap: theme.spacing(2),
     gridTemplateColumns: 'minmax(0, 1fr)',
   },
+  field: { display: 'grid', gap: theme.spacing(0.5) },
 }))
 
 const FilterDrawer: FC<FilterDrawerProps> = ({
   fields,
   filter,
-  hasActiveFields,
   id,
   isOpen,
   itemType,
@@ -52,6 +52,11 @@ const FilterDrawer: FC<FilterDrawerProps> = ({
   onClose,
 }) => {
   const { classes } = useFilterDrawerStyles()
+  const hasActiveFields =
+    getActiveFields({
+      fields: filterFieldDefinitions.map(({ field }) => field),
+      filter,
+    }).length > 0
 
   return (
     <SideDrawer
@@ -77,11 +82,8 @@ const FilterDrawer: FC<FilterDrawerProps> = ({
       <div className={classes.body}>
         {filterCategories.map(({ category, title }) => {
           const definitions = filterFieldDefinitions.filter(
-            (definition) =>
-              definition.category === category &&
-              fields.includes(definition.field)
+            (definition) => definition.category === category
           )
-          if (!definitions.length) return null
           return (
             <Accordion
               key={category}
@@ -96,16 +98,26 @@ const FilterDrawer: FC<FilterDrawerProps> = ({
               </AccordionSummary>
               <AccordionDetails className={classes.group}>
                 {definitions.map(({ field, label }) => (
-                  <FilterFieldEditor
-                    key={field}
-                    field={field}
-                    filter={filter}
-                    id={`${id}-${field}`}
-                    itemType={itemType}
-                    label={label}
-                    onChange={onChange}
-                    mapFieldsToOptions={mapFieldsToOptions}
-                  />
+                  <div key={field} className={classes.field}>
+                    <FilterFieldEditor
+                      field={field}
+                      filter={filter}
+                      id={`${id}-${field}`}
+                      itemType={itemType}
+                      label={label}
+                      onChange={onChange}
+                      mapFieldsToOptions={mapFieldsToOptions}
+                    />
+                    {!fields.includes(field) && (
+                      <Typography
+                        color="text.secondary"
+                        id={`${id}-${field}-not-applied`}
+                        variant="caption"
+                      >
+                        Not applied on this page
+                      </Typography>
+                    )}
+                  </div>
                 ))}
               </AccordionDetails>
             </Accordion>

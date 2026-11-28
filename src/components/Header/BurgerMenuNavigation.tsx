@@ -6,7 +6,7 @@ import { Menu, type MenuItemDefinition } from 'components/Menu'
 import { useCurrentRoute } from 'hooks'
 import { useAuth } from 'providers/AuthProvider'
 import type { RouterRouteIds } from 'routes'
-import { keepSharedFilterSearch } from 'utils/itemsFilter'
+import { pickFilterSearch } from 'utils/itemsFilter'
 
 const BurgerMenuNavigation: FC = () => {
   const { idToken, logout } = useAuth()
@@ -29,7 +29,7 @@ const BurgerMenuNavigation: FC = () => {
     kind: 'link',
     key: to,
     label,
-    search: hasFilter ? keepSharedFilterSearch : undefined,
+    search: hasFilter ? pickFilterSearch : undefined,
     to,
     selected: currentRoute.id === to,
   })

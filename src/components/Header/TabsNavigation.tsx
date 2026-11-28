@@ -4,7 +4,7 @@ import { Tab, Tabs } from '@mui/material'
 import { createLink, Link } from '@tanstack/react-router'
 import { useCurrentRoute } from 'hooks'
 import { useAuth } from 'providers/AuthProvider'
-import { keepSharedFilterSearch } from 'utils/itemsFilter'
+import { pickFilterSearch } from 'utils/itemsFilter'
 
 const TabLink = createLink(Tab)
 
@@ -25,13 +25,13 @@ const TabsNavigation: FC = () => {
     >
       <TabLink
         label="Minifigs"
-        search={keepSharedFilterSearch}
+        search={pickFilterSearch}
         to="/minifigs"
         value="/minifigs"
       />
       <TabLink
         label="Sets"
-        search={keepSharedFilterSearch}
+        search={pickFilterSearch}
         to="/sets"
         value="/sets"
       />
@@ -39,7 +39,7 @@ const TabsNavigation: FC = () => {
       {idToken && (
         <TabLink
           label="Loose minifigs"
-          search={keepSharedFilterSearch}
+          search={pickFilterSearch}
           to="/loose-minifigs"
           value="/loose-minifigs"
         />
@@ -47,7 +47,7 @@ const TabsNavigation: FC = () => {
       {idToken && (
         <TabLink
           label="Resale sets"
-          search={keepSharedFilterSearch}
+          search={pickFilterSearch}
           to="/resale-sets"
           value="/resale-sets"
         />
