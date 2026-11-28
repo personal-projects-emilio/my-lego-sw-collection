@@ -1,11 +1,12 @@
 import type { FC } from 'react'
-import { MdExpandMore } from 'react-icons/md'
+import { MdExpandMore, MdInfoOutline } from 'react-icons/md'
 
 import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
   Button,
+  Tooltip,
   Typography,
 } from '@mui/material'
 import SideDrawer from 'components/SideDrawer'
@@ -38,7 +39,12 @@ const useFilterDrawerStyles = makeStyles({ name: 'FilterDrawer' })((theme) => ({
     gap: theme.spacing(2),
     gridTemplateColumns: 'minmax(0, 1fr)',
   },
-  field: { display: 'grid', gap: theme.spacing(0.5) },
+  notApplied: {
+    color: theme.palette.text.secondary,
+    marginLeft: theme.spacing(0.5),
+    pointerEvents: 'auto',
+    verticalAlign: 'text-bottom',
+  },
 }))
 
 const FilterDrawer: FC<FilterDrawerProps> = ({
@@ -98,26 +104,31 @@ const FilterDrawer: FC<FilterDrawerProps> = ({
               </AccordionSummary>
               <AccordionDetails className={classes.group}>
                 {definitions.map(({ field, label }) => (
-                  <div key={field} className={classes.field}>
-                    <FilterFieldEditor
-                      field={field}
-                      filter={filter}
-                      id={`${id}-${field}`}
-                      itemType={itemType}
-                      label={label}
-                      onChange={onChange}
-                      mapFieldsToOptions={mapFieldsToOptions}
-                    />
-                    {!fields.includes(field) && (
-                      <Typography
-                        color="text.secondary"
-                        id={`${id}-${field}-not-applied`}
-                        variant="caption"
-                      >
-                        Not applied on this page
-                      </Typography>
-                    )}
-                  </div>
+                  <FilterFieldEditor
+                    key={field}
+                    field={field}
+                    filter={filter}
+                    id={`${id}-${field}`}
+                    itemType={itemType}
+                    label={
+                      fields.includes(field) ? (
+                        label
+                      ) : (
+                        <>
+                          {label}
+                          <Tooltip title="Not applied on this page">
+                            <MdInfoOutline
+                              aria-label="Not applied on this page"
+                              className={classes.notApplied}
+                              role="img"
+                            />
+                          </Tooltip>
+                        </>
+                      )
+                    }
+                    onChange={onChange}
+                    mapFieldsToOptions={mapFieldsToOptions}
+                  />
                 ))}
               </AccordionDetails>
             </Accordion>

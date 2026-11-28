@@ -158,7 +158,7 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
                 tabIndex={-1}
               />
               {tagsVocabulary.getLabel(id)}
-              {optionNote && (
+              {optionNote && !isFilter && (
                 <Typography className={classes.note} variant="caption">
                   {optionNote}
                 </Typography>

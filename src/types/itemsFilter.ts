@@ -2,7 +2,6 @@ import type { TagTarget } from './tags'
 
 export type ListFilterField =
   | 'characterName'
-  | 'location'
   | 'minifigId'
   | 'setId'
   | 'subtheme'
@@ -23,7 +22,6 @@ export type ItemsFilter = Record<ListFilterField, string[]> &
 
 export type FilterParam =
   | 'character'
-  | 'location'
   | 'minifigId'
   | 'off'
   | 'owned'

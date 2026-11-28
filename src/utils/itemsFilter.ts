@@ -18,28 +18,28 @@ type FilterFieldDefinition = {
 }
 
 export const filterCategories: { category: FilterCategory; title: string }[] = [
-  { category: 'set', title: 'Set' },
   { category: 'minifig', title: 'Minifig' },
+  { category: 'set', title: 'Set' },
   { category: 'shared', title: 'Shared' },
 ]
 
 export const filterFieldDefinitions: FilterFieldDefinition[] = [
-  { field: 'setId', label: 'Set ID', category: 'set', param: 'setId' },
-  { field: 'retired', label: 'Retired', category: 'set', param: 'retired' },
-  { field: 'subtheme', label: 'Subtheme', category: 'set', param: 'subtheme' },
-  { field: 'location', label: 'Location', category: 'set', param: 'location' },
-  {
-    field: 'minifigId',
-    label: 'Minifig ID',
-    category: 'minifig',
-    param: 'minifigId',
-  },
   {
     field: 'characterName',
     label: 'Character',
     category: 'minifig',
     param: 'character',
   },
+  {
+    field: 'minifigId',
+    label: 'Minifig ID',
+    category: 'minifig',
+    param: 'minifigId',
+  },
+  { field: 'retired', label: 'Retired', category: 'set', param: 'retired' },
+  { field: 'setId', label: 'Set ID', category: 'set', param: 'setId' },
+  { field: 'subtheme', label: 'Subtheme', category: 'set', param: 'subtheme' },
+  { field: 'owned', label: 'Owned', category: 'shared', param: 'owned' },
   { field: 'tags', label: 'Tags', category: 'shared', param: 'tags' },
   {
     field: 'timeline',
@@ -47,7 +47,6 @@ export const filterFieldDefinitions: FilterFieldDefinition[] = [
     category: 'shared',
     param: 'timeline',
   },
-  { field: 'owned', label: 'Owned', category: 'shared', param: 'owned' },
 ]
 
 export const booleanFilterFields: BooleanFilterField[] = ['owned', 'retired']
@@ -61,7 +60,6 @@ export const filterParams: FilterParam[] = [
 export const emptyItemsFilter: ItemsFilter = {
   characterName: [],
   disabledFields: [],
-  location: [],
   minifigId: [],
   owned: null,
   retired: null,

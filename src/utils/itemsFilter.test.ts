@@ -144,11 +144,11 @@ test('getActiveFields lists the set fields of a page', () => {
 
 test('getConfigFields keeps the canonical order', () => {
   assert.deepEqual(getConfigFields(config), [
+    'minifigId',
     'setId',
     'subtheme',
-    'minifigId',
-    'tags',
     'owned',
+    'tags',
   ])
 })
 

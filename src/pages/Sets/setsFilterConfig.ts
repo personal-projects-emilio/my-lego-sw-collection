@@ -13,7 +13,6 @@ export const setsFilterConfig: ItemsFilterConfig<CollectionSet> = {
       toFilterOptions(
         content.minifigs.map(({ characterName }) => characterName)
       ),
-    location: ({ location }) => toFilterOptions(location ? [location] : []),
     minifigId: ({ content }) =>
       content.minifigs.map(({ characterName, id }) => ({
         label: `${id} · ${characterName}`,
@@ -28,7 +27,6 @@ export const setsFilterConfig: ItemsFilterConfig<CollectionSet> = {
   mapColumnIdsToFields: {
     'content.minifigs': 'minifigId',
     id: 'setId',
-    location: 'location',
     ownedQuantity: 'owned',
     retired: 'retired',
     subtheme: 'subtheme',

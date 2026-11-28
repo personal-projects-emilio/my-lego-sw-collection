@@ -1,4 +1,4 @@
-import type { FC } from 'react'
+import type { FC, ReactNode } from 'react'
 
 import {
   Autocomplete,
@@ -23,7 +23,7 @@ type FilterFieldEditorProps = {
   filter: ItemsFilter
   id: string
   itemType?: TagTarget
-  label?: string
+  label?: ReactNode
   mapFieldsToOptions: Partial<Record<ListFilterField, FilterOption[]>>
   onChange: (filter: ItemsFilter) => void
 }

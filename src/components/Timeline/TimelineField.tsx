@@ -2,6 +2,7 @@ import {
   type FC,
   type FocusEvent,
   type KeyboardEvent,
+  type ReactNode,
   type Ref,
   useId,
   useRef,
@@ -28,7 +29,7 @@ type TimelineFieldProps = {
   className?: string
   inherited?: InheritedTimeline
   inputRef?: Ref<HTMLInputElement>
-  label?: string
+  label?: ReactNode
   onChange: (value: TimelineId[]) => void
   placeholder?: string
   popperClassName?: string

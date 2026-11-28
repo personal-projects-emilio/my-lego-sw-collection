@@ -4,7 +4,6 @@ const filterParam = union([string(), number(), boolean()]).optional()
 
 export const filterSearchSchema = object({
   character: filterParam,
-  location: filterParam,
   minifigId: filterParam,
   off: filterParam,
   owned: filterParam,
