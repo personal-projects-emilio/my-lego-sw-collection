@@ -140,6 +140,7 @@ const MinifigFormModal: FC<MinifigFormModalProps> = ({
               <TimelineField
                 inherited={collectionMinifig?.inheritedTimeline}
                 onChange={field.onChange}
+                placeholder="Pick eras, trilogies or titles"
                 value={field.value}
               />
             )}

@@ -5,37 +5,6 @@ import { indent } from './tagTree'
 export default makeStyles<void, 'addButton'>({
   name: 'TagsDrawer',
 })((theme, _params, classes) => ({
-  drawer: {
-    zIndex: theme.zIndex.modal,
-  },
-  paper: {
-    display: 'flex',
-    flexDirection: 'column',
-    maxWidth: '100vw',
-  },
-  resizeHandle: {
-    bottom: 0,
-    cursor: 'col-resize',
-    left: 0,
-    position: 'absolute',
-    top: 0,
-    touchAction: 'none',
-    width: 6,
-    zIndex: 1,
-    '&:hover, &:focus-visible, &:active': {
-      backgroundColor: theme.palette.primary.main,
-      outline: 'none',
-    },
-  },
-  header: {
-    alignItems: 'center',
-    display: 'flex',
-    gap: theme.spacing(1),
-    padding: theme.spacing(1, 1, 1, 2),
-  },
-  title: {
-    flex: 1,
-  },
   alert: {
     margin: theme.spacing(0, 2, 1),
   },

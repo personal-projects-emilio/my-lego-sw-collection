@@ -3,64 +3,27 @@ import { makeStyles } from 'tss-react/mui'
 import { gridColors } from '../table/gridColors'
 
 export default makeStyles({ name: 'ColumnChooser' })((theme) => {
-  const chooser = {
-    backgroundColor: gridColors.chrome,
-    display: 'grid',
-    gridTemplateColumns: 'auto minmax(0, 1fr)',
-    gridTemplateRows: 'auto auto auto minmax(0, 1fr) auto',
-  }
   const fullRow = { gridColumn: '1 / -1' }
   return {
-    besideGrid: {
-      ...chooser,
-      borderLeft: `1px solid ${gridColors.border}`,
-      flexShrink: 0,
-      maxWidth: '50vw',
-      minHeight: 0,
-      position: 'relative',
-    },
-    overlayPaper: {
-      ...chooser,
-      backgroundImage: 'none',
-      maxWidth: '100vw',
-    },
-    resizeHandle: {
-      bottom: 0,
-      cursor: 'col-resize',
-      left: 0,
-      position: 'absolute',
-      top: 0,
-      touchAction: 'none',
-      width: 6,
-      zIndex: 1,
-      '&:hover, &:focus-visible, &:active': {
-        backgroundColor: theme.palette.primary.main,
-        outline: 'none',
-      },
-    },
-    header: {
-      ...fullRow,
-      alignItems: 'center',
-      display: 'flex',
-      gap: theme.spacing(1),
-      gridRow: 1,
-      padding: theme.spacing(0.5, 0.5, 0.5, 2),
-    },
-    title: {
+    chooser: {
+      display: 'grid',
       flex: 1,
+      gridTemplateColumns: 'auto minmax(0, 1fr)',
+      gridTemplateRows: 'auto auto minmax(0, 1fr) auto',
+      minHeight: 0,
     },
     alert: {
       ...fullRow,
-      gridRow: 2,
+      gridRow: 1,
       margin: theme.spacing(0, 2, 1),
     },
     showAll: {
       alignSelf: 'center',
-      gridRow: 3,
+      gridRow: 2,
       margin: theme.spacing(1, 0.5, 1, 1),
     },
     search: {
-      gridRow: 3,
+      gridRow: 2,
       padding: theme.spacing(1, 2, 1, 0),
       '& .MuiTextField-root': {
         width: '100%',
@@ -69,7 +32,7 @@ export default makeStyles({ name: 'ColumnChooser' })((theme) => {
     groups: {
       ...fullRow,
       borderTop: `1px solid ${theme.palette.divider}`,
-      gridRow: 4,
+      gridRow: 3,
       overflowY: 'auto',
       padding: theme.spacing(0, 1, 1),
     },
@@ -85,12 +48,12 @@ export default makeStyles({ name: 'ColumnChooser' })((theme) => {
     },
     row: {
       alignItems: 'center',
-      backgroundColor: gridColors.chrome,
       borderRadius: theme.shape.borderRadius,
       display: 'flex',
       gap: theme.spacing(0.5),
       minHeight: 36,
       '&[data-dragging]': {
+        backgroundColor: gridColors.chrome,
         boxShadow: theme.shadows[4],
         outline: `1px solid ${theme.palette.primary.main}`,
         position: 'relative',
@@ -131,7 +94,7 @@ export default makeStyles({ name: 'ColumnChooser' })((theme) => {
     footer: {
       ...fullRow,
       borderTop: `1px solid ${theme.palette.divider}`,
-      gridRow: 5,
+      gridRow: 4,
       padding: theme.spacing(1, 2),
     },
   }

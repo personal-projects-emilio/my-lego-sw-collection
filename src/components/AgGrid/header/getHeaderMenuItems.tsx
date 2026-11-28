@@ -3,6 +3,7 @@ import {
   MdArrowDownward,
   MdArrowUpward,
   MdClose,
+  MdFilterAlt,
   MdFitScreen,
   MdPushPin,
   MdRemove,
@@ -35,6 +36,7 @@ export const getHeaderMenuItems = ({
   api,
   column,
   openColumnChooser,
+  openFilter,
   requestReset,
   setSort,
   totalRow,
@@ -43,6 +45,7 @@ export const getHeaderMenuItems = ({
   column: Column
   setSort: CustomHeaderProps['setSort']
   openColumnChooser?: () => void
+  openFilter?: () => void
   requestReset?: () => void
   totalRow?: TotalRowSwitch
 }): MenuItemDefinition[] => {
@@ -73,6 +76,18 @@ export const getHeaderMenuItems = ({
     }))
 
   return [
+    ...(openFilter
+      ? ([
+          {
+            kind: 'action',
+            key: 'filter',
+            label: 'Filter',
+            icon: <MdFilterAlt />,
+            onClick: openFilter,
+          },
+          { kind: 'divider', key: 'filterDivider' },
+        ] as const)
+      : []),
     {
       kind: 'submenu',
       key: 'sortBy',

@@ -13,4 +13,3 @@ export const authValidationSchema = z.object({
 })
 
 export type LoginInputs = z.infer<typeof authValidationSchema>
-

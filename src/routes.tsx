@@ -4,11 +4,15 @@ import {
   createRouter,
   Navigate,
   redirect,
+  retainSearchParams,
   type RouteIds,
-  stripSearchParams,
 } from '@tanstack/react-router'
 import Layout from 'components/Layout'
-import { addMinifigSearchSchema, addSetSearchSchema } from 'constants/routes'
+import {
+  addMinifigSearchSchema,
+  addSetSearchSchema,
+  filterSearchSchema,
+} from 'constants/routes'
 import Auth from 'pages/Auth'
 import LooseMinifigs from 'pages/LooseMinifigs'
 import AddLooseMinifigFormModal from 'pages/LooseMinifigs/AddLooseMinifigFormModal'
@@ -23,9 +27,16 @@ import ResaleSetFormModal from 'pages/ResaleSets/ResaleSetFormModal'
 import Sets from 'pages/Sets'
 import { AddSetFormModal, EditSetFormModal } from 'pages/Sets/components'
 import Timeline from 'pages/Timeline'
+import type { FilterSearch } from 'types/itemsFilter'
+import { filterParams } from 'utils/itemsFilter'
 import { looseObject } from 'zod'
 
 const basePath = import.meta.env.BASE_URL
+
+const filterSearch = {
+  validateSearch: filterSearchSchema,
+  search: { middlewares: [retainSearchParams<FilterSearch>(filterParams)] },
+}
 
 const rootRoute = createRootRoute({
   component: Layout,
@@ -40,17 +51,15 @@ const minifigsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/minifigs',
   component: Minifigs,
+  ...filterSearch,
 })
 
 const minifigEditRoute = createRoute({
   getParentRoute: () => minifigsRoute,
   path: '/edit/$minifigId',
   component: () => <EditMinifigFormModal />,
-  // zod 4 types object({}) as Record<string, never>, which breaks ToOptions unions; the middleware strips params anyway
+  // zod 4 types object({}) as Record<string, never>, which breaks ToOptions unions
   validateSearch: looseObject({}),
-  search: {
-    middlewares: [stripSearchParams(true)],
-  },
 })
 
 const minifigAddRoute = createRoute({
@@ -64,6 +73,7 @@ const setsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/sets',
   component: Sets,
+  ...filterSearch,
 })
 
 const setEditRoute = createRoute({
@@ -76,9 +86,6 @@ const setEditRoute = createRoute({
   },
   component: () => <EditSetFormModal />,
   validateSearch: looseObject({}),
-  search: {
-    middlewares: [stripSearchParams(true)],
-  },
 })
 
 const setAddRoute = createRoute({
@@ -98,6 +105,7 @@ const looseMinifigsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/loose-minifigs',
   component: LooseMinifigs,
+  ...filterSearch,
 })
 
 const looseMinifigAddRoute = createRoute({
@@ -105,15 +113,13 @@ const looseMinifigAddRoute = createRoute({
   path: '/add',
   component: () => <AddLooseMinifigFormModal />,
   validateSearch: looseObject({}),
-  search: {
-    middlewares: [stripSearchParams(true)],
-  },
 })
 
 const resaleSetsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/resale-sets',
   component: ResaleSets,
+  ...filterSearch,
 })
 
 const resaleSetAddRoute = createRoute({
@@ -121,9 +127,6 @@ const resaleSetAddRoute = createRoute({
   path: '/add',
   component: () => <ResaleSetFormModal />,
   validateSearch: looseObject({}),
-  search: {
-    middlewares: [stripSearchParams(true)],
-  },
 })
 
 const resaleSetEditRoute = createRoute({
@@ -136,9 +139,6 @@ const resaleSetEditRoute = createRoute({
   },
   component: () => <EditResaleSetFormModal />,
   validateSearch: looseObject({}),
-  search: {
-    middlewares: [stripSearchParams(true)],
-  },
 })
 
 const authRoute = createRoute({

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 
 import type { RouterRouteIds } from 'routes'
+import type { FilterSearch } from 'types/itemsFilter'
 
 type BaseItem = {
   key: string
@@ -30,6 +31,7 @@ export type SwitchItem = Omit<BaseItem, 'icon'> & {
 
 export type LinkItem = BaseItem & {
   kind: 'link'
+  search?: (search: FilterSearch) => FilterSearch
   to: RouterRouteIds
   selected?: boolean
 }

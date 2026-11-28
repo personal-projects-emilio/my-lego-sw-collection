@@ -1,6 +1,7 @@
 import {
   type FC,
   type PropsWithChildren,
+  type ReactNode,
   useEffect,
   useRef,
   useState,
@@ -15,11 +16,13 @@ import {
 
 type OverflowTypographyProps = TypographyProps & {
   tooltipProps?: Omit<TooltipProps, 'title' | 'children'>
+  tooltipTitle?: ReactNode
 }
 
 const OverflowTypography: FC<PropsWithChildren<OverflowTypographyProps>> = ({
   children,
   tooltipProps,
+  tooltipTitle,
   ...props
 }) => {
   const textElementRef = useRef<HTMLSpanElement>(null)
@@ -50,7 +53,7 @@ const OverflowTypography: FC<PropsWithChildren<OverflowTypographyProps>> = ({
   }
 
   return (
-    <Tooltip arrow title={children} {...tooltipProps}>
+    <Tooltip arrow title={tooltipTitle ?? children} {...tooltipProps}>
       <Typography {...typographyProps}>{children}</Typography>
     </Tooltip>
   )

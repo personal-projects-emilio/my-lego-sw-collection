@@ -21,8 +21,6 @@ type LooseField = Exclude<keyof LooseMinifig, 'isInFrame'>
 
 const euroColDef = {
   cellDataType: 'number',
-  filter: 'agNumberColumnFilter',
-  suppressFloatingFilterButton: false,
   valueFormatter: ({ value }) => formatFrEuroCurrency(value ?? 0),
   width: 150,
 } as const satisfies ColDef<CollectionMinifig>
@@ -129,8 +127,6 @@ const useLooseMinifigsColDefs = () => {
         } satisfies ExternalLinksCellRenderProps,
         colId: 'externalLinks',
         field: 'id',
-        filter: false,
-        floatingFilter: false,
         headerName: 'Links',
         resizable: false,
         sortable: false,

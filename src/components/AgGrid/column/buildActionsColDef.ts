@@ -4,8 +4,6 @@ export const buildActionsColDef = <TData>(
   colDef: ColDef<TData>
 ): ColDef<TData> => ({
   colId: 'actions',
-  filter: false,
-  floatingFilter: false,
   headerName: 'Actions',
   lockPinned: true,
   lockVisible: true,

@@ -9,6 +9,7 @@ import { parseColumnLayout } from 'utils/columnLayout'
 
 import { getColumnLayoutEndPoint, queryKeys } from './api.constants'
 import { api, queryClient } from './index'
+import { getSavedFilterQueryKey } from './savedFilter'
 
 type AuthenticatedTarget = ColumnLayoutTarget & { idToken: string }
 
@@ -44,7 +45,7 @@ export const saveColumnLayout = async ({
   layout,
   ...target
 }: AuthenticatedTarget & { layout: ColumnLayout }) => {
-  await api.put(getColumnLayoutEndPoint(target), layout, {
+  await api.patch(getColumnLayoutEndPoint(target), layout, {
     params: { auth: idToken },
   })
   queryClient.setQueryData(getColumnLayoutQueryKey(target), layout)
@@ -55,6 +56,7 @@ export const deleteColumnLayout = async ({
   ...target
 }: AuthenticatedTarget) => {
   queryClient.setQueryData(getColumnLayoutQueryKey(target), null)
+  queryClient.setQueryData(getSavedFilterQueryKey(target), null)
   await api.delete(getColumnLayoutEndPoint(target), {
     params: { auth: idToken },
   })

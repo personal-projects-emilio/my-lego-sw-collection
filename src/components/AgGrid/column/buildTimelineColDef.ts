@@ -3,7 +3,6 @@ import type { TimelineId, TimelineItem } from 'types/timeline'
 import type { Timeline } from 'utils/timeline'
 
 import TimelineCellRenderer from './TimelineCellRenderer'
-import TimelineFilter from './TimelineFilter'
 
 export const buildTimelineColDef = <TData extends TimelineItem>(
   timeline: Timeline
@@ -36,12 +35,10 @@ export const buildTimelineColDef = <TData extends TimelineItem>(
     },
     valueGetter: ({ data }) => data?.effectiveTimeline,
     headerName: 'Timeline',
-    filter: TimelineFilter,
     flex: 2,
     getQuickFilterText: ({ value }) =>
       (value ?? []).map(timeline.getLabel).join(', '),
     minWidth: 160,
-    suppressFloatingFilterButton: false,
     valueFormatter: ({ value }) => timeline.getGroupedLabel(value ?? []),
   }
 }

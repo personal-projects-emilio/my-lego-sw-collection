@@ -1,5 +1,10 @@
 import { type ComponentType, type FC, useRef, useState } from 'react'
-import { MdArrowDownward, MdArrowUpward, MdMoreVert } from 'react-icons/md'
+import {
+  MdArrowDownward,
+  MdArrowUpward,
+  MdFilterAlt,
+  MdMoreVert,
+} from 'react-icons/md'
 
 import { IconButton } from '@mui/material'
 import type { CustomHeaderProps } from 'ag-grid-react'
@@ -27,6 +32,13 @@ const ColumnHeader: FC<CustomHeaderProps & ColumnHeaderParams> = ({
 }) => {
   const { classes } = useColumnHeaderStyles()
   const actions = useColumnLayoutActions()
+  const columnId = column.getColId()
+  const filterActions = actions?.filter
+  const openFilter = filterActions?.isColumnFilterable(columnId)
+    ? () =>
+        filterActions.openColumnFilter({ anchorElement: eGridHeader, columnId })
+    : undefined
+  const isFiltered = !!filterActions?.isColumnFiltered(columnId)
   const buttonRef = useRef<HTMLButtonElement>(null)
   const [anchor, setAnchor] = useState<MenuAnchor>()
   const { direction, position } = useColumnSort({ api, column })
@@ -54,6 +66,17 @@ const ColumnHeader: FC<CustomHeaderProps & ColumnHeaderParams> = ({
           </span>
         )}
         {LabelAdornment && <LabelAdornment className={classes.adornment} />}
+        {isFiltered && openFilter && (
+          <IconButton
+            aria-label={`${displayName} is filtered, edit filter`}
+            className={classes.menuButton}
+            color="primary"
+            onClick={openFilter}
+            size="small"
+          >
+            <MdFilterAlt fontSize="inherit" />
+          </IconButton>
+        )}
         <IconButton
           ref={buttonRef}
           aria-expanded={!!anchor}
@@ -69,7 +92,13 @@ const ColumnHeader: FC<CustomHeaderProps & ColumnHeaderParams> = ({
       {anchor && (
         <Menu
           anchor={anchor}
-          items={getHeaderMenuItems({ api, column, setSort, ...actions })}
+          items={getHeaderMenuItems({
+            api,
+            column,
+            openFilter,
+            setSort,
+            ...actions,
+          })}
           onClose={() => setAnchor(undefined)}
         />
       )}
