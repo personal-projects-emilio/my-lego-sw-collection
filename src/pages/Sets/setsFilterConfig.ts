@@ -23,7 +23,6 @@ export const setsFilterConfig: ItemsFilterConfig<CollectionSet> = {
     tags: ({ effectiveTags }) => toFilterOptions(effectiveTags),
     timeline: ({ effectiveTimeline }) => toFilterOptions(effectiveTimeline),
   },
-  itemType: 'sets',
   mapColumnIdsToFields: {
     'content.minifigs': 'minifigId',
     id: 'setId',

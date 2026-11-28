@@ -7,7 +7,6 @@ export const resaleSetsFilterConfig: ItemsFilterConfig<ResaleSet> = {
   getListValues: {
     setId: ({ id, name }) => [{ label: `${id} · ${name}`, value: String(id) }],
   },
-  itemType: 'sets',
   mapColumnIdsToFields: {
     id: 'setId',
     retired: 'retired',

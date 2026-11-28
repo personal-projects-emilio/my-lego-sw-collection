@@ -17,14 +17,12 @@ import type {
   ItemsFilter,
   ListFilterField,
 } from 'types/itemsFilter'
-import type { TagTarget } from 'types/tags'
 import { getFieldLabel, isListFilterField } from 'utils/itemsFilter'
 
 type FilterFieldEditorProps = {
   field: FilterField
   filter: ItemsFilter
   id: string
-  itemType?: TagTarget
   label?: ReactNode
   mapFieldsToOptions: Partial<Record<ListFilterField, FilterOption[]>>
   onChange: (filter: ItemsFilter) => void
@@ -43,7 +41,6 @@ const FilterFieldEditor: FC<FilterFieldEditorProps> = ({
   field,
   filter,
   id,
-  itemType,
   label = getFieldLabel(field),
   mapFieldsToOptions,
   onChange,
@@ -79,10 +76,9 @@ const FilterFieldEditor: FC<FilterFieldEditorProps> = ({
       </div>
     )
 
-  if (field === 'tags' && itemType)
+  if (field === 'tags')
     return (
       <TagsAutocomplete
-        itemType={itemType}
         mode="filter"
         onChange={(tags) => onChange({ ...filter, tags })}
         textFieldProps={{ id, label, size: 'small' }}

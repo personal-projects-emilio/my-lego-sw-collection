@@ -10,6 +10,5 @@ export const looseMinifigsFilterConfig: ItemsFilterConfig<CollectionMinifig> = {
       { label: `${id} · ${characterName}`, value: id },
     ],
   },
-  itemType: 'minifigs',
   mapColumnIdsToFields: { id: 'minifigId' },
 }

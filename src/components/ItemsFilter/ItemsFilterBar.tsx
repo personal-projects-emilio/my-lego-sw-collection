@@ -12,7 +12,6 @@ import type {
   ItemsFilter,
   ListFilterField,
 } from 'types/itemsFilter'
-import type { TagTarget } from 'types/tags'
 import {
   emptyItemsFilter,
   getActiveFields,
@@ -27,7 +26,6 @@ import useItemsFilterBarStyles from './ItemsFilterBar.styles'
 export type ItemsFilterBarProps = {
   fields: FilterField[]
   filter: ItemsFilter
-  itemType?: TagTarget
   mapFieldsToOptions: Partial<Record<ListFilterField, FilterOption[]>>
   onChange: (filter: ItemsFilter) => void
   request?: FilterRequest

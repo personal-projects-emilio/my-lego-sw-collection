@@ -1,12 +1,5 @@
-import type { TagTarget } from './tags'
-
 export type ListFilterField =
-  | 'characterName'
-  | 'minifigId'
-  | 'setId'
-  | 'subtheme'
-  | 'tags'
-  | 'timeline'
+  'characterName' | 'minifigId' | 'setId' | 'subtheme' | 'tags' | 'timeline'
 
 export type BooleanFilterField = 'owned' | 'retired'
 
@@ -43,7 +36,6 @@ export type ItemsFilterConfig<Item> = {
   getListValues: Partial<
     Record<ListFilterField, (item: Item) => FilterOption[]>
   >
-  itemType?: TagTarget
   mapColumnIdsToFields: Record<string, FilterField>
 }
 

@@ -52,7 +52,6 @@ const FilterDrawer: FC<FilterDrawerProps> = ({
   filter,
   id,
   isOpen,
-  itemType,
   mapFieldsToOptions,
   onChange,
   onClose,
@@ -109,7 +108,6 @@ const FilterDrawer: FC<FilterDrawerProps> = ({
                     field={field}
                     filter={filter}
                     id={`${id}-${field}`}
-                    itemType={itemType}
                     label={
                       fields.includes(field) ? (
                         label

@@ -26,7 +26,7 @@ type TagsAutocompleteProps = {
   className?: string
   disabled?: boolean
   inheritedTags?: InheritedTags
-  itemType: TagTarget
+  itemType?: TagTarget
   mode?: 'store' | 'filter'
   name?: string
   onBlur?: () => void

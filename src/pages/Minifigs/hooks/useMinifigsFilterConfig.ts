@@ -28,7 +28,6 @@ const useMinifigsFilterConfig = (): ItemsFilterConfig<CollectionMinifig> => {
         tags: ({ effectiveTags }) => toFilterOptions(effectiveTags),
         timeline: ({ effectiveTimeline }) => toFilterOptions(effectiveTimeline),
       },
-      itemType: 'minifigs',
       mapColumnIdsToFields: {
         characterName: 'characterName',
         id: 'minifigId',

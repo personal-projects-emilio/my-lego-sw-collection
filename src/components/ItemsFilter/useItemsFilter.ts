@@ -124,7 +124,6 @@ const useItemsFilter = <Item>({
     barProps: {
       fields,
       filter,
-      itemType: config.itemType,
       mapFieldsToOptions,
       onChange,
       request,
