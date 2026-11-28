@@ -1,9 +1,12 @@
 import type { FC } from 'react'
 
 import { Tab, Tabs } from '@mui/material'
-import { Link } from '@tanstack/react-router'
+import { createLink, Link } from '@tanstack/react-router'
 import { useCurrentRoute } from 'hooks'
 import { useAuth } from 'providers/AuthProvider'
+import { pickFilterSearch } from 'utils/itemsFilter'
+
+const TabLink = createLink(Tab)
 
 const TabsNavigation: FC = () => {
   const { idToken, logout } = useAuth()
@@ -20,21 +23,36 @@ const TabsNavigation: FC = () => {
       aria-label="Application tab navigation"
       component="nav"
     >
-      <Tab component={Link} label="Minifigs" to="/minifigs" value="/minifigs" />
-      <Tab component={Link} label="Sets" to="/sets" value="/sets" />
-      <Tab component={Link} label="Timeline" to="/timeline" value="/timeline" />
+      <TabLink
+        label="Minifigs"
+        search={pickFilterSearch}
+        to="/minifigs"
+        value="/minifigs"
+      />
+      <TabLink
+        label="Sets"
+        search={pickFilterSearch}
+        to="/sets"
+        value="/sets"
+      />
+      <TabLink
+        label="Timeline"
+        search={pickFilterSearch}
+        to="/timeline"
+        value="/timeline"
+      />
       {idToken && (
-        <Tab
-          component={Link}
+        <TabLink
           label="Loose minifigs"
+          search={pickFilterSearch}
           to="/loose-minifigs"
           value="/loose-minifigs"
         />
       )}
       {idToken && (
-        <Tab
-          component={Link}
+        <TabLink
           label="Resale sets"
+          search={pickFilterSearch}
           to="/resale-sets"
           value="/resale-sets"
         />

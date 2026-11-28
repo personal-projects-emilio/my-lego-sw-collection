@@ -58,10 +58,7 @@ const useMinifigsColDefs = () => {
           headerName: 'Character Name',
         },
         buildTimelineColDef<CollectionMinifig>(timeline),
-        buildTagsColDef<CollectionMinifig>({
-          tagsVocabulary,
-          itemType: 'minifigs',
-        }),
+        buildTagsColDef<CollectionMinifig>(tagsVocabulary),
         {
           cellClass: agGridClasses.flexAlignCenter,
           cellRenderer: OwnedCellRenderer,
@@ -74,9 +71,6 @@ const useMinifigsColDefs = () => {
           headerName: 'Owned',
           resizable: false,
           valueFormatter: ({ value }) => value.total,
-          filter: 'agNumberColumnFilter',
-          filterValueGetter: ({ data }) => data?.owned.total,
-          suppressFloatingFilterButton: false,
           width: 100,
           getQuickFilterText: ({
             data: { owned },
@@ -94,8 +88,6 @@ const useMinifigsColDefs = () => {
           } satisfies ExternalLinksCellRenderProps,
           colId: 'externalLinks',
           field: 'id',
-          filter: false,
-          floatingFilter: false,
           headerName: 'Links',
           resizable: false,
           sortable: false,

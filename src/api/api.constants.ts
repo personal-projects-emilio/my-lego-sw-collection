@@ -6,6 +6,7 @@ export const queryKeys = {
   looseMinifigs: 'looseMinifigs',
   minifigs: 'minifigs',
   resaleSets: 'resaleSets',
+  savedFilter: 'savedFilter',
   sets: 'sets',
   tags: 'tags',
   timeline: 'timeline',
@@ -26,3 +27,6 @@ export const getColumnLayoutEndPoint = ({
   columnLayoutId,
 }: ColumnLayoutTarget) =>
   `/userPreferences/${userId}/grids/${columnLayoutId}.json`
+
+export const getSavedFilterEndPoint = (userId: string) =>
+  `/userPreferences/${userId}/filter.json`

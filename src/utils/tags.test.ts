@@ -104,6 +104,7 @@ test.for([
 test.for([
   { target: 'sets' as const, expected: ['aor', 'ot', 'anh', 'esb', 'x-wing'] },
   { target: 'minifigs' as const, expected: ['aor', 'ot', 'anh', 'esb'] },
+  { target: undefined, expected: ['aor', 'ot', 'anh', 'esb', 'x-wing'] },
 ])(
   'pickable for $target skips roots and other item types',
   ({ target, expected }) => {

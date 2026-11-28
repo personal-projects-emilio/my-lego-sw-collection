@@ -14,10 +14,12 @@ const createTagsVocabulary = (tagsList: TagsList) => {
     return appliesTo === 'both' || appliesTo === target
   }
 
-  const getPickable = (target: TagTarget) =>
+  const getPickable = (target?: TagTarget) =>
     tree.sort(
       tagsList
-        .filter(({ id, parent }) => parent && doesApplyTo({ id, target }))
+        .filter(
+          ({ id, parent }) => parent && (!target || doesApplyTo({ id, target }))
+        )
         .map(({ id }) => id)
     )
 

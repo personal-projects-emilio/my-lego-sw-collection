@@ -1,19 +1,14 @@
 import type { ColDef } from 'ag-grid-community'
 import { TagsDrawerButton } from 'components/TagsDrawer'
-import type { TaggedItem, TagId, TagTarget } from 'types/tags'
+import type { TaggedItem, TagId } from 'types/tags'
 import type { TagsVocabulary } from 'utils/tags'
 
 import type { ColumnHeaderParams } from '../header'
 import TagsCellRenderer from './TagsCellRenderer'
-import TagsFilter, { type TagsFilterProps } from './TagsFilter'
 
-export const buildTagsColDef = <TData extends TaggedItem>({
-  tagsVocabulary,
-  itemType,
-}: {
+export const buildTagsColDef = <TData extends TaggedItem>(
   tagsVocabulary: TagsVocabulary
-  itemType: TagTarget
-}): ColDef<TData, TagId[]> => ({
+): ColDef<TData, TagId[]> => ({
   cellRenderer: TagsCellRenderer,
   colId: 'tags',
   comparator: (a, b) =>
@@ -25,12 +20,9 @@ export const buildTagsColDef = <TData extends TaggedItem>({
   headerComponentParams: {
     labelAdornment: TagsDrawerButton,
   } satisfies ColumnHeaderParams,
-  filter: TagsFilter,
-  filterParams: { itemType } satisfies TagsFilterProps,
   flex: 2,
   getQuickFilterText: ({ value }) =>
     (value ?? []).map(tagsVocabulary.getLabel).join(', '),
   minWidth: 160,
-  suppressFloatingFilterButton: false,
   valueFormatter: ({ value }) => tagsVocabulary.getGroupedLabel(value ?? []),
 })

@@ -5,6 +5,7 @@ import { Button, Skeleton } from '@mui/material'
 import { AgGridReact, type AgGridReactProps } from 'ag-grid-react'
 import ConfirmDialog from 'components/ConfirmDialog'
 import type { ColumnLayoutId } from 'types/columnLayout'
+import type { ColumnFilterActions } from 'types/itemsFilter'
 import type { GetTotalRow } from 'types/totalRow'
 import {
   getColumnTotals,
@@ -25,16 +26,20 @@ import useTotalRow from './useTotalRow'
 
 type ColumnLayoutGridProps<TData> = AgGridReactProps<TData> & {
   className: string
+  columnFilter?: ColumnFilterActions
   columnLayoutId: ColumnLayoutId
   getTotalRow?: GetTotalRow<TData>
+  onReset?: () => void
 }
 
 const ColumnLayoutGrid = <TData,>({
   className,
+  columnFilter,
   columnLayoutId,
   defaultColDef,
   getRowId,
   getTotalRow,
+  onReset,
   ...props
 }: ColumnLayoutGridProps<TData>) => {
   const { classes } = useAgGridTableStyles()
@@ -62,13 +67,14 @@ const ColumnLayoutGrid = <TData,>({
   const hasTotalRow = !!buildTotalRow
   const actions = useMemo(
     () => ({
+      filter: columnFilter,
       openColumnChooser: () => setIsChooserOpen(true),
       requestReset: () => setIsResetOpen(true),
       ...(hasTotalRow && {
         totalRow: { isShown: isTotalRowShown, toggle: toggleTotalRow },
       }),
     }),
-    [hasTotalRow, isTotalRowShown, toggleTotalRow]
+    [columnFilter, hasTotalRow, isTotalRowShown, toggleTotalRow]
   )
   const columnDefs = useMemo(
     () =>
@@ -85,7 +91,13 @@ const ColumnLayoutGrid = <TData,>({
       ? buildTotalRowColDef(gridDefaultColDef)
       : gridDefaultColDef
   }, [defaultColDef, hasTotalRow])
-  const resetScope = `Column order, visibility, widths, pinning${hasTotalRow ? ', sorting and the total row' : ' and sorting'} go back to their defaults`
+  const resetParts = [
+    'Column order, visibility, widths, pinning',
+    'sorting',
+    ...(hasTotalRow ? ['the total row'] : []),
+    ...(onReset ? ['the filter'] : []),
+  ]
+  const resetScope = `${resetParts.slice(0, -1).join(', ')} and ${resetParts[resetParts.length - 1]} go back to their defaults`
 
   if (layout.isLoading)
     return <Skeleton className={className} variant="rectangular" />
@@ -150,6 +162,7 @@ const ColumnLayoutGrid = <TData,>({
         onClose={() => setIsResetOpen(false)}
         onConfirm={async () => {
           await layout.reset()
+          onReset?.()
           setIsResetOpen(false)
         }}
         open={isResetOpen}

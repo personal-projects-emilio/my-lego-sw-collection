@@ -17,6 +17,7 @@ import { useTagsVocabulary } from 'hooks'
 import type { InheritedTags, TagId, TagTarget } from 'types/tags'
 import { filterTagsAfterPick, getStoredTagsAfterPick } from 'utils/tags'
 
+import renderLimitedChips from '../renderLimitedChips'
 import nestOptions, { isOptionElement } from './nestOptions'
 import useTagsAutocompleteStyles from './TagsAutocomplete.styles'
 import useTagNotes from './useTagNotes'
@@ -25,7 +26,7 @@ type TagsAutocompleteProps = {
   className?: string
   disabled?: boolean
   inheritedTags?: InheritedTags
-  itemType: TagTarget
+  itemType?: TagTarget
   mode?: 'store' | 'filter'
   name?: string
   onBlur?: () => void
@@ -158,7 +159,7 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
                 tabIndex={-1}
               />
               {tagsVocabulary.getLabel(id)}
-              {optionNote && (
+              {optionNote && !isFilter && (
                 <Typography className={classes.note} variant="caption">
                   {optionNote}
                 </Typography>
@@ -199,7 +200,7 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
                 return groupNote ? [[id, groupNote]] : []
               })
             )
-          return tagsVocabulary
+          const groupChips = tagsVocabulary
             .getSiblingGroups(ids)
             .map(({ parent, ids: group }) => {
               if (parent)
@@ -245,6 +246,10 @@ const TagsAutocomplete = forwardRef<HTMLInputElement, TagsAutocompleteProps>(
                 </Tooltip>
               )
             })
+          return renderLimitedChips({
+            chips: groupChips,
+            title: <TreeView ids={ids} tree={tagsVocabulary} />,
+          })
         }}
         value={chips}
       />

@@ -4,6 +4,8 @@ import {
   type AutocompleteRenderValueGetItemProps,
   Typography,
 } from '@mui/material'
+import renderLimitedChips from 'components/inputs/renderLimitedChips'
+import TreeView from 'components/TreeView'
 import { useTimeline } from 'hooks'
 import type { InheritedTimeline, TimelineId } from 'types/timeline'
 
@@ -47,7 +49,7 @@ const TimelineChips: FC<TimelineChipsProps> = ({
     )
   }
 
-  return groups.map(({ parent, ids: members }) =>
+  const chips = groups.flatMap(({ parent, ids: members }) =>
     parent && members.length > 1 ? (
       <div
         key={`group-${parent}`}
@@ -67,6 +69,10 @@ const TimelineChips: FC<TimelineChipsProps> = ({
       members.map((id) => renderChip({ id, label: timeline.getPathLabel(id) }))
     )
   )
+  return renderLimitedChips({
+    chips,
+    title: <TreeView ids={ids} tree={timeline} />,
+  })
 }
 
 export default TimelineChips

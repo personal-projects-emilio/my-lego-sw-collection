@@ -1,22 +1,22 @@
-import { type FC, useDeferredValue, useMemo, useState } from 'react'
+import { type FC, useMemo, useState } from 'react'
 
 import { Alert, FormControlLabel, Skeleton, Switch } from '@mui/material'
 import { Navigate, Outlet } from '@tanstack/react-router'
 import { useResaleSetsQuery } from 'api/resaleSets'
 import { AgGridTable } from 'components/AgGrid/table'
+import { ItemsFilterBar, useItemsFilter } from 'components/ItemsFilter'
 import ModuleHeader from 'components/ModuleHeader/ModuleHeader'
 import { defaultSetsColumnDefs } from 'pages/Sets/Sets.constants'
 import { useAuth } from 'providers/AuthProvider'
 import { getResaleTotals, getResaleValues } from 'utils/lego'
 
+import { resaleSetsFilterConfig } from './resaleSetsFilterConfig'
 import useResaleSetsColDefs from './useResaleSetsColDefs'
 
 const ResaleSets: FC = () => {
   const { idToken } = useAuth()
   const { data: resaleSetsList, isError, isLoading } = useResaleSetsQuery()
   const columnDefs = useResaleSetsColDefs()
-  const [quickFilter, setQuickFilter] = useState('')
-  const deferredQuickFilter = useDeferredValue(quickFilter)
   const [inStockOnly, setInStockOnly] = useState(true)
 
   const rows = useMemo(
@@ -30,6 +30,11 @@ const ResaleSets: FC = () => {
     [inStockOnly, resaleSetsList]
   )
 
+  const itemsFilter = useItemsFilter({
+    config: resaleSetsFilterConfig,
+    items: rows,
+  })
+
   if (!idToken) return <Navigate to="/sets" />
 
   if (isLoading)
@@ -40,11 +45,8 @@ const ResaleSets: FC = () => {
 
   return (
     <>
-      <ModuleHeader
-        addTo="/resale-sets/add"
-        quickFilter={quickFilter}
-        setQuickFilter={setQuickFilter}
-      >
+      <ModuleHeader addLabel="Add resale set" addTo="/resale-sets/add">
+        <ItemsFilterBar {...itemsFilter.barProps} />
         <FormControlLabel
           control={
             <Switch
@@ -64,7 +66,7 @@ const ResaleSets: FC = () => {
           id: 'Total',
           ...getResaleTotals(visibleRows),
         })}
-        quickFilterText={deferredQuickFilter}
+        {...itemsFilter.gridProps}
         rowData={rows}
       />
       <Outlet />

@@ -1,11 +1,5 @@
 import { type FC, useMemo, useState } from 'react'
-import {
-  MdAdd,
-  MdClose,
-  MdUndo,
-  MdUnfoldLess,
-  MdUnfoldMore,
-} from 'react-icons/md'
+import { MdAdd, MdUndo, MdUnfoldLess, MdUnfoldMore } from 'react-icons/md'
 
 import { closestCenter, DndContext } from '@dnd-kit/core'
 import { SortableContext } from '@dnd-kit/sortable'
@@ -13,12 +7,11 @@ import {
   Alert,
   Button,
   Divider,
-  Drawer,
   IconButton,
   Tooltip,
   Typography,
 } from '@mui/material'
-import { useDrawerWidth } from 'hooks'
+import SideDrawer from 'components/SideDrawer'
 import type { Tag, TagId } from 'types/tags'
 import { addTag, editTag } from 'utils/tags'
 
@@ -42,11 +35,6 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
   const { classes } = useTagsDrawerStyles()
   const { state, isPending, error, setError, run, lastEdit, undo } =
     useTagEdits()
-  const { width, handleProps } = useDrawerWidth({
-    storageKey: 'tagsDrawerWidth',
-    defaultWidth: 480,
-    minWidth: 360,
-  })
   const [editing, setEditing] = useState<Editing>()
   const [menu, setMenu] = useState<{ anchor: HTMLElement; id: TagId }>()
   const [deleting, setDeleting] = useState<Tag>()
@@ -132,16 +120,36 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
   )
 
   return (
-    <Drawer
-      anchor="right"
-      className={classes.drawer}
-      onClose={() => !isPending && onClose()}
-      open
-      slotProps={{ paper: { className: classes.paper, style: { width } } }}
-    >
-      <div className={classes.resizeHandle} {...handleProps} />
-      <div className={classes.header}>
-        <Typography className={classes.title} component="h2" variant="h6">
+    <SideDrawer
+      actions={
+        <>
+          <Button
+            disabled={tagsCount === undefined}
+            loading={isPending}
+            onClick={() => setEditing({})}
+            startIcon={<MdAdd />}
+          >
+            Add root
+          </Button>
+          <Tooltip title="Expand all">
+            <IconButton aria-label="Expand all" onClick={tree.expandAll}>
+              <MdUnfoldMore />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Collapse all">
+            <IconButton aria-label="Collapse all" onClick={tree.collapseAll}>
+              <MdUnfoldLess />
+            </IconButton>
+          </Tooltip>
+        </>
+      }
+      defaultWidth={480}
+      isCloseDisabled={isPending}
+      minWidth={360}
+      onClose={onClose}
+      storageKey="tagsDrawerWidth"
+      title={
+        <>
           Tags
           {tagsCount !== undefined && (
             <Typography
@@ -150,29 +158,9 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
               variant="body2"
             >{` · ${tagsCount}`}</Typography>
           )}
-        </Typography>
-        <Button
-          disabled={tagsCount === undefined}
-          loading={isPending}
-          onClick={() => setEditing({})}
-          startIcon={<MdAdd />}
-        >
-          Add root
-        </Button>
-        <Tooltip title="Expand all">
-          <IconButton aria-label="Expand all" onClick={tree.expandAll}>
-            <MdUnfoldMore />
-          </IconButton>
-        </Tooltip>
-        <Tooltip title="Collapse all">
-          <IconButton aria-label="Collapse all" onClick={tree.collapseAll}>
-            <MdUnfoldLess />
-          </IconButton>
-        </Tooltip>
-        <IconButton aria-label="Close" disabled={isPending} onClick={onClose}>
-          <MdClose />
-        </IconButton>
-      </div>
+        </>
+      }
+    >
       {error && (
         <Alert
           className={classes.alert}
@@ -268,7 +256,7 @@ const TagsDrawer: FC<{ onClose: () => void }> = ({ onClose }) => {
           </Typography>
         )}
       </div>
-    </Drawer>
+    </SideDrawer>
   )
 }
 

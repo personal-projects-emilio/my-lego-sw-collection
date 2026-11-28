@@ -83,7 +83,7 @@ const useSetsColDefs = () => {
           minWidth: 120,
         },
         buildTimelineColDef<CollectionSet>(timeline),
-        buildTagsColDef<CollectionSet>({ tagsVocabulary, itemType: 'sets' }),
+        buildTagsColDef<CollectionSet>(tagsVocabulary),
         {
           cellDataType: 'number',
           field: 'releaseYear',
@@ -94,8 +94,6 @@ const useSetsColDefs = () => {
           field: 'exitDate',
           headerName: 'Exit date',
           cellDataType: 'dateString',
-          filter: 'agDateColumnFilter',
-          suppressFloatingFilterButton: false,
           valueFormatter: ({ value }) => formatFrDate(value),
           width: 130,
         },
@@ -104,7 +102,6 @@ const useSetsColDefs = () => {
           headerName: 'Retired',
           cellDataType: 'boolean',
           valueGetter: ({ data }) => (data ? isSetRetired(data) : false),
-          suppressFloatingFilterButton: false,
           width: 110,
         },
         {
@@ -134,7 +131,6 @@ const useSetsColDefs = () => {
             ),
           cellClass: [agGridClasses.flexAlignCenter],
           cellRenderer: SetMinifigsCellRenderer,
-          filter: false,
           getQuickFilterText: ({
             data: {
               content: { minifigs },
@@ -153,8 +149,6 @@ const useSetsColDefs = () => {
             isExcluded: idToken === undefined,
             ...buildTotalContext({ aggregation: 'sum' }),
           },
-          filter: 'agNumberColumnFilter',
-          suppressFloatingFilterButton: false,
           valueFormatter: ({ value }) => formatFrEuroCurrency(value),
           width: 100,
         })),
@@ -167,8 +161,6 @@ const useSetsColDefs = () => {
           cellRendererParams: {
             variant: 'set',
           } satisfies ExternalLinksCellRenderProps,
-          filter: false,
-          floatingFilter: false,
           resizable: false,
           sortable: false,
           width: 100,

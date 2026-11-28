@@ -8,10 +8,12 @@ import {
   type MenuItemProps,
   Switch,
 } from '@mui/material'
-import { Link } from '@tanstack/react-router'
+import { createLink } from '@tanstack/react-router'
 
 import useMenuStyles from './Menu.styles'
 import type { ActionItem, LinkItem, RadioItem, SwitchItem } from './menu.types'
+
+const MenuItemLink = createLink(MenuItem)
 
 export type InjectedMenuItemProps = Pick<
   MenuItemProps,
@@ -124,14 +126,14 @@ export const LinkMenuItem: FC<ItemProps<LinkItem>> = ({
   onClose,
   ...menuItemProps
 }) => (
-  <MenuItem
+  <MenuItemLink
     {...menuItemProps}
-    component={Link}
     disabled={item.disabled}
     onClick={onClose}
+    search={item.search}
     selected={item.selected}
     to={item.to}
   >
     <MenuItemContent icon={item.icon} label={item.label} />
-  </MenuItem>
+  </MenuItemLink>
 )

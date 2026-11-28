@@ -27,8 +27,6 @@ export type ResaleSetRow = ResaleSet & ReturnType<typeof getResaleValues>
 
 const euroColDef = {
   cellDataType: 'number',
-  filter: 'agNumberColumnFilter',
-  suppressFloatingFilterButton: false,
   valueFormatter: ({ value }) =>
     value === null || value === undefined ? '' : formatFrEuroCurrency(value),
   width: 140,
@@ -98,7 +96,6 @@ const useResaleSetsColDefs = () => {
           cellDataType: 'boolean',
           colId: 'retired',
           headerName: 'Retired',
-          suppressFloatingFilterButton: false,
           valueGetter: ({ data }) => (data ? isSetRetired(data) : null),
           width: 110,
         },
