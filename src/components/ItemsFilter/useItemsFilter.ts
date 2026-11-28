@@ -4,6 +4,7 @@ import { useNavigate, useSearch } from '@tanstack/react-router'
 import type { IRowNode } from 'ag-grid-community'
 import type {
   ColumnFilterActions,
+  FilterOption,
   FilterRequest,
   FilterSearch,
   ItemsFilter,
@@ -12,16 +13,20 @@ import type {
 import {
   doesItemPass,
   emptyItemsFilter,
+  filterFieldDefinitions,
   getActiveFields,
   getAppliedFilter,
   getConfigFields,
+  getFilterOptions,
   getOptionsByField,
+  isListFilterField,
   parseFilterSearch,
   pickFilterSearch,
   removeInactiveDisabledFields,
   toFilterSearch,
 } from 'utils/itemsFilter'
 
+import useCollectionFilterOptions from './useCollectionFilterOptions'
 import useSavedFilterSync from './useSavedFilterSync'
 
 const useItemsFilter = <Item>({
@@ -67,10 +72,28 @@ const useItemsFilter = <Item>({
   const appliedFields = getActiveFields({ fields, filter: appliedFilter })
   const appliedFieldsKey = appliedFields.join()
 
-  const mapFieldsToOptions = useMemo(
-    () => getOptionsByField({ config, items }),
-    [config, items]
-  )
+  const collectionOptions = useCollectionFilterOptions()
+  const mapFieldsToOptions = useMemo(() => {
+    const pageOptions = getOptionsByField({ config, items })
+    return Object.fromEntries(
+      filterFieldDefinitions.flatMap(({ field }) =>
+        isListFilterField(field)
+          ? [
+              [
+                field,
+                getFilterOptions({
+                  getValues: (options: FilterOption[]) => options,
+                  items: [
+                    collectionOptions[field] ?? [],
+                    pageOptions[field] ?? [],
+                  ],
+                }),
+              ],
+            ]
+          : []
+      )
+    )
+  }, [collectionOptions, config, items])
 
   const isExternalFilterPresent = useCallback(
     () => appliedFieldsKey !== '',

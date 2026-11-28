@@ -17,14 +17,12 @@ type TimelineChipsProps = {
   ids: TimelineId[]
   inherited: InheritedTimeline
   getItemProps: AutocompleteRenderValueGetItemProps<true>
-  limit?: number
 }
 
 const TimelineChips: FC<TimelineChipsProps> = ({
   ids,
   inherited,
   getItemProps,
-  limit,
 }) => {
   const { classes } = useTimelineFieldStyles()
   const timeline = useTimeline()
@@ -73,7 +71,6 @@ const TimelineChips: FC<TimelineChipsProps> = ({
   )
   return renderLimitedChips({
     chips,
-    limit,
     title: <TreeView ids={ids} tree={timeline} />,
   })
 }

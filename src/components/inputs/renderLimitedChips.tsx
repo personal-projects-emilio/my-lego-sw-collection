@@ -2,16 +2,18 @@ import type { ReactNode } from 'react'
 
 import { Chip, Tooltip } from '@mui/material'
 
+const defaultLimit = 3
+
 const renderLimitedChips = ({
   chips,
-  limit,
+  limit = defaultLimit,
   title,
 }: {
   chips: ReactNode[]
   limit?: number
   title: ReactNode
 }) => {
-  if (limit === undefined || chips.length <= limit) return chips
+  if (chips.length <= limit) return chips
   const hiddenCount = chips.length - limit
   return [
     ...chips.slice(0, limit),

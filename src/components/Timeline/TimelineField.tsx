@@ -30,7 +30,6 @@ type TimelineFieldProps = {
   inherited?: InheritedTimeline
   inputRef?: Ref<HTMLInputElement>
   label?: ReactNode
-  limitTags?: number
   onChange: (value: TimelineId[]) => void
   placeholder?: string
   popperClassName?: string
@@ -47,7 +46,6 @@ const TimelineField: FC<TimelineFieldProps> = ({
   inherited = noInherited,
   inputRef,
   label = 'Timeline',
-  limitTags,
   onChange,
   placeholder,
   popperClassName,
@@ -164,7 +162,6 @@ const TimelineField: FC<TimelineFieldProps> = ({
               ids={values}
               inherited={inherited}
               getItemProps={getItemProps}
-              limit={limitTags}
             />
           )}
         />
