@@ -78,10 +78,16 @@ const isBooleanField = (field: FilterField): field is BooleanFilterField =>
 const isFilterField = (value: string): value is FilterField =>
   filterFieldDefinitions.some(({ field }) => field === value)
 
+const formatListItem = (value: string) =>
+  value.split('%').join('%25').split(listSeparator).join('%2C')
+
+const parseListItem = (value: string) =>
+  value.split('%2C').join(listSeparator).split('%25').join('%')
+
 const splitList = (value: FilterSearch[FilterParam]) =>
   value === undefined || value === ''
     ? []
-    : String(value).split(listSeparator).filter(Boolean)
+    : String(value).split(listSeparator).filter(Boolean).map(parseListItem)
 
 const parseBoolean = (value: FilterSearch[FilterParam]) =>
   value === true || value === 'true'
@@ -115,7 +121,9 @@ export const toFilterSearch = (filter: ItemsFilter): FilterSearch => ({
       if (typeof value === 'boolean') return [param, value]
       return [
         param,
-        value.length ? toParamValue(value.join(listSeparator)) : undefined,
+        value.length
+          ? toParamValue(value.map(formatListItem).join(listSeparator))
+          : undefined,
       ]
     })
   ),
@@ -226,6 +234,22 @@ export const isListFilterField = (
 
 export const toFilterOptions = (values: string[]): FilterOption[] =>
   values.map((value) => ({ label: value, value }))
+
+export const toMinifigIdOption = ({
+  characterName,
+  id,
+}: {
+  characterName: string
+  id: string
+}): FilterOption => ({ label: `${id} · ${characterName}`, value: id })
+
+export const toSetIdOption = ({
+  id,
+  name,
+}: {
+  id: number | string
+  name: string
+}): FilterOption => ({ label: `${id} · ${name}`, value: String(id) })
 
 export const getOptionsByField = <Item>({
   config,

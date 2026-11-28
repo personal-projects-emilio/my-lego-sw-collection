@@ -1,6 +1,10 @@
 import type { ItemsFilterConfig } from 'types/itemsFilter'
 import type { CollectionSet } from 'types/sets'
-import { toFilterOptions } from 'utils/itemsFilter'
+import {
+  toFilterOptions,
+  toMinifigIdOption,
+  toSetIdOption,
+} from 'utils/itemsFilter'
 import { isSetRetired } from 'utils/lego'
 
 export const setsFilterConfig: ItemsFilterConfig<CollectionSet> = {
@@ -13,12 +17,8 @@ export const setsFilterConfig: ItemsFilterConfig<CollectionSet> = {
       toFilterOptions(
         content.minifigs.map(({ characterName }) => characterName)
       ),
-    minifigId: ({ content }) =>
-      content.minifigs.map(({ characterName, id }) => ({
-        label: `${id} · ${characterName}`,
-        value: id,
-      })),
-    setId: ({ id, name }) => [{ label: `${id} · ${name}`, value: String(id) }],
+    minifigId: ({ content }) => content.minifigs.map(toMinifigIdOption),
+    setId: (set) => [toSetIdOption(set)],
     subtheme: ({ subtheme }) => toFilterOptions([subtheme]),
     tags: ({ effectiveTags }) => toFilterOptions(effectiveTags),
     timeline: ({ effectiveTimeline }) => toFilterOptions(effectiveTimeline),

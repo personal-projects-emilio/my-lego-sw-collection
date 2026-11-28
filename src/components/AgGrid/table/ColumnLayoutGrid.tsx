@@ -91,7 +91,13 @@ const ColumnLayoutGrid = <TData,>({
       ? buildTotalRowColDef(gridDefaultColDef)
       : gridDefaultColDef
   }, [defaultColDef, hasTotalRow])
-  const resetScope = `Column order, visibility, widths, pinning, sorting${hasTotalRow ? ', the total row' : ''}${onReset ? ' and the filter' : ''} go back to their defaults`
+  const resetParts = [
+    'Column order, visibility, widths, pinning',
+    'sorting',
+    ...(hasTotalRow ? ['the total row'] : []),
+    ...(onReset ? ['the filter'] : []),
+  ]
+  const resetScope = `${resetParts.slice(0, -1).join(', ')} and ${resetParts[resetParts.length - 1]} go back to their defaults`
 
   if (layout.isLoading)
     return <Skeleton className={className} variant="rectangular" />

@@ -2,7 +2,12 @@ import { useMemo } from 'react'
 
 import { useCollection } from 'hooks'
 import type { FilterOption, ListFilterField } from 'types/itemsFilter'
-import { getFilterOptions, toFilterOptions } from 'utils/itemsFilter'
+import {
+  getFilterOptions,
+  toFilterOptions,
+  toMinifigIdOption,
+  toSetIdOption,
+} from 'utils/itemsFilter'
 
 const useCollectionFilterOptions = () => {
   const { minifigsList, setsList } = useCollection()
@@ -16,15 +21,11 @@ const useCollectionFilterOptions = () => {
         items: minifigs,
       }),
       minifigId: getFilterOptions({
-        getValues: ({ characterName, id }) => [
-          { label: `${id} · ${characterName}`, value: id },
-        ],
+        getValues: (minifig) => [toMinifigIdOption(minifig)],
         items: minifigs,
       }),
       setId: getFilterOptions({
-        getValues: ({ id, name }) => [
-          { label: `${id} · ${name}`, value: String(id) },
-        ],
+        getValues: (set) => [toSetIdOption(set)],
         items: sets,
       }),
       subtheme: getFilterOptions({

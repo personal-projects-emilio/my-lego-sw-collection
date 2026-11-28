@@ -29,9 +29,11 @@ import {
 import useCollectionFilterOptions from './useCollectionFilterOptions'
 import useSavedFilterSync from './useSavedFilterSync'
 
+const noItems: never[] = []
+
 const useItemsFilter = <Item>({
   config,
-  items = [],
+  items = noItems,
 }: {
   config: ItemsFilterConfig<Item>
   items?: Item[]
@@ -114,7 +116,7 @@ const useItemsFilter = <Item>({
           .includes(config.mapColumnIdsToFields[columnId]),
       openColumnFilter: ({ anchorElement, columnId }) => {
         const field = config.mapColumnIdsToFields[columnId]
-        if (field) setRequest({ anchorElement, field, requestedAt: Date.now() })
+        if (field) setRequest({ anchorElement, field })
       },
     }),
     [appliedFieldsKey, config]

@@ -51,5 +51,4 @@ export type ColumnFilterActions = {
 export type FilterRequest = {
   anchorElement: Element
   field: FilterField
-  requestedAt: number
 }

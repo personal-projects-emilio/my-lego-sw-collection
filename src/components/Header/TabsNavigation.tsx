@@ -35,7 +35,12 @@ const TabsNavigation: FC = () => {
         to="/sets"
         value="/sets"
       />
-      <Tab component={Link} label="Timeline" to="/timeline" value="/timeline" />
+      <TabLink
+        label="Timeline"
+        search={pickFilterSearch}
+        to="/timeline"
+        value="/timeline"
+      />
       {idToken && (
         <TabLink
           label="Loose minifigs"

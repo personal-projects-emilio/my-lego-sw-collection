@@ -28,6 +28,7 @@ export const useSavedFilterQuery = () => {
       userId && idToken
         ? () => fetchSavedFilter({ idToken, userId })
         : skipToken,
+    staleTime: Infinity,
   })
 }
 
@@ -37,11 +38,15 @@ export const saveFilter = async ({
   userId,
 }: SavedFilterTarget & { filter: FilterSearch }) => {
   const config = { params: { auth: idToken } }
-  if (hasFilterSearch(filter))
-    await api.put(getSavedFilterEndPoint(userId), filter, config)
-  else await api.delete(getSavedFilterEndPoint(userId), config)
-  queryClient.setQueryData(
-    getSavedFilterQueryKey(userId),
-    hasFilterSearch(filter) ? filter : null
-  )
+  const queryKey = getSavedFilterQueryKey(userId)
+  const previous = queryClient.getQueryData<FilterSearch | null>(queryKey)
+  queryClient.setQueryData(queryKey, hasFilterSearch(filter) ? filter : null)
+  try {
+    if (hasFilterSearch(filter))
+      await api.put(getSavedFilterEndPoint(userId), filter, config)
+    else await api.delete(getSavedFilterEndPoint(userId), config)
+  } catch (saveFailure) {
+    queryClient.setQueryData(queryKey, previous)
+    throw saveFailure
+  }
 }

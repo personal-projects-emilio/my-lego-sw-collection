@@ -37,7 +37,7 @@ const BurgerMenuNavigation: FC = () => {
   const items: MenuItemDefinition[] = [
     toLinkItem({ to: '/minifigs', label: 'Minifigs', hasFilter: true }),
     toLinkItem({ to: '/sets', label: 'Sets', hasFilter: true }),
-    toLinkItem({ to: '/timeline', label: 'Timeline' }),
+    toLinkItem({ to: '/timeline', label: 'Timeline', hasFilter: true }),
     ...(idToken
       ? [
           toLinkItem({

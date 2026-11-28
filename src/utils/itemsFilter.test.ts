@@ -97,6 +97,10 @@ test.for([
   { search: { owned: 'true' }, expected: { owned: true } },
   { search: { character: 'Han Solo' }, expected: { character: 'Han Solo' } },
   {
+    search: { character: 'Clone Trooper%2C 501st,100%25 Yoda' },
+    expected: { character: 'Clone Trooper%2C 501st,100%25 Yoda' },
+  },
+  {
     search: { off: 'tags,unknown', tags: 'vehicle' },
     expected: { off: 'tags', tags: 'vehicle' },
   },
@@ -109,6 +113,20 @@ test.for([
     )
   }
 )
+
+test.for([
+  { values: ['Han Solo'], param: 'Han Solo' },
+  {
+    values: ['Clone Trooper, 501st', 'Yoda'],
+    param: 'Clone Trooper%2C 501st,Yoda',
+  },
+  { values: ['100% Yoda'], param: '100%25 Yoda' },
+  { values: ['a%2Cb'], param: 'a%252Cb' },
+])('list value $values round-trips through $param', ({ values, param }) => {
+  const search = toFilterSearch({ ...emptyItemsFilter, characterName: values })
+  assert.equal(search.character, param)
+  assert.deepEqual(parseFilterSearch(search).characterName, values)
+})
 
 test.for([
   { search: {}, expected: false },

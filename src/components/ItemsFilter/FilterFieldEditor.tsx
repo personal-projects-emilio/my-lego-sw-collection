@@ -106,7 +106,7 @@ const FilterFieldEditor: FC<FilterFieldEditorProps> = ({
       getOptionLabel={(value) => mapValuesToLabels.get(value) ?? value}
       multiple
       onChange={(_event, values) => onChange({ ...filter, [field]: values })}
-      options={options.map(({ value }) => value)}
+      options={[...new Set([...mapValuesToLabels.keys(), ...filter[field]])]}
       renderInput={(params) => <TextField {...params} id={id} label={label} />}
       renderValue={(values, getItemProps) =>
         renderLimitedChips({

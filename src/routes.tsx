@@ -99,6 +99,7 @@ const timelineRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/timeline',
   component: Timeline,
+  ...filterSearch,
 })
 
 const looseMinifigsRoute = createRoute({
