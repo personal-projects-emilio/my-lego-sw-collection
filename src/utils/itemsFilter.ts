@@ -19,13 +19,17 @@ type FilterFieldDefinition = {
 
 export const filterCategories: { category: FilterCategory; title: string }[] = [
   { category: 'shared', title: 'Shared' },
-  { category: 'set', title: 'Set' },
-  { category: 'minifig', title: 'Minifig' },
+  { category: 'page', title: 'This page' },
 ]
 
 export const filterFieldDefinitions: FilterFieldDefinition[] = [
-  { field: 'owned', label: 'Owned', category: 'shared', param: 'owned' },
-  { field: 'retired', label: 'Retired', category: 'shared', param: 'retired' },
+  { field: 'setId', label: 'Set ID', category: 'shared', param: 'setId' },
+  {
+    field: 'minifigId',
+    label: 'Minifig ID',
+    category: 'shared',
+    param: 'minifigId',
+  },
   { field: 'tags', label: 'Tags', category: 'shared', param: 'tags' },
   {
     field: 'timeline',
@@ -33,16 +37,16 @@ export const filterFieldDefinitions: FilterFieldDefinition[] = [
     category: 'shared',
     param: 'timeline',
   },
-  { field: 'setId', label: 'ID', category: 'set', param: 'setId' },
-  { field: 'subtheme', label: 'Subtheme', category: 'set', param: 'subtheme' },
-  { field: 'location', label: 'Location', category: 'set', param: 'location' },
+  { field: 'owned', label: 'Owned', category: 'shared', param: 'owned' },
+  { field: 'retired', label: 'Retired', category: 'page', param: 'retired' },
+  { field: 'subtheme', label: 'Subtheme', category: 'page', param: 'subtheme' },
+  { field: 'location', label: 'Location', category: 'page', param: 'location' },
   {
     field: 'characterName',
     label: 'Character',
-    category: 'minifig',
+    category: 'page',
     param: 'character',
   },
-  { field: 'minifigId', label: 'ID', category: 'minifig', param: 'minifigId' },
 ]
 
 export const booleanFilterFields: BooleanFilterField[] = ['owned', 'retired']
@@ -53,7 +57,9 @@ export const filterParams: FilterParam[] = [
   ...filterFieldDefinitions.map(({ param }) => param),
 ]
 
-const sharedFields: FilterField[] = ['minifigId', 'setId', 'tags', 'timeline']
+const sharedFields: FilterField[] = filterFieldDefinitions
+  .filter(({ category }) => category === 'shared')
+  .map(({ field }) => field)
 
 const sharedParams: FilterParam[] = [
   'q',
@@ -238,18 +244,9 @@ export const getFilterOptions = <Item>({
     ).values(),
   ].sort((first, second) => first.label.localeCompare(second.label))
 
-export const getFieldLabel = (field: FilterField) => {
-  const definition = filterFieldDefinitions.find(
-    (candidate) => candidate.field === field
-  )
-  if (!definition) return field
-  const categoryTitle = filterCategories.find(
-    ({ category }) => category === definition.category
-  )?.title
-  return definition.category === 'shared'
-    ? definition.label
-    : `${categoryTitle} ${definition.label}`
-}
+export const getFieldLabel = (field: FilterField) =>
+  filterFieldDefinitions.find((definition) => definition.field === field)
+    ?.label ?? field
 
 export const isListFilterField = (
   field: FilterField

@@ -13,7 +13,7 @@ export type BooleanFilterField = 'owned' | 'retired'
 
 export type FilterField = ListFilterField | BooleanFilterField
 
-export type FilterCategory = 'shared' | 'set' | 'minifig'
+export type FilterCategory = 'shared' | 'page'
 
 export type ItemsFilter = Record<ListFilterField, string[]> &
   Record<BooleanFilterField, boolean | null> & {

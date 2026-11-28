@@ -125,7 +125,7 @@ test.for([
 test.for([
   {
     search: { q: 'x', setId: '1', owned: true, character: 'Han Solo' },
-    expected: { q: 'x', setId: '1' },
+    expected: { q: 'x', setId: '1', owned: true },
   },
   {
     search: { tags: 'a', subtheme: 'b', off: 'tags,subtheme' },
@@ -158,17 +158,17 @@ test('getActiveFields lists the set fields of a page', () => {
       fields: getConfigFields(config),
       filter: parseFilterSearch({ owned: false, setId: '1', retired: true }),
     }),
-    ['owned', 'setId']
+    ['setId', 'owned']
   )
 })
 
 test('getConfigFields keeps the canonical order', () => {
   assert.deepEqual(getConfigFields(config), [
-    'owned',
-    'tags',
     'setId',
-    'subtheme',
     'minifigId',
+    'tags',
+    'owned',
+    'subtheme',
   ])
 })
 
@@ -188,7 +188,8 @@ test('getFilterOptions dedupes and sorts by label', () => {
 test.for([
   { field: 'tags', label: 'Tags' },
   { field: 'setId', label: 'Set ID' },
-  { field: 'characterName', label: 'Minifig Character' },
+  { field: 'owned', label: 'Owned' },
+  { field: 'characterName', label: 'Character' },
 ] as const)('getFieldLabel of $field is $label', ({ field, label }) => {
   assert.equal(getFieldLabel(field), label)
 })
