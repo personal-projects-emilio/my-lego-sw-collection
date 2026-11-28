@@ -138,6 +138,7 @@ const SetFormModal: FC<SetFormModalProps> = ({ isEdit, setData }) => {
               <TimelineField
                 className={classes.gridSpan12}
                 onChange={field.onChange}
+                placeholder="Pick eras, trilogies or titles"
                 value={field.value}
               />
             )}

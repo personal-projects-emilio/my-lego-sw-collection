@@ -120,6 +120,7 @@ const FieldEditor: FC<FieldEditorProps> = ({
     return (
       <TimelineField
         label={label}
+        size="small"
         value={filter.timeline}
         onChange={(timeline) => onChange({ ...filter, timeline })}
       />

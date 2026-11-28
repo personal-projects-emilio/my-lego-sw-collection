@@ -30,7 +30,9 @@ type TimelineFieldProps = {
   inputRef?: Ref<HTMLInputElement>
   label?: string
   onChange: (value: TimelineId[]) => void
+  placeholder?: string
   popperClassName?: string
+  size?: 'medium' | 'small'
   value: TimelineId[]
 }
 
@@ -44,7 +46,9 @@ const TimelineField: FC<TimelineFieldProps> = ({
   inputRef,
   label = 'Timeline',
   onChange,
+  placeholder,
   popperClassName,
+  size,
   value,
 }) => {
   const { classes, theme } = useTimelineFieldStyles()
@@ -97,6 +101,7 @@ const TimelineField: FC<TimelineFieldProps> = ({
           id={inputId}
           multiple
           className={classes.select}
+          size={size}
           data-filled={shown.length > 0 || undefined}
           disableClearable
           open={false}
@@ -121,9 +126,7 @@ const TimelineField: FC<TimelineFieldProps> = ({
               focused={open || undefined}
               inputRef={inputRef}
               label={label}
-              placeholder={
-                shown.length ? undefined : 'Pick eras, trilogies or titles'
-              }
+              placeholder={shown.length ? undefined : placeholder}
               slotProps={{
                 ...params.slotProps,
                 htmlInput: {
