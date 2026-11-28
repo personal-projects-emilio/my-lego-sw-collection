@@ -1,15 +1,14 @@
 import type { FC } from 'react'
-import { MdClose, MdExpandMore } from 'react-icons/md'
+import { MdExpandMore } from 'react-icons/md'
 
 import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
   Button,
-  Drawer,
-  IconButton,
   Typography,
 } from '@mui/material'
+import SideDrawer from 'components/SideDrawer'
 import { makeStyles } from 'tss-react/mui'
 
 import FieldEditor from './FieldEditor'
@@ -30,23 +29,10 @@ type FilterDrawerProps = FilterVariantProps & {
 }
 
 const useFilterDrawerStyles = makeStyles({ name: 'FilterDrawer' })((theme) => ({
-  drawerPaper: { height: 'calc(100% - 48px)', overflow: 'hidden', top: 48 },
-  panel: {
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-    width: 360,
-  },
-  panelHeader: {
-    alignItems: 'center',
-    borderBottom: `1px solid ${theme.palette.divider}`,
-    display: 'flex',
-    padding: theme.spacing(1, 1, 1, 2),
-  },
   body: { overflowX: 'hidden', overflowY: 'auto' },
   accordion: {
     background: 'transparent',
-    borderBottom: `1px solid ${theme.palette.divider}`,
+    borderTop: `1px solid ${theme.palette.divider}`,
     '&::before': { display: 'none' },
   },
   group: {
@@ -54,7 +40,6 @@ const useFilterDrawerStyles = makeStyles({ name: 'FilterDrawer' })((theme) => ({
     gap: theme.spacing(2),
     gridTemplateColumns: 'minmax(0, 1fr)',
   },
-  title: { flex: 1 },
 }))
 
 const FilterDrawer: FC<FilterDrawerProps> = ({
@@ -71,84 +56,65 @@ const FilterDrawer: FC<FilterDrawerProps> = ({
   )
 
   return (
-    <Drawer
-      anchor="right"
+    <SideDrawer
+      actions={
+        <Button
+          disabled={!hasActiveFields}
+          onClick={() =>
+            onChange({
+              ...emptySetsFilter,
+              ...Object.fromEntries(
+                excludedFields.map((field) => [field, filter[field]])
+              ),
+            })
+          }
+          size="small"
+        >
+          Clear all
+        </Button>
+      }
+      defaultWidth={360}
+      id={panelId}
+      isOpen={isOpen}
+      minWidth={280}
       onClose={onClose}
-      open={isOpen}
-      slotProps={{
-        paper: { className: classes.drawerPaper },
-        transition: {
-          onEntered: () => document.getElementById(panelId)?.focus(),
-        },
-      }}
-      variant="persistent"
+      storageKey="filtersDrawerWidth"
+      title="Filters"
     >
-      <section
-        aria-label="Filters"
-        className={classes.panel}
-        id={panelId}
-        onKeyDown={(event) => {
-          if (event.key === 'Escape' && !event.defaultPrevented) onClose()
-        }}
-        tabIndex={-1}
-      >
-        <div className={classes.panelHeader}>
-          <Typography className={classes.title} component="h2" variant="h6">
-            Filters
-          </Typography>
-          <Button
-            disabled={!hasActiveFields}
-            onClick={() =>
-              onChange({
-                ...emptySetsFilter,
-                ...Object.fromEntries(
-                  excludedFields.map((field) => [field, filter[field]])
-                ),
-              })
-            }
-            size="small"
+      <div className={classes.body}>
+        {filterCategories.map(({ category, title }) => (
+          <Accordion
+            key={title}
+            className={classes.accordion}
+            defaultExpanded
+            disableGutters
+            elevation={0}
+            square
           >
-            Clear all
-          </Button>
-          <IconButton aria-label="Close filters" onClick={onClose}>
-            <MdClose />
-          </IconButton>
-        </div>
-        <div className={classes.body}>
-          {filterCategories.map(({ category, title }) => (
-            <Accordion
-              key={title}
-              className={classes.accordion}
-              defaultExpanded
-              disableGutters
-              elevation={0}
-              square
-            >
-              <AccordionSummary expandIcon={<MdExpandMore />}>
-                <Typography variant="subtitle2">{title}</Typography>
-              </AccordionSummary>
-              <AccordionDetails className={classes.group}>
-                {setsFilterFields
-                  .filter(
-                    (definition) =>
-                      definition.category === category &&
-                      !excludedFields.includes(definition.field)
-                  )
-                  .map(({ field, label }) => (
-                    <FieldEditor
-                      key={field}
-                      {...props}
-                      field={field}
-                      id={`${panelId}-${field}`}
-                      label={label}
-                    />
-                  ))}
-              </AccordionDetails>
-            </Accordion>
-          ))}
-        </div>
-      </section>
-    </Drawer>
+            <AccordionSummary expandIcon={<MdExpandMore />}>
+              <Typography variant="subtitle2">{title}</Typography>
+            </AccordionSummary>
+            <AccordionDetails className={classes.group}>
+              {setsFilterFields
+                .filter(
+                  (definition) =>
+                    definition.category === category &&
+                    !excludedFields.includes(definition.field)
+                )
+                .map(({ field, label }) => (
+                  <FieldEditor
+                    key={field}
+                    {...props}
+                    field={field}
+                    id={`${panelId}-${field}`}
+                    label={label}
+                  />
+                ))}
+            </AccordionDetails>
+          </Accordion>
+        ))}
+      </div>
+    </SideDrawer>
   )
 }
 

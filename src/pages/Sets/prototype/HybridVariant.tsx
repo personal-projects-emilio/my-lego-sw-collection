@@ -178,10 +178,7 @@ const HybridVariant: FC<FilterVariantProps> = (props) => {
         {...props}
         excludedFields={['search']}
         isOpen={drawer.isOpen}
-        onClose={() => {
-          drawer.onClose()
-          filtersButtonRef.current?.focus()
-        }}
+        onClose={drawer.onClose}
         panelId={drawer.panelId}
       />
     </>
